@@ -1,0 +1,448 @@
+{
+  "roles": {
+    "default": {
+      "label": "All Examples",
+      "summaries": ["showcase_linear_regression", "showcase_classification", "showcase_outlier_detection", "showcase_categorical_outlier_detection", "showcase_forecast", "showcase_clustering"]
+    },
+    "IT": {
+      "label": "IT Examples",
+      "summaries": ["showcase_linear_regression_it", "showcase_classification_it", "showcase_outlier_detection_it", "showcase_categorical_outlier_detection_it", "showcase_forecast_it", "showcase_clustering_it"]
+    },
+    "Security": {
+      "label": "Security Examples",
+      "summaries": ["showcase_linear_regression_sec", "showcase_classification_sec", "showcase_outlier_detection_sec", "showcase_categorical_outlier_detection_sec", "showcase_forecast_sec", "showcase_clustering_sec"]
+    },
+    "Business": {
+      "label": "Business Examples",
+      "summaries": ["showcase_linear_regression_biz", "showcase_classification_biz", "showcase_outlier_detection_biz", "showcase_categorical_outlier_detection_biz", "showcase_forecast_biz", "showcase_clustering_biz"]
+    },
+    "IoT": {
+      "label": "IoT Examples",
+      "summaries": ["showcase_linear_regression_iot", "showcase_classification_iot", "showcase_outlier_detection_iot", "showcase_categorical_outlier_detection_iot", "showcase_forecast_iot", "showcase_clustering_iot"]
+    }
+  },
+  "summaries": {
+    "showcase_linear_regression": {
+      "name": "Predict Numeric Fields",
+      "description": "Predict the value of a numeric field using a weighted combination of the values of other fields in that event. A common use of these predictions is to identify anomalies: predictions that differ significantly from the actual value may be considered anomalous.",
+      "dashboard": "showcase_linear_regression",
+      "examples": [
+        {
+          "name": "Server Power",
+          "label": "Predict Server Power Consumption"
+        },
+        {
+          "name": "App Usage",
+          "label": "Predict VPN Usage"
+        },
+        {
+          "name": "Housing",
+          "label": "Predict Median House Value"
+        },
+        {
+          "name": "Power Plant",
+          "label": "Predict Power Plant Energy Output"
+        }
+      ]
+    },
+    "showcase_linear_regression_it": {
+      "name": "Predict Numeric Fields",
+      "description": "Predict the value of a numeric field using a weighted combination of the values of other fields in that event. A common use of these predictions is to identify anomalies: predictions that differ significantly from the actual value may be considered anomalous. As in the example below, an IT administrator could estimate server power consumption given metrics like CPU utilization and memory transactions.",
+      "dashboard": "showcase_linear_regression",
+      "examples": [
+        {
+          "name": "Server Power",
+          "label": "Predict Server Power Consumption"
+        }
+      ]
+    },
+    "showcase_linear_regression_sec": {
+      "name": "Predict Numeric Fields",
+      "description": "Predict the value of a numeric field using a weighted combination of the values of other fields in that event. A common use of these predictions is to identify anomalies: predictions that differ significantly from the actual value may be considered anomalous. As in the example below, a security analyst could predict the frequency of VPN usage based on the use of other apps and detect unusual activity.",
+      "dashboard": "showcase_linear_regression",
+      "examples": [
+        {
+          "name": "App Usage",
+          "label": "Predict VPN Usage"
+        }
+      ]
+    },
+    "showcase_linear_regression_biz": {
+      "name": "Predict Numeric Fields",
+      "description": "Predict the value of a numeric field using a weighted combination of the values of other fields in that event. A common use of these predictions is to identify anomalies: predictions that differ significantly from the actual value may be considered anomalous. As in the example below, a real estate analyst in Boston could predict the selling price of a house based on known factors like the number of rooms and neighborhood crime rate.",
+      "dashboard": "showcase_linear_regression",
+      "examples": [
+        {
+          "name": "Housing",
+          "label": "Predict Median House Value"
+        }
+      ]
+    },
+    "showcase_linear_regression_iot": {
+      "name": "Predict Numeric Fields",
+      "description": "Predict the value of a numeric field using a weighted combination of the values of other fields in that event. A common use of these predictions is to identify anomalies: predictions that differ significantly from the actual value may be considered anomalous. As in the example below, an analyst at a combined cycle power plant could estimate the plant's energy output from other (possibly easier to measure) metrics like ambient temperature and humidity.",
+      "dashboard": "showcase_linear_regression",
+      "examples": [
+        {
+          "name": "Power Plant",
+          "label": "Predict Power Plant Energy Output"
+        }
+      ]
+    },
+    "showcase_classification": {
+      "name": "Predict Categorical Fields",
+      "description": "Predict the value of a categorical field using the values of other fields in that event. A common use of these predictions is to identify anomalies: predictions that differ significantly from the actual value may be considered anomalous.",
+      "dashboard": "showcase_classification",
+      "examples": [
+        {
+          "name": "Disk Failures",
+          "label": "Predict Hard Drive Failure"
+        },
+        {
+          "name": "Malware",
+          "label": "Predict the Presence of Malware"
+        },
+        {
+          "name": "Churn",
+          "label": "Predict Telecom Customer Churn"
+        },
+        {
+          "name": "Diabetes",
+          "label": "Predict the Presence of Diabetes"
+        },
+        {
+          "name": "Race Cars",
+          "label": "Predict Vehicle Make and Model"
+        }
+      ]
+    },
+    "showcase_classification_it": {
+      "name": "Predict Categorical Fields",
+      "description": "Predict the value of a categorical field using the values of other fields in that event. A common use of these predictions is to identify anomalies: predictions that differ significantly from the actual value may be considered anomalous. As in the example below, an IT administrator could predict hard drive failures using SMART metrics.",
+      "dashboard": "showcase_classification",
+      "examples": [
+        {
+          "name": "Disk Failures",
+          "label": "Predict Hard Drive Failure"
+        }
+      ]
+    },
+    "showcase_classification_sec": {
+      "name": "Predict Categorical Fields",
+      "description": "Predict the value of a categorical field using the values of other fields in that event. A common use of these predictions is to identify anomalies: predictions that differ significantly from the actual value may be considered anomalous. As in the example below, a security analyst could predict the presence of malware using firewall traffic.",
+      "dashboard": "showcase_classification",
+      "examples": [
+        {
+          "name": "Malware",
+          "label": "Predict the Presence of Malware"
+        }
+      ]
+    },
+    "showcase_classification_biz": {
+      "name": "Predict Categorical Fields",
+      "description": "Predict the value of a categorical field using the values of other fields in that event. A common use of these predictions is to identify anomalies: predictions that differ significantly from the actual value may be considered anomalous. As in the example below, a business analyst could predict whether a customer is likely to churn based on factors like their customer service interactions and billing history.",
+      "dashboard": "showcase_classification",
+      "examples": [
+        {
+          "name": "Churn",
+          "label": "Predict Telecom Customer Churn"
+        }
+      ]
+    },
+    "showcase_classification_iot": {
+      "name": "Predict Categorical Fields",
+      "description": "Predict the value of a categorical field using the values of other fields in that event. A common use of these predictions is to identify anomalies: predictions that differ significantly from the actual value may be considered anomalous. As in the example below, and IoT administrator could infer the make and model of a vehicle using onboard metrics like engine temperature and vehicle speed.",
+      "dashboard": "showcase_classification",
+      "examples": [
+        {
+          "name": "Race Cars",
+          "label": "Predict Vehicle Make and Model"
+        }
+      ]
+    },
+    "showcase_outlier_detection": {
+      "name": "Detect Numeric Outliers",
+      "description": "Find values that differ significantly from previous values.",
+      "dashboard": "showcase_outlier_detection",
+      "examples": [
+        {
+          "name": "Server Response Time",
+          "label": "Detect Outliers in Server Response Time"
+        },
+        {
+          "name": "Employee Logins (prediction errors)",
+          "label": "Detect Outliers in Number of Logins (vs. Predicted Value)"
+        },
+        {
+          "name": "Supermarket Purchases",
+          "label": "Detect Outliers in Supermarket Purchases"
+        },
+        {
+          "name": "Power Plant Humidity",
+          "label": "Detect Outliers in Power Plant Humidity"
+        }
+      ]
+    },
+    "showcase_outlier_detection_it": {
+      "name": "Detect Numeric Outliers",
+      "description": "Find values that differ significantly from previous values. As in the example below, an IT administrator could look for outliers in server response time to alert them to a potential problem, and then drill down to investigate.",
+      "dashboard": "showcase_outlier_detection",
+      "examples": [
+        {
+          "name": "Server Response Time",
+          "label": "Detect Outliers in Server Response Time"
+        }
+      ]
+    },
+    "showcase_outlier_detection_sec": {
+      "name": "Detect Numeric Outliers",
+      "description": "Find values that differ significantly from previous values. As in the example below, a security analyst could look for significant deviation from the predicted number of employee logins. The outliers in this example are not indications of a security threat; our predictive model did not know about Thanksgiving.",
+      "dashboard": "showcase_outlier_detection",
+      "examples": [
+        {
+          "name": "Employee Logins (prediction errors)",
+          "label": "Detect Outliers in Number of Logins (vs. Predicted Value)"
+        }
+      ]
+    },
+    "showcase_outlier_detection_biz": {
+      "name": "Detect Numeric Outliers",
+      "description": "Find values that differ significantly from previous values. As in the example below, a business analyst could examine supermarket transactions involving an unusually large quantity of items to understand what factors influence big spenders.",
+      "dashboard": "showcase_outlier_detection",
+      "examples": [
+        {
+          "name": "Supermarket Purchases",
+          "label": "Detect Outliers in Supermarket Purchases"
+        }
+      ]
+    },
+    "showcase_outlier_detection_iot": {
+      "name": "Detect Numeric Outliers",
+      "description": "Find values that differ significantly from previous values. As in the example below, a combined cycle power plant administrator could detect when the humidity deviates significantly from its typical range.",
+      "dashboard": "showcase_outlier_detection",
+      "examples": [
+        {
+          "name": "Power Plant Humidity",
+          "label": "Detect Outliers in Power Plant Humidity"
+        }
+      ]
+    },
+    "showcase_categorical_outlier_detection": {
+      "name": "Detect Categorical Outliers",
+      "description": "Find events that contain unusual combinations of values.",
+      "dashboard": "showcase_categorical_outlier_detection",
+      "examples": [
+        {
+          "name": "Disk Failures",
+          "label": "Detect Outliers in Disk Failures"
+        },
+                {
+          "name": "Bitcoin Transactions",
+          "label": "Detect Outliers in Bitcoin Transactions"
+        },
+        {
+          "name": "Supermarket Purchases",
+          "label": "Detect Outliers in Supermarket Purchases"
+        },
+        {
+          "name": "Mortgage Loans Data - New York",
+          "label": "Detect Outliers in Mortgage Contracts"
+        },
+        {
+          "name": "Diabetic Data",
+          "label": "Detect Outliers in Diabetes Patient Records"
+        },
+        {
+          "name": "Phone Usage",
+          "label": "Detect Outliers in Mobile Phone Activity"
+        }
+      ]
+    },
+    "showcase_categorical_outlier_detection_it": {
+      "name": "Detect Categorical Outliers",
+      "description": "Find events that contain unusual combinations of values. As in the example below, an IT administrator could look for unusual conditions related to hard drive failure, such as the reported drive capacity.",
+      "dashboard": "showcase_categorical_outlier_detection",
+      "examples": [
+        {
+          "name": "Disk Failures",
+          "label": "Detect Outliers in Disk Failures"
+        }
+      ]
+    },
+    "showcase_categorical_outlier_detection_sec": {
+      "name": "Detect Categorical Outliers",
+      "description": "Find events that contain unusual combinations of values. As in the example below, a security analyst for a bitcoin exchange could look for unusual combinations of users and transaction amounts.",
+      "dashboard": "showcase_categorical_outlier_detection",
+      "examples": [
+        {
+          "name": "Bitcoin Transactions",
+          "label": "Detect Outliers in Bitcoin Transactions"
+        }
+      ]
+    },
+    "showcase_categorical_outlier_detection_biz": {
+      "name": "Detect Categorical Outliers",
+      "description": "Find events that contain unusual combinations of values. As in the example below, a business analyst for a supermarket could look for unusual purchases, such as big spending by a customer who is typically frugal.",
+      "dashboard": "showcase_categorical_outlier_detection",
+      "examples": [
+        {
+          "name": "Supermarket Purchases",
+          "label": "Detect Outliers in Supermarket Purchases"
+        }
+      ]
+    },
+    "showcase_categorical_outlier_detection_iot": {
+      "name": "Detect Categorical Outliers",
+      "description": "Find events that contain unusual combinations of values. As in the example below, an IoT administrator could look for unusual mobile phone activity, in terms of the number of incoming, outgoing, and missed calls.",
+      "dashboard": "showcase_categorical_outlier_detection",
+      "examples": [
+        {
+          "name": "Phone Usage",
+          "label": "Detect Outliers in Mobile Phone Activity"
+        }
+      ]
+    },
+    "showcase_forecast": {
+      "name": "Forecast Time Series",
+      "description": "Forecast future values given past values of a metric (numeric time series).",
+      "dashboard": "showcase_forecast",
+      "examples": [
+        {
+          "name": "Internet Traffic",
+          "label": "Forecast Internet Traffic"
+        },
+        {
+          "name": "Employee Logins",
+          "label": "Forecast the Number of Employee Logins"
+        },
+        {
+          "name": "Souvenir Sales",
+          "label": "Forecast Monthly Sales"
+        },
+        {
+          "name": "Bluetooth Devices",
+          "label": "Forecast the Number of Bluetooth Devices"
+        }
+      ]
+    },
+    "showcase_forecast_it": {
+      "name": "Forecast Time Series",
+      "description": "Forecast future values given past values of a metric (numeric time series). As in the example below, an IT administrator could forecast internet traffic at different times of the week to inform dynamic resource provisioning.",
+      "dashboard": "showcase_forecast",
+      "examples": [
+        {
+          "name": "Internet Traffic",
+          "label": "Forecast Internet Traffic"
+        }
+      ]
+    },
+    "showcase_forecast_sec": {
+      "name": "Forecast Time Series",
+      "description": "Forecast future values given past values of a metric (numeric time series). As in the example below, a security analyst could forecast the number of expected employee logins. That forecast correctly anticipates few logins over the weekend, but lacks the external context to explain the Thanksgiving lull.",
+      "dashboard": "showcase_forecast",
+      "examples": [
+        {
+          "name": "Employee Logins",
+          "label": "Forecast the Number of Employee Logins"
+        }
+      ]
+    },
+    "showcase_forecast_biz": {
+      "name": "Forecast Time Series",
+      "description": "Forecast future values given past values of a metric (numeric time series). As in the example below, a business analyst for a souvenir shop (at a beach resort in Queensland, Australia) could forecast sales revenue, correctly forecasting the spikes that regularly happen in December and March.",
+      "dashboard": "showcase_forecast",
+      "examples": [
+        {
+          "name": "Souvenir Sales",
+          "label": "Forecast Monthly Sales"
+        }
+      ]
+    },
+    "showcase_forecast_iot": {
+      "name": "Forecast Time Series",
+      "description": "Forecast future values given past values of a metric (numeric time series). As in the example below, an IoT administrator could forecast the number of people who are likely to be at a particular location by using historical counts of the number of bluetooth devices detected over time.",
+      "dashboard": "showcase_forecast",
+      "examples": [
+        {
+          "name": "Bluetooth Devices",
+          "label": "Forecast the Number of Bluetooth Devices"
+        }
+      ]
+    },
+    "showcase_clustering": {
+      "name": "Cluster Numeric Events",
+      "description": "Partition events with multiple numeric fields into clusters.",
+      "dashboard": "showcase_clustering",
+      "examples": [
+        {
+          "name": "Disk",
+          "label": "Cluster Hard Drives by SMART Metrics"
+        },
+        {
+          "name": "Apps",
+          "label": "Cluster Behavior by App Usage"
+        },
+        {
+          "name": "Housing",
+          "label": "Cluster Neighborhoods by Properties"
+        },
+        {
+          "name": "Track",
+          "label": "Cluster Vehicles by Onboard Metrics"
+        },
+        {
+          "name": "PowerPlant",
+          "label": "Cluster Power Plant Operating Regimes"
+        }
+      ]
+    },
+    "showcase_clustering_it": {
+      "name": "Cluster Numeric Events",
+      "description": "Partition events with multiple numeric fields into clusters. As in the example below, an IT administrator could cluster hard drives based on the self-monitoring metrics they generate.",
+      "dashboard": "showcase_clustering",
+      "examples": [
+        {
+          "name": "Disk",
+          "label": "Cluster Hard Drives by SMART Metrics"
+        }
+      ]
+    },
+    "showcase_clustering_sec": {
+      "name": "Cluster Numeric Events",
+      "description": "Partition events with multiple numeric fields into clusters. As in the example below, a security analyst could cluster the behavior of employees based on how frequently they use business applications like Webmail or the VPN.",
+      "dashboard": "showcase_clustering",
+      "examples": [
+        {
+          "name": "Apps",
+          "label": "Cluster Behavior by App Usage"
+        }
+      ]
+    },
+    "showcase_clustering_biz": {
+      "name": "Cluster Numeric Events",
+      "description": "Partition events with multiple numeric fields into clusters. As in the example below, a business analyst interested in understanding a housing market could cluster neighborhoods based on properties like crime rate and median house value.",
+      "dashboard": "showcase_clustering",
+      "examples": [
+        {
+          "name": "Housing",
+          "label": "Cluster Neighborhoods by Properties"
+        }
+      ]
+    },
+    "showcase_clustering_iot": {
+      "name": "Cluster Numeric Events",
+      "description": "Partition events with multiple numeric fields into clusters. As in the examples below, an IoT administrator could cluster vehicles driven on a racetrack by onboard metrics like engine temperature and G-forces, or they could cluster the operating regimes of a power plant based on ambient measurements like temperature and vacuum.",
+      "dashboard": "showcase_clustering",
+      "examples": [
+        {
+          "name": "Track",
+          "label": "Cluster Vehicles by Onboard Metrics"
+        },
+        {
+          "name": "PowerPlant",
+          "label": "Cluster Power Plant Operating Regimes"
+        }
+      ]
+    }
+  }
+}

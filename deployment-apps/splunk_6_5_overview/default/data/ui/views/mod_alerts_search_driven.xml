@@ -1,0 +1,33 @@
+<dashboard>
+  <label>Custom Alert Action - Search-driven Dropdowns</label>
+  <description>Dynamic, search-driven input support for the custom alert action UI integration.</description>
+  <row>
+    <panel>
+      <html>
+        <p>Developers that build a UI (html) as part of their custom alert action to accept user input params can now include dynamically populated dropdown forms.  This can be used to:</p>
+        <ul>
+          <li><b>Populate dropdown from an external service</b> - Leverage a custom Splunk endpoint to remotely query and populate form controls such as the list of incident categories from ServiceNow, the list of rooms configured in HipChat, and more.</li>
+          <li><b>Populate dropdown from Splunk REST</b> - Query any Splunk REST API to fetch values such as available indexes, users, and more.</li>
+          <li><b>Populate dropdown from Splunk search</b> - Query for events or use commands such as inputlookup to populate values.</li>
+        </ul>
+        <br/>
+        <h3>Syntax:</h3>
+        <pre>
+          <![CDATA[
+<!-- Populate a dropdown from a custom Splunk endpoint that connects to an external service -->
+<splunk-search-dropdown name="action.myaction.param.myparam"
+ search="| rest /services/my/custom/endpint foo=bar"
+ value-field="somefield" label-field="otherfield" />
+ 
+ <!-- Populate a dropdown from a Splunk search -->
+ <splunk-search-dropdown name="action.myaction.param.myparam"
+ search="index=someindex | dedup somefield | table somefield otherfield"
+ earliest="-24h" latest="now"
+ value-field="somefield" label-field="otherfield" />]]></pre>
+        
+        <div style="margin-left:30px"><img src="/static/app/splunk_6_5_overview/images/mod_alerts_1.png" style="margin: 20px 0" width="600px" /></div>
+        
+      </html>
+    </panel>
+  </row>
+</dashboard>

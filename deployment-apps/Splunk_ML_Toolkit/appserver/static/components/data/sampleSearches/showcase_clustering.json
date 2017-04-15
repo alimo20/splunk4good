@@ -1,0 +1,121 @@
+{
+  "Disk": {
+    "value": "| inputlookup disk_failures.csv | search SMART_1_Raw=* | sample 1000",
+    "label": "Disk",
+    "preprocessedVariable": [
+      "SMART_1_Raw",
+      "SMART_2_Raw",
+      "SMART_3_Raw",
+      "SMART_4_Raw",
+      "SMART_5_Raw"
+    ],
+    "SSCheckbox": true,
+    "DRCheckbox": true,
+    "DRAlgorithm": "PCA",
+    "DRNumber": "4",
+    "algorithm": "KMeans",
+    "clusterVariable": [
+      "PC_1",
+      "PC_2",
+      "PC_3",
+      "PC_4"
+    ],
+    "algorithmParams": ["k=3"],
+    "modelName": "example_hard_drives"
+  },
+  "Apps": {
+    "value": "| inputlookup app_usage.csv",
+    "label": "Apps",
+    "preprocessedVariable": [
+      "CloudDrive",
+      "Recruiting",
+      "RemoteAccess",
+      "Webmail"
+    ],
+    "SSCheckbox": true,
+    "DRCheckbox": false,
+    "DRAlgorithm": "PCA",
+    "DRNumber": "3",
+    "algorithm": "SpectralClustering",
+    "clusterVariable": [
+      "SS_CloudDrive",
+      "SS_Recruiting",
+      "SS_RemoteAccess",
+      "SS_Webmail"
+    ],
+    "algorithmParams": ["k=3"]
+  },
+  "Housing": {
+    "value": "| inputlookup housing.csv",
+    "label": "Housing",
+    "preprocessedVariable": [
+      "avg_rooms_per_dwelling",
+      "business_acres",
+      "crime_rate",
+      "distance_to_employment_center",
+      "highway_accessibility_index",
+      "land_zone",
+      "median_house_value",
+      "nitric_oxide_concentration",
+      "property_tax_rate",
+      "pupil_teacher_ratio",
+      "units_prior_1940"
+    ],
+    "SSCheckbox": true,
+    "DRCheckbox": true,
+    "DRAlgorithm": "PCA",
+    "DRNumber": "3",
+    "algorithm": "DBSCAN",
+    "clusterVariable": [
+      "PC_1",
+      "PC_2",
+      "PC_3"
+    ],
+    "algorithmParams": ["eps=0.96"]
+  },
+  "Track": {
+    "value": "| inputlookup track_day.csv",
+    "label": "Track",
+    "preprocessedVariable": [
+      "batteryVoltage",
+      "engineCoolantTemperature",
+      "engineSpeed",
+      "lateralGForce",
+      "longitudeGForce",
+      "speed",
+      "verticalGForce"
+    ],
+    "SSCheckbox": true,
+    "DRCheckbox": true,
+    "DRAlgorithm": "PCA",
+    "DRNumber": "3",
+    "algorithm": "Birch",
+    "clusterVariable": [
+      "PC_1",
+      "PC_2",
+      "PC_3"
+    ],
+    "algorithmParams": ["k=6"],
+    "modelName": "example_vehicles"
+  },
+  "PowerPlant": {
+    "value": "| inputlookup power_plant.csv | sample 1000",
+    "label": "PowerPlant",
+    "preprocessedVariable": [
+    ],
+    "SSCheckbox": false,
+    "DRCheckbox": false,
+    "DRAlgorithm": "PCA",
+    "DRNumber": "3",
+    "algorithm": "Birch",
+    "clusterVariable": [
+      "Energy_Output",
+      "Humidity",
+      "Pressure",
+      "Temperature",
+      "Vacuum"
+    ],
+    "algorithmParams": ["k=4"],
+    "modelName": "example_powerplant"
+  }
+}

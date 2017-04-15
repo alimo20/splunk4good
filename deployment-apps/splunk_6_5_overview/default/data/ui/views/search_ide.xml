@@ -1,0 +1,54 @@
+<dashboard>
+  <label>Enhanced Search Assistance</label>
+  <description>Improved SPL readability and debugging capabilities in search editor.</description>
+  
+  <row>
+    <panel>
+      <html>
+        <p>In Splunk Enterprise 6.5, we’ve added exciting new features that will improve the way you write and manage searches. Enhanced Search Assistant is a fresh new experience for writing SPL in the search bar, and adds capabilities like syntax highlighting and auto-complete. Both Job Manager and Job Inspector have been rewritten for improved usability and future supportability.</p>
+        
+        <br/>
+        
+        <h2>Search IDE</h2>
+        <p>In Splunk Enterprise 6.5, two new features have been added to the search bar: <b>Syntax Highlighting</b> and <b>Autocomplete</b>. The new features are enabled by default.</p>
+
+        <h3>Syntax highlighting</h3>
+        <p>A popular feature of many code editors, syntax highlighting uses colors to provide information about the role of commands, arguments, and values within a query. Having the information in a visual cue improves readability and comprehension of queries with varied SPL syntax. Here’s an example:</p>
+        
+        <div style="margin-left:30px"><img src="/static/app/splunk_6_5_overview/images/search_ide_syntax_highlighting.png" style="margin: 20px 0" width="600px"/></div>
+
+        
+        <br/>
+        
+        <h3>Compact Assistant</h3>
+        <p>Another popular capability in code editor and terminal applications, autocomplete improves query-building by providing more relevant and interactive information. We think you’ll find that the autocomplete features make writing SPL easier and faster, and will help you become a Splunk Ninja in no time! Here are a few features that autocomplete provides:</p>
+
+        <div style="margin-left:30px">
+          <h4>Code Completion </h4>
+          <p>Code completion provides information relevant to your query, without taking up as much space on the page as the previous Search Helper mode (pre-6.5). Information in the code-completion box is context-sensitive, meaning it will provide information not only about the command being written within the query, but information relevant to the cursor position within the command. Commands, arguments, and historical commands are displayed together, giving you the choice of where you want to take your query.</p>
+          <img src="/static/app/splunk_6_5_overview/images/search_ide_compact_assistant.png" style="margin: 20px 0" width="600px"/>
+        </div>
+        
+        <br/>
+        <div style="margin-left:30px">
+          <h4>Miscellaneous</h4>
+          <p>When autocomplete is enabled, you also get the benefit of some additional code editing capabilities, like:
+          <ul>
+            <li>Bracket and parentheses matching</li>
+            <li>Find-in-query (CTRL+F or CMD+F within the search box)</li>
+            <li>Query formatting (CTRL+\ or CMD+\ within the search box)</li>
+          </ul>
+          </p>
+        </div>
+        <br/>
+        
+        <h3>Configuring your search features in Account Preferences</h3>
+        <p>You can enable and disable both Syntax Highlighting and Autocomplete in your Account settings:</p>
+        <div style="margin-left:30px">
+          <img src="/static/app/splunk_6_5_overview/images/search_ide_configuration.png" style="margin: 20px 0" width="700px"/>
+        </div>
+
+      </html>
+    </panel>
+  </row>
+</dashboard>

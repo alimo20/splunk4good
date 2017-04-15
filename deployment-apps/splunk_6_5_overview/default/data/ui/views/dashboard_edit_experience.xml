@@ -1,0 +1,40 @@
+<dashboard>
+  <label>Dashboard Edit Experience</label>
+  <description>Enhanced productivity in dashboard authoring and editing with a dashboard preview state and source editor improvements.</description>
+  <row>
+    <panel>
+      <html>
+        <p>This release introduces an enhanced dashboard edit experience to make users more productive in both authoring and editing dashboards.  Further, this now makes the edit experience for dashboards more consistent with other knowledge objects within Splunk.</p>
+        <p>Key features:</p>
+        <ul>
+          <li><b>Dashboard Preview State</b></li>
+          <ul>
+            <li>Preview changes before saving to the system</li>
+            <li>Cancel unwanted changes</li>
+          </ul>
+          <li><b>New XML Source Editor (advanced)</b></li>
+          <ul>
+            <li>Supports inline validation of proper Simple XML (nodes, values, etc)</li>
+            <li>Full-width editor</li>
+            <li>Standard IDE functionality (syntax highlighting, auto-close tags, etc)</li>
+          </ul>
+        </ul>
+        <br/>
+        
+        <h2>Dashboard Preview State (Save/SaveAs/Cancel Controls)</h2>
+        <div style="margin-left:30px">
+          <img src="/static/app/splunk_6_5_overview/images/dashboard_edit_1.png" style="margin-left:auto; margin-right:auto; align:middle; height:600px; "/>
+          <br/>
+          <br/>
+          <br/>
+        </div>
+        
+        <h2>XML Source Editor (advanced)</h2>
+        <div style="margin-left:30px">
+          <img src="/static/app/splunk_6_5_overview/images/dashboard_edit_2.png" style="margin-left:auto; margin-right:auto; align:middle; height:600px; "/>
+          <br/>
+        </div>
+      </html>
+    </panel>
+  </row>
+</dashboard>

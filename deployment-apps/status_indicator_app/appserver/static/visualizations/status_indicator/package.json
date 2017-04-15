@@ -1,0 +1,22 @@
+{
+  "name": "status_indicator_visualization",
+  "version": "1.1.0",
+  "description": "Splunk visualization app",
+  "main": "visualization.js",
+  "scripts": {
+    "build": "PROD=1 $SPLUNK_HOME/bin/splunk cmd node ./node_modules/webpack/bin/webpack.js",
+    "devbuild": "$SPLUNK_HOME/bin/splunk cmd node ./node_modules/webpack/bin/webpack.js --progress",
+    "watch": "$SPLUNK_HOME/bin/splunk cmd node ./node_modules/webpack/bin/webpack.js -d --watch --progress"
+  },
+  "author": "Splunk",
+  "license": "MIT",
+  "devDependencies": {
+    "webpack": "^1.12.6"
+  },
+  "dependencies": {
+    "bootstrap": "^3.3.5",
+    "jquery": "^2.1.4",
+    "numeral": "^1.5.3",
+    "underscore": "^1.8.3"
+  }
+}

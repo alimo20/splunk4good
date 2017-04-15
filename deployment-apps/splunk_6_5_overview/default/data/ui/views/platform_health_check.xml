@@ -1,0 +1,32 @@
+<dashboard>
+	<label>Monitoring Console - Health Check</label>
+	<description>Health check dashboards that provide status of Splunk deployment and identify if corrective action is required.</description>
+	<row>
+	  <panel>
+	    <html>
+	      <h2>Key Features</h2>
+  			
+  			<ul>
+  				<li>
+                  <i>
+            </i> In-depth views integrated into Monitoring Console.
+          </li>
+            
+          <li>
+                  <i>
+            </i> Includes checks for common issues with suggested actions.
+          </li>
+          <li>
+                  <i>
+            </i> Add custom Health Checks for your environment with an SPL search.
+          </li>
+          
+        </ul>
+        <h2>Health Check Example:</h2>
+  			<div>
+          <img src="/static/app/splunk_6_5_overview/images/healthcheck.png" width="1200" style="margin: 20px 0"/>
+        </div>
+	    </html>
+	  </panel>
+	</row>
+</dashboard>

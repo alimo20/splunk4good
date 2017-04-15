@@ -1,0 +1,46 @@
+<dashboard>
+  <label>Table Summaries</label>
+  <description>Users can now summarize column totals and calculate percent breakdowns straight from the UI.</description>
+  <row>
+    <panel>
+      <title>Example: Creditcard transactions, total per month and card provider</title>
+      <table>
+        <search>
+          <query>| inputlookup creditcard_transactions.csv
+| eval _time=date
+| timechart sum(amount) by card_provider</query>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">true</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">true</option>
+        <option name="wrap">true</option>
+        <format type="number" field="AMEX"></format>
+        <format type="number" field="DISCOVERY"></format>
+        <format type="number" field="MASTERCARD"></format>
+        <format type="number" field="VISA"></format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <p>Sample XML with the new report table options:</p>
+        <pre>
+          <![CDATA[
+      <table>
+        <search>
+          <query>...</query>
+        </search>
+        <option name="percentagesRow">true</option>
+        <option name="totalsRow">true</option>
+      </table>
+          ]]>
+          </pre>
+      </html>        
+    </panel>
+  </row>
+</dashboard>

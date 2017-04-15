@@ -1,0 +1,38 @@
+<dashboard>
+  <label>Removal of Metered License Enforcement</label>
+  <description>Starting with version 6.5, Splunk Enterprise no longer disables searches when you exceed your licensed data ingestion quota.</description>
+  <row>
+    <panel>
+      <html>
+        <p>We know that Splunk plays a mission-critical role for your business. With metered enforcement, unanticipated data growth or bursts of new data during an incident investigation could cause critical business disruption. So starting with version 6.5, Splunk Enterprise no longer disables searches when you exceed your licensed data ingestion quota. </p>
+
+         <p>Below are some common questions; <strong><a href="https://www.splunk.com/en_us/resources/splunk-enterprise-metered-license-enforcement-faq.html">please see the FAQ for more information</a></strong>.
+        </p>
+        <br></br>
+        <h2>What exactly is the Removal of Metered License Enforcement?</h2>
+            Starting with version 6.5, Splunk Enterprise will no longer disable search when you exceed your licensed data ingestion quota. This will be standard for any new license purchased on or after September 27, 2016. If you’re an existing customer, you will need to upgrade to Splunk Enterprise 6.5 and request a “no-enforcement” key from your Splunk sales rep or Splunk authorized partner. 
+
+        <h2>What do I have to do to remove enforcement from my deployment? </h2>
+            Removal of enforcement is governed by a new type of license key (“no-enforcement”) and the installation or upgrade to Splunk Enterprise 6.5. Current customers can upgrade their entire deployment, or simply upgrade their deployment’s License Master to Splunk Enterprise 6.5. You will need to acquire a new “no enforcement” key and install it on each deployment’s License Master. Once the "no-enforcement” key is installed, enforcement is removed across the entire deployment, including on the volume from previously purchased keys.
+
+        
+        <h2>What is the process to get the new key?</h2>
+        <strong>Method 1:</strong> <p>Purchase a net-new Splunk Enterprise license.
+For any license purchase after September 27, 2016, you will actually receive two keys: one for the purchased license capacity and one “no-enforcement” key.
+The “no enforcement” key only works on 6.5 license masters. It is not compatible with previous versions of Splunk Enterprise. If you are an existing customer running an earlier version of Splunk Enterprise, we are providing both keys so that you can install the “no-enforcement” key when you are ready to upgrade to 6.5. </p>
+<strong>Method 2:</strong> <p>Contact your Sales rep or Splunk Authorized Partner to request a key. 
+They’ll help you assess your current deployment, use cases, and data volume needs and provide recommendations to secure additional capacity and a “no-enforcement” key.
+Where can I find additional documentation that explains how disabling of enforcement works?</p>
+<p>Detailed documentation is available at: <strong><a href="http://docs.splunk.com/Documentation/Splunk/6.5.0/Admin/TypesofSplunklicenses">http://docs.splunk.com/Documentation/Splunk/6.5.0/Admin/TypesofSplunklicenses</a></strong></p>
+
+<h2>What happens if I temporarily burst over my purchased license capacity?</h2>
+The software will generate a violation warning if you exceed your licensed ingestion volume on any one calendar day. If you exceed your daily ingestion limit five or more times in a rolling 30-day period, you will be in violation of your license. However, the software will no longer disable search functionality if you exceed this limit.
+
+<h2>What will Splunk do if I go over my purchased license capacity?</h2>
+You should work with your Splunk sales rep or Splunk authorized partner to assess your current usage and purchase additional license capacity. It is not Splunk’s intention to bill for retroactive usage or surprise customers with invoices for previous license overages.  
+
+        
+        </html>
+    </panel>
+  </row>
+</dashboard>

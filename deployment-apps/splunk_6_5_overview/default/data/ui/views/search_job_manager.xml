@@ -1,0 +1,24 @@
+<dashboard>
+  <label>Search Job Manager &amp; Inspector</label>
+  <description>Improved user experience for Search Job Inspector and Job Manager.</description>
+  <row>
+    <panel>
+      <html>
+        <h2>Search Job Manager &amp; Inspector</h2>
+        
+        <p>Key features:</p>
+        
+        <ul>
+          <li>Bulk editing, filtering, collapsing elements</li>
+        </ul>
+
+          <img src="/static/app/splunk_6_5_overview/images/jobinspector.png" style="margin: 20px 0" />
+        
+          <br/>
+
+          <img src="/static/app/splunk_6_5_overview/images/jobmanager.png" style="margin: 20px 0" />
+          
+      </html>
+    </panel>
+  </row>
+</dashboard>

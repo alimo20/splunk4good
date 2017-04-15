@@ -1,0 +1,27 @@
+{
+  "name": "location_tracker",
+  "version": "1.1.0",
+  "description": "Map used to show the location of a physical asset in real time",
+  "main": "visualization.js",
+  "scripts": {
+    "build": "PROD=1 $SPLUNK_HOME/bin/splunk cmd node ./node_modules/webpack/bin/webpack.js",
+    "devbuild": "$SPLUNK_HOME/bin/splunk cmd node ./node_modules/webpack/bin/webpack.js --progress",
+    "watch": "$SPLUNK_HOME/bin/splunk cmd node ./node_modules/webpack/bin/webpack.js -d --watch --progress"
+  },
+  "author": "Splunk",
+  "license": "MIT",
+  "devDependencies": {
+    "webpack": "^1.12.6",
+    "babel-core": "^5.8.30",
+    "babel-loader": "^5.3.2",
+    "css-loader": "^0.21.0",
+    "file-loader": "^0.8.4",
+    "style-loader": "^0.13.0",
+    "url-loader": "^0.5.6"
+  },
+  "dependencies": {
+    "jquery": "^2.2.1",
+    "leaflet": "^0.7.7",
+    "underscore": "^1.8.3"
+  }
+}

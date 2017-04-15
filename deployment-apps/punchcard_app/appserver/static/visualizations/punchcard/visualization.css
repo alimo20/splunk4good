@@ -1,0 +1,40 @@
+.splunk-punchcard .axis path,.axis line {
+  fill: none;
+  stroke: #b6b6b6;
+  shape-rendering: crispEdges;
+}
+.splunk-punchcard .tick text {
+  fill: #555;
+  font-size:10px;
+  font-family: 'Lucida Grande', 'Lucida Sans Unicode', Arial, Helvetica;
+  cursor: pointer;  
+}
+.splunk-punchcard g.dimension.active {
+  cursor: pointer;
+}
+.splunk-punchcard text.label {
+  fill: #555;
+  font-size:12px;
+  font-family: 'Lucida Grande', 'Lucida Sans Unicode', Arial, Helvetica;
+  cursor: pointer;
+  text-transform:none;
+}
+
+.splunk-punchcard .punch-label {
+  cursor: pointer;
+}
+
+.splunk-punchcard text.value {
+  font-size: 12px;
+  cursor: pointer;  
+  text-shadow: 2px 0 0 white, 0 2px 0 white, -2px 0 0 white, 0 -2px 0 white;
+}
+.splunk-punchcard svg {
+  margin: 0px auto;
+  display: block;
+}
+.splunk-punchcard {
+  margin: auto;
+  overflow-y:auto;
+  overflow-x:hidden;
+}

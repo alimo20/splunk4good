@@ -1,0 +1,59 @@
+<dashboard>
+  <label>Table Datasets</label>
+  <description>Table based dataset views that can be created without writing SPL and used for focused analysis by both specialist and generalist users.</description>
+  
+  <row>
+    <panel>
+      <html>
+        
+        <h2>Overview</h2>
+        
+        <p>Users can shape and focus datasets through an iterative process that may include filtering, enriching, joining, and raw data transformation through interactive actions, abstracting the Splunk search processing language (SPL) from the workflow of analysis and reporting.</p>
+                
+        <ul>
+          <li>Design, curate, and share datasets, a knowledge object type that unifies existing data structures such as data models and lookups, using a common set of interactions that are optimized for reuse and extension.</li>
+          <li>Use the Table Editor to create tables, a new type of dataset based on searches with additional schema and metadata, and shape them to fit your specific business requirements.</li>
+          <li>Build sophisticated tables with ease even if your SPL skills are limited. The Table Editor lets you filter events, add fields, edit field values, perform statistical data aggregations, and more.</li>
+          <li>Validate your tables with different sampling modes, data summaries, and edit history.</li>
+          <li>Use tables to speed up your own analysis or share with your colleagues.</li>
+          <li>Open datasets in Pivot for deeper analysis and to  create visualization-rich reports and dashboard panels.</li>
+          <li>Drill in from datasets to SPL-based interfaces to the data model builder and the Search view.</li>
+        </ul>
+        
+        <br/>
+
+        <h2>Create a Table:</h2>
+        
+        <p>You create a table in two steps. First, you define its initial source data though one of the following methods:</p>
+        
+        <ul>
+          <li>Select a source index and/or source type.</li>
+          <li>Pick an existing dataset.</li>
+          <li>Enter a simple search query.</li>
+        </ul>
+        
+        <p>Next, choose the fields that you’d like to see in your table from a list of automatically extracted fields.</p>
+        
+        <div style="margin-left:30px"><img src="/static/app/splunk_6_5_overview/images/Datasets_Create.png" style="margin: 20px 0" width="1000px" />
+        </div>
+        <br/>
+        
+        <h2>Edit a Table:</h2>
+        
+        <p>The Table Editor lets you filter events, add fields, edit field values, and more. You can use its edit history feature to validate data entry and fix errors you made in previous editing steps.</p>
+        
+        <div style="margin-left:30px"><img src="/static/app/splunk_6_5_overview/images/Datasets_Edit.png" style="margin: 20px 0" width="1000px" />
+        </div>
+        <br/>
+
+        <h2>Analyze a dataset:</h2>
+        
+        <p>The Table Editor provides a “Summarize Fields” view, which displays a variety of analytical details about the fields in your table. See top value distributions, null value percentages, numeric value statistics, and more. </p>
+        
+        <div style="margin-left:30px"><img src="/static/app/splunk_6_5_overview/images/Datasets_Summarize.png" style="margin: 20px 0" width="1000px" />
+        </div>
+        
+      </html>
+    </panel>
+  </row>
+</dashboard>

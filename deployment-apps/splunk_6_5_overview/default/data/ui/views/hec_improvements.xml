@@ -1,0 +1,56 @@
+<dashboard>
+	<label>HTTP Event Collector Improvements</label>
+  <description>Automatically extract fields from JSON payloads and utilize Basic Auth.</description>
+  <row>
+    <panel>
+      <html>
+  			<h2>Overview</h2>
+  			<p>The HTTP Event Collector (HEC) is a new way to send data to Splunk Enterprise or Splunk Cloud. Notably, the HEC enables you to send data over HTTP (or HTTPS) directly to Splunk from your application. The HEC was created with application developers in mind, so that all it takes is a few lines of code added to an app for the app to send data. Also, the HEC is token-based, so you never need to hard-code your Splunk credentials in your app or supporting files. HTTP Event Collector provides a new way for developers to send application logging and metrics directly to Splunk via HTTP in a highly efficient and secure manner.</p>
+
+  			<p>In Splunk 6.4 and 6.5 we added new features to the HEC. Below are some of the key updates:</p>
+  			<ul>
+  				<li>
+                  <i>
+              <strong>Documentation</strong>
+            </i> - There were several updates to the documentation including detailed information on <a href="http://dev.splunk.com/view/event-collector/SP-CAAAE73">distributed architecture</a>, <a href="http://dev.splunk.com/view/event-collector/SP-CAAAE6Q">configuration</a>, <a href="http://dev.splunk.com/view/event-collector/SP-CAAAE7H">REST endpoints</a>, and more.</li>
+            
+            <li>
+                  <i>
+              <strong>JSON Field Extraction (6.5)</strong>
+            </i> - Users can now specify additional index fields separate from the "event" playload (JSON endpoint only). Additionally users can use sourcetypes with JSON index field extraction enabled and also supply arbitrary key-value-pairs to be indexed using "fields".</li>
+            
+            <li>
+                  <i>
+              <strong>Basic Auth (6.5)</strong>
+            </i> - Basic Auth can be used to authenticate your HEC requests. This is useful for systems that do not support custom auth header values but can support Basic Auth via the URI (Github web hooks).</li>
+            
+              <li>
+                  <i>
+              <strong>Indexer Acknowledgements (6.4)</strong>
+            </i> - Indexer acknowledgements provide a way to get acknowledgments once data sent to the HTTP Event Collector has been indexed. Systems utilizing this feature when sending data to Splunk can be more resilient when outages occur, and prevent data loss as it offers guarantees on data indexing.</li>
+  				<li>
+            <i>
+              <strong>Raw event payloads (6.4)</strong>
+            </i> - Raw event payloads sent to the HTTP Event Collector can now be properly indexed.  This feature is useful for integrating with existing systems that send proporietary formats of data, such as Akamai's Cloud Delivery Service or other systems that cannot send events in Splunk's JSON event format.</li>
+  			<li>
+            <i>
+              <strong>HTTP configuration options (6.4)</strong>
+            </i> - An admin can now configure specific HTTP server settings for HTTP Event Collector such as:</li>
+              <ul><li>SSL - Configure a specific SSL cert for HEC, enable client cert, etc.</li>
+                <li>CORS - Enable Cross Origin access for HEC or NOT</li>
+                <li>Network Restrictions - Specify IPs, hostnames, etc that are allowed to access</li></ul>
+        	<li>
+            <i>
+              <strong>Request Level Metadata (6.4)</strong>
+            </i> - This feature is useful for reducing the payload size when sending batches of events to HEC which override metadata. With request level metadata you can specify all of the metadata for the batch in a single place rather than having to specify within each event. </li>
+  				</ul>
+
+  			<br/>
+  			<h2>How to enable Indexer Acknowledgements:</h2>
+  			<div>
+          <img src="/static/app/splunk_6_5_overview/images/http_event_collector_ACK.png" width="1200" style="margin: 20px 0"/>
+        </div>
+		</html>
+    </panel>
+  </row>
+</dashboard>

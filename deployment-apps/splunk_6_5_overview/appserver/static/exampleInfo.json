@@ -1,0 +1,150 @@
+[
+
+{
+    "id": "datasets_addon",
+    "title": "Table Datasets",
+    "short-description": "Create and analyze tabular data views without using SPL. Make power users more productive in creating rich data views, while making it simple for anyone to analyze data.",
+    "category": "User Experience"
+},
+
+{
+    "id": "table_formats",
+    "title": "Conditional Table Formatting & Number Formatting",
+    "short-description": "Set table cell coloring  determined by cell values straight from the UI. Format numbers and add units while keeping sort order.",
+    "category": "User Experience"
+},
+
+{
+    "id": "report_tables",
+    "title": "Table Summaries",
+    "short-description": "Summarize column totals and calculate percent breakdowns straight from the UI.",
+    "category": "User Experience"
+},
+
+{
+    "id": "dashboard_refresh",
+    "title": "Dashboard Refresh",
+    "short-description": "Auto-refresh dashboard elements using versatile controls.",
+    "category": "User Experience"
+},
+
+{
+    "id": "dashboard_edit_experience",
+    "title": "Dashboard Edit Experience",
+    "short-description": "Preview dashboard before saving. Use new in-page SimpleXML source code editor with inline validation to create custom dashboards.",
+    "category": "User Experience"
+},
+
+{
+    "id": "search_ide",
+    "title": "Enhanced Search Assistance",
+    "short-description": "Improve SPL productivity and readability in search editor, including syntax highlighting, auto-formatting, and autocomplete.",
+    "category": "User Experience"
+},
+
+{
+    "id": "search_job_manager",
+    "title": "Search Job Manager & Inspector",
+    "short-description": "Improved user experience for Search Job Manager and Job Inspector.",
+    "category": "User Experience"
+},
+
+{
+    "id": "machine_learning_toolkit",
+    "title": "Machine Learning Toolkit",
+    "short-description": "Extend platform with guided modeling environment. Assistants offer a choice of 25 popular algorithms and provide guided model creation, testing and deployment for common objectives like forecasting values, predicting fields, and detecting outliers.",
+    "category": "Platform"
+},
+
+{
+    "id": "hadoop_data_roll",
+    "title": "Hadoop Data Roll",
+    "short-description":"Migrate historical data to existing Hadoop deployment while retaining Splunk search functionality. Now an integrated feature of Splunk Enterprise.",
+    "category": "Platform"
+},
+
+{
+    "id": "IndexerClusteringEnhancements",
+    "title": "Indexer Clustering Enhancements",
+    "short-description": "Better manage Indexer Clusters through several improvements including enhanced recoverability UI.",
+    "category": "Management"
+},
+
+{
+    "id": "SearchHeadClusteringEnhancements",
+    "title": "Search Head Clustering Enhancements",
+    "short-description": "Better manage Search Head Clusters through several improvements including a new Health Checker.",
+    "category": "Management"
+},
+
+{
+    "id": "saml_idps",
+    "title": "User Authentication",
+    "short-description": "SAML support for CA SiteMinder, OneLogin, and Optimal SAML solutions. Support for Duo Security Two Factor Authentication.",
+    "category": "Platform"
+},
+
+{
+    "id": "hec_improvements",
+    "title": "HTTP Event Collector Improvements",
+    "short-description": "Automatically extract fields from JSON payload and utilize Basic Auth.",
+    "category": "Platform"
+},
+
+{
+    "id": "DataRebalance",
+    "title": "Indexer Clustering Rebalance",
+    "short-description": "Automatically rebalance data across all available indexers after adding new indexer to a cluster.",
+    "category": "Management"
+},
+
+{
+    "id": "platform_health_check",
+    "title": "Monitoring Console - Health Check",
+    "short-description": "Verify status of Splunk deployment and identify if corrective action is required.",
+    "category": "Management"
+},
+
+{
+    "id": "mobile_app",
+    "title": "Splunk Mobile App",
+    "short-description": "Better manage mobile access through several enhancements, including integration with Enterprise Mobility Management (EMM) technologies like MobileIron, AirWatch, and Good Technology.",
+    "category": "Management"
+},
+
+{
+    "id": "remove_metered_license",
+    "title": "Removal of Metered License Enforcement",
+    "short-description": "Starting with version 6.5, Splunk Enterprise no longer disables searches when you exceed your licensed data ingestion quota.",
+    "category": "Management"
+},
+
+{
+    "id": "dev_test_license",
+    "title": "Personalized Dev/Test Licenses",
+    "short-description": "Splunk customers can now explore new data sources and projects with free personalized Splunk Enterprise Dev/Test Licenses.",
+    "category": "Management"
+},
+
+{
+    "id": "mod_alerts_search_driven",
+    "title": "Custom Alert Action - Search-driven Dropdowns",
+    "short-description": "Dynamic, search-driven input support for Custom Alert Actions.",
+    "category": "Developer"
+},
+
+{
+    "id": "new_dev_resources",
+    "title": "New Developer Resources and Splunkbase App Discovery",
+    "short-description": "Take advantage of the many resources available to help you build, package, certify, and promote your apps. Learn more at dev.splunk.com.",
+    "category": "Developer"
+},
+
+{
+    "id": "addon_builder_app",
+    "title": "Add-on Builder App",
+    "short-description": "Onboard your data faster using a process driven UI.",
+    "category": "Developer"
+}
+
+]

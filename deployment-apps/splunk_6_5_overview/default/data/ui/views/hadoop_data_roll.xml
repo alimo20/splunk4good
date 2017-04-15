@@ -1,0 +1,29 @@
+<dashboard>
+  <label>Hadoop Data Roll</label>
+  <description>Drive down costs by easily rolling historical data from Splunk Enterprise to HDFS and Amazon S3. See the full picture by accessing real-time data from Splunk Enterprise and historical data stored in Hadoop.  Search and analyze using the proven Splunk search language and visualizations.</description>
+  <row>
+    <panel>
+      <html>
+				<h2>Overview</h2>
+				<p>Hadoop data roll is an option available to customers who would like to retain their historical Splunk data in their Hadoop data lake. It is compatible with most popular Apache Hadoop distributions as well as Amazon EMR running on S3 storage. The main benefit of Hadoop data roll is TCO reduction achieved by reducing the storage footprint and lower cost storage hardware. Additionally, your Hadoop applications will be able to use data that was originally indexed in Splunk.</p>
+
+				<p>Reduction in storage footprint is achieved by reducing Splunk search optimization data that are primarily used to speed up ”needle in the haystack” type searches. The storage footprint reductions can range from 40-80%, depending on the characteristics of the underlying data.</p>
+
+				<p>Once data is rolled into Hadoop, search, reporting, and analysis functionality within Splunk Enterprise is retained through virtual indexes, though with performance tradeoffs. </p>
+				
+				<p>
+          <b>Key features:</b>
+        </p>
+          
+          <ul>
+            <li>Rolls historical data into existing Hadoop distribution</li>
+            <li>Reduces storage up to 80% (Achieved by reducing Splunk search optimization data)</li>
+            <li>Retains Splunk search capability with performance tradeoffs</li>
+            <li>Integrated, zero-cost option of Splunk Enterprise</li>
+          </ul>
+				
+				
+			</html>
+    </panel>
+  </row>
+</dashboard>

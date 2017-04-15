@@ -1,0 +1,53 @@
+<dashboard>
+  <label>Search Head Clustering Enhancements</label>
+  <description>Better manage Search Head Clusters through several improvements including a new Health Checker.
+</description>
+  <row>
+    <panel>
+      <html>
+        <p>Key Features:</p>
+        <ul>
+          <li>SHC Health Checker</li>
+          <ul>
+            <li> Monitor SHC cluster health to detect network/node failures, out of sync members and display search concurrency limits</li>
+          </ul>
+          <li>Preferred Captain</li>
+          <ul>
+            <li>Select one or more SHC members as preferred captain</li>
+          </ul>
+          <li>Improved recoverability from RAFT metadata corruption </li>
+          <ul>
+            <li>Recover from SHC captain election failures due to metadata corruption </li>
+          </ul>
+        </ul>
+        
+        <br/>
+        <h2> SHC Health Checker detects missing heartbeats </h2>
+        <div style="margin-left:30px">
+          <img src="/static/app/splunk_6_5_overview/images/SHCE_1.png" style="margin: 20px 0" width="700px"/>
+          <br/>
+          <br/>
+          <br/>
+        </div>
+
+        <h2> SHC Health Checker detects out-of-sync SHC members</h2>
+        <div style="margin-left:30px">
+          <img src="/static/app/splunk_6_5_overview/images/SHCE_2.png" style="margin: 20px 0" width="700px"/>
+          <br/>
+          <br/>
+          <br/>
+        </div>
+
+        <h2> SHC Health Checker displays granular information to help determine out-of-sync SHC members</h2>
+        <div style="margin-left:30px">
+          <img src="/static/app/splunk_6_5_overview/images/SHCE_3.png" style="margin: 20px 0" width="700px"/>
+          <br/>
+          <br/>
+          <br/>
+        </div>
+
+        
+        </html>
+    </panel>
+  </row>
+</dashboard>
