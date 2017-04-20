@@ -36,3 +36,5 @@ system/*
 !system/local/
 system/local/*
 !system/local/serverclass.conf
+
+**/*.pyc
