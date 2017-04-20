@@ -5,6 +5,7 @@
 
 !deployment-apps/
 !master-apps/
+master-apps/_cluster/
 
 !apps/
 apps/100_splunk4good_prod_splunkcloud/
