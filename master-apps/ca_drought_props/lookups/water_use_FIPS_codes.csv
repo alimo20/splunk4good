@@ -1,0 +1,59 @@
+County,FIPS_Code,featureId
+Alameda County,1,Alameda
+Alpine County,3,Alpine
+Amador County,5,Amador
+Butte County,7,Butte
+Calaveras County,9,Calaveras
+Colusa County,11,Colusa
+Contra Costa County,13,Contra Costa
+Del Norte County,15,Del Norte
+El Dorado County,17,El Dorado
+Fresno County,19,Fresno
+Glenn County,21,Glenn
+Humboldt County,23,Humboldt
+Imperial County,25,Imperial
+Inyo County,27,Inyo
+Kern County,29,Kern
+Kings County,31,Kings
+Lake County,33,Lake
+Lassen County,35,Lassen
+Los Angeles County,37,Los Angeles
+Madera County,39,Madera
+Marin County,41,Marin
+Mariposa County,43,Mariposa
+Mendocino County,45,Mendocino
+Merced County,47,Merced
+Modoc County,49,Modoc
+Mono County,51,Mono
+Monterey County,53,Monterey
+Napa County,55,Napa
+Nevada County,57,Nevada
+Orange County,59,Orange
+Placer County,61,Placer
+Plumas County,63,Plumas
+Riverside County,65,Riverside
+Sacramento County,67,Sacramento
+San Benito County,69,San Benito
+San Bernardino County,71,San Bernardino
+San Diego County,73,San Diego
+San Francisco County,75,San Francisco
+San Joaquin County,77,San Joaquin
+San Luis Obispo County,79,San Luis Obispo
+San Mateo County,81,San Mateo
+Santa Barbara County,83,Santa Barbara
+Santa Clara County,85,Santa Clara
+Santa Cruz County,87,Santa Cruz
+Shasta County,89,Shasta
+Sierra County,91,Sierra
+Siskiyou County,93,Siskiyou
+Solano County,95,Solano
+Sonoma County,97,Sonoma
+Stanislaus County,99,Stanislaus
+Sutter County,101,Sutter
+Tehama County,103,Tehama
+Trinity County,105,Trinity
+Tulare County,107,Tulare
+Tuolumne County,109,Tuolumne
+Ventura County,111,Ventura
+Yolo County,113,Yolo
+Yuba County,115,Yuba
