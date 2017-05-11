@@ -1,11 +1,3 @@
-[app/ui]
-version = 6.5.3
-modtime = 1492223048.023011000
-
-[app/launcher]
-version = 6.5.3
-modtime = 1492223048.024582000
-
-[app/package/check_for_updates]
-version = 6.5.3
-modtime = 1492223048.025186000
+[]
+access = read : [ * ], write : [ admin ]
+export = system
