@@ -1,0 +1,20 @@
+[app/ui]
+version = 6.5.3
+modtime = 1495059473.477904000
+
+[app/launcher]
+version = 6.5.3
+modtime = 1495059473.479693000
+
+[app/package/check_for_updates]
+version = 6.5.3
+modtime = 1495059473.480369000
+
+[views/urban_water_supplier_reports]
+version = 6.5.3
+modtime = 1495059521.200424000
+
+[views/precipitation]
+owner = admin
+version = 6.5.3
+modtime = 1495059880.863493000

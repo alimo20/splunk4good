@@ -1,0 +1,2 @@
+County,FIPS_Code,featureId,agency_cd,site_no,site_tp_cd,lev_dt,lev_tm,lev_tz_cd,lev_va,sl_lev_va,sl_datum_cd,lev_status_cd,lev_agency_cd,lev_dt_acy_cd,lev_acy_cd,lev_src_cd,lev_meth_cd,lev_age_cd,Latitude,Longitude
+Shasta County,89,Shasta,USGS,403700121540001,GW,2010-09-13,12:00,PST,154.0,NULL,NULL,NULL,USGS,D,0,S,V,A,40.6285833,-121.91125
