@@ -3,6 +3,9 @@
 ![https://dev.splunk4good.com/en-US/app/s4g-ca_drought/](https://img.shields.io/badge/App%20Status-Stable%20(beta)-orange.svg) ![https://splunkbase.splunk.com/app/1257/](https://img.shields.io/badge/Dependencies-Wunderground%20TA-green.svg)
 ![https://dev.splunk4good.com/en-US/app/s4g-ca_drought/](https://img.shields.io/badge/Deployment%20Status-Dev-orange.svg)
 
+## UPDATE
+`hobbes3` (May 2017): I've made massive edits and cleaned up this app for the Splunk4Good environment. Some parts of the documentation may be no longer relevant.
+
 ## Overview
 
 The state of California has been suffering from drought for the past four years. This has led to mandatory rationing and other conservation measures to be adopted in the state.
