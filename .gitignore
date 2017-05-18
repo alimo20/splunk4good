@@ -30,7 +30,6 @@ apps/SplunkLightForwarder/
 apps/splunk_monitoring_console/
 apps/user-prefs/
 !apps/*/local/
-apps/*/local/*
 !apps/*/local/serverclass.conf
 
 !system/
