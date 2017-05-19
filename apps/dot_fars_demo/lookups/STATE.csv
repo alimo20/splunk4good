@@ -1,0 +1,52 @@
+fips_state_id,state_name,state_abbreviation,state_assoc_press,state_federal_region,state_census_region,state_census_region_name,state_census_division,state_census_division_name,state_circuit_court,state_latitude,state_longitude
+1,Alabama,AL,Ala.,IV,3,South,6,East South Central,11,32.806671,-86.79113
+2,Alaska,AK,Alaska,X,4,West,9,Pacific,9,61.370716,-152.404419
+4,Arizona,AZ,Ariz.,IX,4,West,8,Mountain,9,33.729759,-111.431221
+5,Arkansas,AR,Ark.,VI,3,South,7,West South Central,8,34.969704,-92.373123
+6,California,CA,Calif.,IX,4,West,9,Pacific,9,36.116203,-119.681564
+8,Colorado,CO,Colo.,VIII,4,West,8,Mountain,10,39.059811,-105.311104
+9,Connecticut,CT,Conn.,I,1,Northeast,1,New England,2,41.597782,-72.755371
+10,Delaware,DE,Del.,III,3,South,5,South Atlantic,3,39.318523,-75.507141
+12,Florida,FL,Fla.,IV,3,South,5,South Atlantic,11,27.766279,-81.686783
+13,Georgia,GA,Ga.,IV,3,South,5,South Atlantic,11,33.040619,-83.643074
+15,Hawaii,HI,Hawaii,IX,4,West,9,Pacific,9,21.094318,-157.498337
+16,Idaho,ID,Idaho,X,4,West,8,Mountain,9,44.240459,-114.478828
+17,Illinois,IL,Ill.,V,2,Midwest,3,East North Central,7,40.349457,-88.986137
+18,Indiana,IN,Ind.,V,2,Midwest,3,East North Central,7,39.849426,-86.258278
+19,Iowa,IA,Iowa,VII,2,Midwest,4,West North Central,8,42.011539,-93.210526
+20,Kansas,KS,Kan.,VII,2,Midwest,4,West North Central,10,38.5266,-96.726486
+21,Kentucky,KY,Ky.,IV,3,South,6,East South Central,6,37.66814,-84.670067
+22,Louisiana,LA,La.,VI,3,South,7,West South Central,5,31.169546,-91.867805
+23,Maine,ME,Maine,I,1,Northeast,1,New England,1,44.693947,-69.381927
+24,Maryland,MD,Md.,III,3,South,5,South Atlantic,4,39.063946,-76.802101
+25,Massachusetts,MA,Mass.,I,1,Northeast,1,New England,1,42.230171,-71.530106
+26,Michigan,MI,Mich.,V,2,Midwest,3,East North Central,6,43.326618,-84.536095
+27,Minnesota,MN,Minn.,V,2,Midwest,4,West North Central,8,45.694454,-93.900192
+28,Mississippi,MS,Miss.,IV,3,South,6,East South Central,5,32.741646,-89.678696
+29,Missouri,MO,Mo.,VII,2,Midwest,4,West North Central,8,38.456085,-92.288368
+30,Montana,MT,Mont.,VIII,4,West,8,Mountain,9,46.921925,-110.454353
+31,Nebraska,NE,Neb.,VII,2,Midwest,4,West North Central,8,41.12537,-98.268082
+32,Nevada,NV,Nev.,IX,4,West,8,Mountain,9,38.313515,-117.055374
+33,New Hampshire,NH,N.H.,I,1,Northeast,1,New England,1,43.452492,-71.563896
+34,New Jersey,NJ,N.J.,II,1,Northeast,2,Mid-Atlantic,3,40.298904,-74.521011
+35,New Mexico,NM,N.M.,VI,4,West,8,Mountain,10,34.840515,-106.248482
+36,New York,NY,N.Y.,II,1,Northeast,2,Mid-Atlantic,2,42.165726,-74.948051
+37,North Carolina,NC,N.C.,IV,3,South,5,South Atlantic,4,35.630066,-79.806419
+38,North Dakota,ND,N.D.,VIII,2,Midwest,4,West North Central,8,47.528912,-99.784012
+39,Ohio,OH,Ohio,V,2,Midwest,3,East North Central,6,40.388783,-82.764915
+40,Oklahoma,OK,Okla.,VI,3,South,7,West South Central,10,35.565342,-96.928917
+41,Oregon,OR,Ore.,X,4,West,9,Pacific,9,44.572021,-122.070938
+42,Pennsylvania,PA,Pa.,III,1,Northeast,2,Mid-Atlantic,3,40.590752,-77.209755
+44,Rhode Island,RI,R.I.,I,1,Northeast,1,New England,1,41.680893,-71.51178
+45,South Carolina,SC,S.C.,IV,3,South,5,South Atlantic,4,33.856892,-80.945007
+46,South Dakota,SD,S.D.,VIII,2,Midwest,4,West North Central,8,44.299782,-99.438828
+47,Tennessee,TN,Tenn.,IV,3,South,6,East South Central,6,35.747845,-86.692345
+48,Texas,TX,Texas,VI,3,South,7,West South Central,5,31.054487,-97.563461
+49,Utah,UT,Utah,VIII,4,West,8,Mountain,10,40.150032,-111.862434
+50,Vermont,VT,Vt.,I,1,Northeast,1,New England,2,44.045876,-72.710686
+51,Virginia,VA,Va.,III,3,South,5,South Atlantic,4,37.769337,-78.169968
+53,Washington,WA,Wash.,X,4,West,9,Pacific,9,47.400902,-121.490494
+54,West Virginia,WV,W.Va.,III,3,South,5,South Atlantic,4,38.491226,-80.954453
+55,Wisconsin,WI,Wis.,V,2,Midwest,3,East North Central,7,44.268543,-89.616508
+56,Wyoming,WY,Wyo.,VIII,4,West,8,Mountain,10,42.755966,-107.30249
+11,Washington DC,DC,,III,3,South,5,South Atlantic,D.C.,38.897438,-77.026817
