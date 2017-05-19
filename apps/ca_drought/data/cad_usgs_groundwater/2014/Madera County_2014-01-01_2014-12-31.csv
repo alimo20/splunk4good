@@ -1,0 +1,5 @@
+County,FIPS_Code,featureId,agency_cd,site_no,site_tp_cd,lev_dt,lev_tm,lev_tz_cd,lev_va,sl_lev_va,sl_datum_cd,lev_status_cd,lev_agency_cd,lev_dt_acy_cd,lev_acy_cd,lev_src_cd,lev_meth_cd,lev_age_cd,Latitude,Longitude
+Madera County,39,Madera,USGS,364900120030001,GW,2014-03-18,12:20,PDT,68.01,NULL,NULL,NULL,USGS,m,2,S,V,A,36.8289722,-120.062861
+Madera County,39,Madera,USGS,365700120220001,GW,2014-04-10,08:40,PDT,144.52,NULL,NULL,NULL,USGS,m,2,S,V,A,36.9560833,-120.3730556
+Madera County,39,Madera,USGS,370700120040001,GW,2014-04-09,10:55,PDT,140.02,NULL,NULL,NULL,USGS,m,2,S,V,A,37.12575,-120.0757778
+Madera County,39,Madera,USGS,370700120210001,GW,2014-03-20,10:07,PDT,209.66,NULL,NULL,NULL,USGS,m,2,S,V,A,37.11916667,-120.3524722

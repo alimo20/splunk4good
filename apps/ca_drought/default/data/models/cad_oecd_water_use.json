@@ -1,0 +1,126 @@
+{
+    "modelName": "cad_oecd_water_use",
+    "displayName": "cad_oecd_water_use",
+    "description": "",
+    "objectSummary": {
+        "Event-Based": 1,
+        "Transaction-Based": 0,
+        "Search-Based": 0
+    },
+    "objects": [
+        {
+            "objectName": "cad_oecd_water_use",
+            "displayName": "cad_oecd_water_use",
+            "parentName": "BaseEvent",
+            "fields": [
+                {
+                    "fieldName": "country",
+                    "owner": "cad_oecd_water_use",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "country",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "country_iso2",
+                    "owner": "cad_oecd_water_use",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "country_iso2",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "population_people",
+                    "owner": "cad_oecd_water_use",
+                    "type": "number",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "population_people",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "wateruse_per_capita_annual_m3",
+                    "owner": "cad_oecd_water_use",
+                    "type": "number",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "wateruse_per_capita_annual_m3",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "_time",
+                    "owner": "BaseEvent",
+                    "type": "timestamp",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "_time",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "host",
+                    "owner": "BaseEvent",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "host",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "source",
+                    "owner": "BaseEvent",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "source",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "sourcetype",
+                    "owner": "BaseEvent",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "sourcetype",
+                    "comment": ""
+                }
+            ],
+            "calculations": [],
+            "constraints": [
+                {
+                    "search": "index=\"ca_drought\" sourcetype=\"cad_oecd_water_use\"",
+                    "owner": "cad_oecd_water_use"
+                }
+            ],
+            "lineage": "cad_oecd_water_use"
+        }
+    ],
+    "objectNameList": [
+        "cad_oecd_water_use"
+    ]
+}

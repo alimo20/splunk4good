@@ -1,0 +1,15 @@
+<nav search_view="search" color="#32bea6">
+  <collection label="Dashboards">
+    <view name="urban_water_supplier_reports" default="true"/>
+    <view name="reservoir_levels"/>
+    <view name="reservoir_and_groundwater_levels"/>
+    <view name="precipitation"/>
+    <view name="urban_water_supplier_explorer"/>
+    <view name="worldwide_water_stats"/>
+  </collection>
+  <collection label="About">
+    <view name="methodology"/>
+    <a href="http://splunk4good.com/" target="_blank">Splunk4Good</a>
+    <a href="http://splunk.com/" target="_blank">Splunk</a>
+  </collection> 
+</nav>

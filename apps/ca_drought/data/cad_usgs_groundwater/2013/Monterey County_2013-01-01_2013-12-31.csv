@@ -1,0 +1,4 @@
+County,FIPS_Code,featureId,agency_cd,site_no,site_tp_cd,lev_dt,lev_tm,lev_tz_cd,lev_va,sl_lev_va,sl_datum_cd,lev_status_cd,lev_agency_cd,lev_dt_acy_cd,lev_acy_cd,lev_src_cd,lev_meth_cd,lev_age_cd,Latitude,Longitude
+Monterey County,53,Monterey,USGS,362314121214401,GW,2013-03-19,09:47,PDT,81.36,NULL,NULL,NULL,USGS,m,2,S,V,A,36.38725,-121.3620833
+Monterey County,53,Monterey,USGS,365016121383701,GW,2013-02-07,09:49,PST,80.77,NULL,NULL,NULL,USGS,m,2,S,V,A,36.83802778,-121.643611
+Monterey County,53,Monterey,USGS,365318121394601,GW,2013-02-06,08:15,PST,79.9,NULL,NULL,NULL,USGS,m,2,S,V,A,36.88827778,-121.6627222

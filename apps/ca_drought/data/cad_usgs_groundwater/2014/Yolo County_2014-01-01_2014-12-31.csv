@@ -1,0 +1,4 @@
+County,FIPS_Code,featureId,agency_cd,site_no,site_tp_cd,lev_dt,lev_tm,lev_tz_cd,lev_va,sl_lev_va,sl_datum_cd,lev_status_cd,lev_agency_cd,lev_dt_acy_cd,lev_acy_cd,lev_src_cd,lev_meth_cd,lev_age_cd,Latitude,Longitude
+Yolo County,113,Yolo,USGS,383121121575301,GW,2014-04-01,09:00,PDT,66.0,NULL,NULL,NULL,NULL,m,9,O,G,A,38.52191667,-121.9647222
+Yolo County,113,Yolo,USGS,384000121520001,GW,2014-04-01,11:53,PDT,91.68,NULL,NULL,NULL,USGS,m,2,S,V,A,38.6705833,-121.871361
+Yolo County,113,Yolo,USGS,384113121455501,GW,2014-02-28,12:00,PST,64.0,NULL,NULL,NULL,NULL,D,9,O,R,A,38.68680556,-121.7663056

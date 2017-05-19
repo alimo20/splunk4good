@@ -1,0 +1,183 @@
+<form script="autodiscover.js">
+  <label>Worldwide Water Consumption</label>
+  <description>The USA is one of the highest consumers of water per capita than any other country in the world. Looking more closely, California is the largest consumer of water in the whole country by some margin. Using data from the OECD we take a closer look.</description>
+  <fieldset submitButton="false">
+    <input type="radio" token="unitToken" searchWhenChanged="true">
+      <label>Unit</label>
+      <choice value="gallons">Gallons</choice>
+      <choice value="litres">Litres</choice>
+      <default>gallons</default>
+      <initialValue>gallons</initialValue>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <single>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_oecd_water_use" "country_iso2"="US" | head 1 | fields total_water_use_$unitToken$</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="numberPrecision">0</option>
+        <option name="showSparkline">0</option>
+        <option name="showTrendIndicator">0</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+        <option name="drilldown">none</option>
+        <option name="afterLabel">$unitToken$ of water, EVERY YEAR!</option>
+        <option name="beforeLabel">America uses</option>
+        <option name="rangeColors">["0x65a637","0x6db7c6","0xf7bc38","0xf58f39","0xd93f3c"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="trendInterval">auto</option>
+        <option name="linkView">search</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <single>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_oecd_water_use" "country_iso2"="US" | head 1 | eval total_water_use_population_annual_trillion_$unitToken$ = total_water_use_$unitToken$ / 1000000000000 | fields total_water_use_population_annual_trillion_$unitToken$</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="count">10</option>
+        <option name="list.drilldown">full</option>
+        <option name="list.wrap">1</option>
+        <option name="maxLines">5</option>
+        <option name="raw.drilldown">full</option>
+        <option name="rowNumbers">0</option>
+        <option name="table.drilldown">all</option>
+        <option name="table.wrap">1</option>
+        <option name="type">list</option>
+        <fields>[]</fields>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="numberPrecision">0</option>
+        <option name="showSparkline">0</option>
+        <option name="showTrendIndicator">0</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+        <option name="drilldown">none</option>
+        <option name="afterLabel">trillion $unitToken$)</option>
+        <option name="beforeLabel">(That's</option>
+        <option name="rangeColors">["0x65a637","0x6db7c6","0xf7bc38","0xf58f39","0xd93f3c"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="trendInterval">auto</option>
+        <option name="linkView">search</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>Annual Water Use By Country ($unitToken$)</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_oecd_water_use"  | stats max("total_water_use_$unitToken$") AS "total_water_use_$unitToken$" by "country" | sort -"total_water_use_$unitToken$" | head 10</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">bar</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="charting.axisTitleX.text">Country</option>
+        <option name="charting.axisTitleY.text">Water Use</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>Annual Water Use Per Capita By Country ($unitToken$)</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_oecd_water_use"  | stats max("water_use_per_capita_annual_$unitToken$") AS "water_use_$unitToken$" by "country" | sort -"water_use_$unitToken$" | eventstats sum(water_use_$unitToken$) AS "water_use_$unitToken$_sum" | eval "OECD_ave_$unitToken$" = water_use_$unitToken$_sum / 27  | stats values("water_use_$unitToken$") AS "water_use_$unitToken$" by "country", "OECD_ave_$unitToken$" | sort -"water_use_$unitToken$" | head 10</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="charting.chart.overlayFields">OECD_ave_gallons,OECD_ave_litres</option>
+        <option name="charting.axisTitleX.text">Country</option>
+        <option name="charting.axisTitleY.text">Water Use</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <map>
+        <title>Water Use Per Capita By Country (litres)</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_oecd_water_use" |  stats max("water_use_per_capita_annual_$unitToken$") AS "water_use_$unitToken$" by "country" | geom geo_countries featureIdField="country"</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="mapping.choroplethLayer.colorBins">8</option>
+        <option name="mapping.choroplethLayer.colorMode">auto</option>
+        <option name="mapping.choroplethLayer.maximumColor">0x009983</option>
+        <option name="mapping.choroplethLayer.minimumColor">0x2F25BA</option>
+        <option name="mapping.choroplethLayer.neutralPoint">0</option>
+        <option name="mapping.choroplethLayer.shapeOpacity">0.75</option>
+        <option name="mapping.choroplethLayer.showBorder">1</option>
+        <option name="mapping.data.maxClusters">100</option>
+        <option name="mapping.drilldown">all</option>
+        <option name="mapping.map.center">(48.34,-39.64)</option>
+        <option name="mapping.map.panning">true</option>
+        <option name="mapping.map.scrollZoom">false</option>
+        <option name="mapping.map.zoom">3</option>
+        <option name="mapping.markerLayer.markerMaxSize">50</option>
+        <option name="mapping.markerLayer.markerMinSize">10</option>
+        <option name="mapping.markerLayer.markerOpacity">0.8</option>
+        <option name="mapping.showTiles">1</option>
+        <option name="mapping.tileLayer.maxZoom">7</option>
+        <option name="mapping.tileLayer.minZoom">0</option>
+        <option name="mapping.tileLayer.tileOpacity">1</option>
+        <option name="mapping.type">choropleth</option>
+        <option name="drilldown">none</option>
+      </map>
+    </panel>
+  </row>
+</form>

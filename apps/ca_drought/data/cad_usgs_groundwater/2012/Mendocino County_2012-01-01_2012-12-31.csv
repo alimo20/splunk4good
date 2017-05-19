@@ -1,0 +1,4 @@
+County,FIPS_Code,featureId,agency_cd,site_no,site_tp_cd,lev_dt,lev_tm,lev_tz_cd,lev_va,sl_lev_va,sl_datum_cd,lev_status_cd,lev_agency_cd,lev_dt_acy_cd,lev_acy_cd,lev_src_cd,lev_meth_cd,lev_age_cd,Latitude,Longitude
+Mendocino County,45,Mendocino,USGS,385625123065301,GW,2012-07-30,12:34,PDT,36.3,NULL,NULL,R,USGS,m,2,S,V,A,38.9404722,-123.1149722
+Mendocino County,45,Mendocino,USGS,391757123473101,GW,2012-05-24,09:50,PDT,19.64,NULL,NULL,NULL,USGS,m,2,S,V,A,39.29930556,-123.792
+Mendocino County,45,Mendocino,USGS,392830123474501,GW,2012-05-24,08:20,PDT,1.03,NULL,NULL,NULL,USGS,m,2,S,V,A,39.47488829,-123.79696

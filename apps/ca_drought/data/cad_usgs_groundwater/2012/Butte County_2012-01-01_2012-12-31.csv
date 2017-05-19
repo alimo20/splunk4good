@@ -1,0 +1,4 @@
+County,FIPS_Code,featureId,agency_cd,site_no,site_tp_cd,lev_dt,lev_tm,lev_tz_cd,lev_va,sl_lev_va,sl_datum_cd,lev_status_cd,lev_agency_cd,lev_dt_acy_cd,lev_acy_cd,lev_src_cd,lev_meth_cd,lev_age_cd,Latitude,Longitude
+Butte County,7,Butte,USGS,392542121452501,GW,2012-08-14,19:52,PDT,4.87,NULL,NULL,NULL,USGS,m,2,S,V,A,39.4265,-121.7616556
+Butte County,7,Butte,USGS,392924121504801,GW,2012-08-15,19:20,PDT,1.95,NULL,NULL,NULL,USGS,m,2,S,V,A,39.4902611,-121.8476028
+Butte County,7,Butte,USGS,393630121455401,GW,2012-08-15,16:35,PDT,3.9,NULL,NULL,NULL,USGS,m,2,S,V,A,39.60813056,-121.7657944

@@ -1,0 +1,6 @@
+County,FIPS_Code,featureId,agency_cd,site_no,site_tp_cd,lev_dt,lev_tm,lev_tz_cd,lev_va,sl_lev_va,sl_datum_cd,lev_status_cd,lev_agency_cd,lev_dt_acy_cd,lev_acy_cd,lev_src_cd,lev_meth_cd,lev_age_cd,Latitude,Longitude
+San Luis Obispo County,79,San Luis Obispo,USGS,345541120174101,GW,2015-03-11,14:40,PST,19.91,NULL,NULL,NULL,USGS,m,2,S,V,A,34.92813889,-120.294861
+San Luis Obispo County,79,San Luis Obispo,USGS,345928120335501,GW,2015-03-09,09:29,PST,57.62,NULL,NULL,NULL,USGS,m,2,S,V,A,34.99113889,-120.5654444
+San Luis Obispo County,79,San Luis Obispo,USGS,345950120294501,GW,2015-01-11,14:40,PST,92.87,NULL,NULL,NULL,CA397,m,2,R,V,P,34.99719959,-120.4968333
+San Luis Obispo County,79,San Luis Obispo,USGS,350107120353201,GW,2015-01-11,14:00,PST,21.18,NULL,NULL,NULL,CA397,m,2,R,V,A,35.01858765,-120.5932262
+San Luis Obispo County,79,San Luis Obispo,USGS,350107120353201,GW,2015-03-09,09:52,PST,24.47,NULL,NULL,NULL,USGS,m,2,S,S,A,35.01858765,-120.5932262

@@ -1,0 +1,5 @@
+County,FIPS_Code,featureId,agency_cd,site_no,site_tp_cd,lev_dt,lev_tm,lev_tz_cd,lev_va,sl_lev_va,sl_datum_cd,lev_status_cd,lev_agency_cd,lev_dt_acy_cd,lev_acy_cd,lev_src_cd,lev_meth_cd,lev_age_cd,Latitude,Longitude
+Del Norte County,15,Del Norte,USGS,413430124040001,GW,2011-07-25,12:00,PDT,14.89,NULL,NULL,NULL,USGS,m,2,S,V,A,41.57519444,-124.0668889
+Del Norte County,15,Del Norte,USGS,414706124113701,GW,2011-07-25,12:00,PST,NULL,NULL,NULL,N,USGS,D,NULL,S,O,A,41.78502778,-124.19375
+Del Norte County,15,Del Norte,USGS,414911124060301,GW,2011-07-25,10:30,PDT,22.82,NULL,NULL,NULL,USGS,m,2,S,V,A,41.8198611,-124.1010278
+Del Norte County,15,Del Norte,USGS,415522124084301,GW,2011-07-25,08:30,PDT,18.22,NULL,NULL,NULL,USGS,m,2,S,V,A,41.9229722,-124.1452806
