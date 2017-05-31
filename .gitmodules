@@ -1,0 +1,6 @@
+[submodule "apps/ca_drought"]
+	path = apps/ca_drought
+	url = https://github.com/hobbes3/ca_drought
+[submodule "apps/dot_fars_demo"]
+	path = apps/dot_fars_demo
+	url = https://github.com/hobbes3/dot_fars_demo
