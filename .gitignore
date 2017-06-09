@@ -39,3 +39,4 @@ system/local/*
 !system/local/serverclass.conf
 
 **/*.pyc
+local.meta
