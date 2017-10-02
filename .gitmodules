@@ -4,3 +4,9 @@
 [submodule "apps/dot_fars"]
 	path = apps/dot_fars
 	url = https://github.com/hobbes3/dot_fars
+[submodule "apps/s4g_welcome"]
+	path = apps/s4g_welcome
+	url = git@github.com:hobbes3/s4g_welcome.git
+[submodule "apps/fec"]
+	path = apps/fec
+	url = git@github.com:hobbes3/fec.git
