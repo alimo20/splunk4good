@@ -10,3 +10,12 @@
 [submodule "apps/fec"]
 	path = apps/fec
 	url = git@github.com:hobbes3/fec.git
+[submodule "master-apps/fec_props"]
+	path = master-apps/fec_props
+	url = git@github.com:hobbes3/fec_props.git
+[submodule "apps/gen"]
+	path = apps/gen
+	url = git@github.com:hobbes3/gen.git
+[submodule "master-apps/gen_props"]
+	path = master-apps/gen_props
+	url = git@github.com:hobbes3/gen_props.git
