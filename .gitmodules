@@ -31,3 +31,6 @@
 [submodule "master-apps/wunderground_props"]
 	path = master-apps/wunderground_props
 	url = git@github.com:hobbes3/wunderground_props.git
+[submodule "master-apps/ca_drought_props"]
+	path = master-apps/ca_drought_props
+	url = git@github.com:hobbes3/ca_drought_props.git
