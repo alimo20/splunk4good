@@ -3,13 +3,12 @@
 # Written by hobbes3
 
 import paramiko
-import socket
 import traceback
 import json
 import sys
-import glob
 import os
 from pipes import quote
+from splunk4good_config import host, port, splunk_user, splunk_password
 
 print "Symlinking master-apps to apps..."
 
@@ -18,11 +17,6 @@ for app in os.listdir("."):
     if os.path.islink("../apps/" + app):
         os.unlink("../apps/" + app)
     os.symlink("../master-apps/" + app, "../apps/" + app)
-
-hostname = socket.gethostname()
-
-host = "c0m1.splunk4good_prod.splunkcloud.com"
-port = 22
 
 try:
     client = paramiko.SSHClient()
@@ -50,14 +44,9 @@ try:
     """)
     print stdout.read()
 
-    print "Reading splunk4good_logins.json..."
-    with open("../splunk4good_logins.json") as json_file:    
-        logins = json.load(json_file)
+    print "Applying cluster bundle..."
 
-    user     = logins[host]["user"]
-    password = logins[host]["password"]
-
-    stdin, stdout, stderr = client.exec_command("/opt/splunk/bin/splunk apply cluster-bundle -auth " + user + ":" + quote(password))
+    stdin, stdout, stderr = client.exec_command("/opt/splunk/bin/splunk apply cluster-bundle -auth " + splunk_user + ":" + quote(splunk_password))
     print stderr.read()
     print stdout.read()
 
