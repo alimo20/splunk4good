@@ -2,7 +2,7 @@
 
 !.gitignore
 !README.md
-!splunk4good_apply_cm.py
+!splunk4good_apply.py
 
 !deployment-apps/
 !master-apps/
