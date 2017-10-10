@@ -28,3 +28,6 @@
 [submodule "master-apps/intrinio_props"]
 	path = master-apps/intrinio_props
 	url = git@github.com:hobbes3/intrinio_props.git
+[submodule "master-apps/wunderground_props"]
+	path = master-apps/wunderground_props
+	url = git@github.com:hobbes3/wunderground_props.git
