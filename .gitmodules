@@ -34,3 +34,6 @@
 [submodule "master-apps/ca_drought_props"]
 	path = master-apps/ca_drought_props
 	url = git@github.com:hobbes3/ca_drought_props.git
+[submodule "master-apps/sf_muni_props"]
+	path = master-apps/sf_muni_props
+	url = git@github.com:hobbes3/sf_muni_props.git
