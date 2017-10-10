@@ -19,3 +19,9 @@
 [submodule "master-apps/gen_props"]
 	path = master-apps/gen_props
 	url = git@github.com:hobbes3/gen_props.git
+[submodule "apps/sf_trees"]
+	path = apps/sf_trees
+	url = git@github.com:hobbes3/sf_trees.git
+[submodule "master-apps/sf_trees_props"]
+	path = master-apps/sf_trees_props
+	url = git@github.com:hobbes3/sf_trees_props.git
