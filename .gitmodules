@@ -25,3 +25,6 @@
 [submodule "master-apps/sf_trees_props"]
 	path = master-apps/sf_trees_props
 	url = git@github.com:hobbes3/sf_trees_props.git
+[submodule "master-apps/intrinio_props"]
+	path = master-apps/intrinio_props
+	url = git@github.com:hobbes3/intrinio_props.git
