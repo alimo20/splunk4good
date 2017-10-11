@@ -1,6 +1,3 @@
-[submodule "apps/ca_drought"]
-	path = apps/ca_drought
-	url = git@github.com:hobbes3/ca_drought
 [submodule "apps/dot_fars"]
 	path = apps/dot_fars
 	url = git@github.com:hobbes3/dot_fars
