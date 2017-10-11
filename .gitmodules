@@ -10,30 +10,9 @@
 [submodule "apps/fec"]
 	path = apps/fec
 	url = git@github.com:hobbes3/fec.git
-[submodule "master-apps/fec_TA"]
-	path = master-apps/fec_TA
-	url = git@github.com:hobbes3/fec_TA.git
 [submodule "apps/gen"]
 	path = apps/gen
 	url = git@github.com:hobbes3/gen.git
-[submodule "master-apps/gen_TA"]
-	path = master-apps/gen_TA
-	url = git@github.com:hobbes3/gen_TA.git
 [submodule "apps/sf_trees"]
 	path = apps/sf_trees
 	url = git@github.com:hobbes3/sf_trees.git
-[submodule "master-apps/sf_trees_TA"]
-	path = master-apps/sf_trees_TA
-	url = git@github.com:hobbes3/sf_trees_TA.git
-[submodule "master-apps/intrinio_TA"]
-	path = master-apps/intrinio_TA
-	url = git@github.com:hobbes3/intrinio_TA.git
-[submodule "master-apps/wunderground_TA"]
-	path = master-apps/wunderground_TA
-	url = git@github.com:hobbes3/wunderground_TA.git
-[submodule "master-apps/ca_drought_TA"]
-	path = master-apps/ca_drought_TA
-	url = git@github.com:hobbes3/ca_drought_TA.git
-[submodule "master-apps/sf_muni_TA"]
-	path = master-apps/sf_muni_TA
-	url = git@github.com:hobbes3/sf_muni_TA.git
