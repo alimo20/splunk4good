@@ -1,6 +1,6 @@
-[submodule "apps/dot_fars"]
-	path = apps/dot_fars
-	url = git@github.com:hobbes3/dot_fars
+[submodule "apps/ntsa_fars"]
+	path = apps/nhtsa_fars
+	url = git@github.com:hobbes3/nhtsa_fars
 [submodule "apps/s4g_welcome"]
 	path = apps/s4g_welcome
 	url = git@github.com:hobbes3/s4g_welcome.git
@@ -34,9 +34,9 @@
 [submodule "master-apps/sf_muni_TA"]
 	path = master-apps/sf_muni_TA
 	url = git@github.com:hobbes3/sf_muni_TA.git
-[submodule "master-apps/dot_fars_TA"]
-	path = master-apps/dot_fars_TA
-	url = git@github.com:hobbes3/dot_fars_TA.git
 [submodule "master-apps/intrinio_TA"]
 	path = master-apps/intrinio_TA
 	url = git@github.com:hobbes3/intrinio_TA.git
+[submodule "master-apps/nhtsa_fars_TA"]
+	path = master-apps/nhtsa_fars_TA
+	url = git@github.com:hobbes3/nhtsa_fars_TA.git
