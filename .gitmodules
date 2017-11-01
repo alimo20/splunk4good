@@ -34,6 +34,9 @@
 [submodule "master-apps/sf_muni_TA"]
 	path = master-apps/sf_muni_TA
 	url = git@github.com:hobbes3/sf_muni_TA.git
+[submodule "master-apps/dot_fars_TA"]
+	path = master-apps/dot_fars_TA
+	url = git@github.com:hobbes3/dot_fars_TA.git
 [submodule "master-apps/intrinio_TA"]
 	path = master-apps/intrinio_TA
 	url = git@github.com:hobbes3/intrinio_TA.git
