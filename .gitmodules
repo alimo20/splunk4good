@@ -40,3 +40,6 @@
 [submodule "master-apps/nhtsa_fars_TA"]
 	path = master-apps/nhtsa_fars_TA
 	url = git@github.com:hobbes3/nhtsa_fars_TA.git
+[submodule "master-apps/irs_990_TA"]
+	path = master-apps/irs_990_TA
+	url = git@github.com:hobbes3/irs_990_TA.git
