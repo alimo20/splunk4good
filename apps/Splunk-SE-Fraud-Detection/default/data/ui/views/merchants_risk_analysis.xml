@@ -1,0 +1,223 @@
+<form>
+  <label>Merchants and Payment Terminals: Risk Analysis</label>
+  <description>Discover potentially risky merchants. Risky merchants could be the ones with potentially compromised payment terminals or merchants where fraudulent cards tends to be used at least 5 times more often than clean cards.</description>
+  <search id="base_search">
+    <query>
+      <![CDATA[
+        index=vpnet2 sourcetype=cards_txn2 txn_region=*
+          [search index=vpnet2 sourcetype=cards_txn2
+            [search index=vpnet2 sourcetype=cards_txn2 latest=now | head 1 | eval search=" _time>"+tostring(_time-($time_period$*24*3600))+" _time<="+tostring(_time-(0)) | fields search]
+            card_number_masked!=XXXXXXXX* | top card_number_masked limit=0 | fields card_number_masked]
+        | fillnull value=""
+        | fields _time card_* merchant_* txn_* compromise_type
+        $include_compromised_cards$
+        | dedup _raw
+        | sort 0 card_id, _time
+        | streamstats window=2 current=1 dc(txn_region) as region_change, list(txn_region) as regions, dc(merchant_name) as merchant_change, range(_time) as time_delta by card_id
+
+        | eval region_change=region_change-1, merchant_change=merchant_change-1
+
+        | eval x="======== Calculating risk score for card"
+        | eval event_risk_messages="", event_risk_scores=0
+
+        | eval this_risk_score=50, this_risk_id=4, this_risk_message="Risk: fast region shift", this_risk_triggered=if(region_change>0 AND isnull(mvfind(regions,"^0?$")) AND time_delta<7200, 1, 0)
+        | eval event_risk_scores=if(this_risk_triggered>0,   mvappend(event_risk_scores, this_risk_score), event_risk_scores)
+
+        | eval this_risk_score=15, this_risk_id=5, this_risk_message="Risk: fast merchant shift", this_risk_triggered=if(merchant_change>0 AND isnull(mvfind(regions,"^0?$")) AND time_delta<60, 1, 0)
+        | eval event_risk_scores=if(this_risk_triggered>0,   mvappend(event_risk_scores, this_risk_score), event_risk_scores)
+
+        | eventstats sum(event_risk_scores) as risk by card_number_masked
+        | eval risky=if(len(compromise_type)>0 OR risk>$include_risk_score$, 1, if(risk=0, 0, 2))
+        | eventstats
+          dc(eval(if(risky=0, card_number_masked, NULL))) as total_clean_cards
+          dc(eval(if(risky=1, card_number_masked, NULL))) as total_risky_cards
+          dc(eval(if(risky=2, card_number_masked, NULL))) as total_other_cards
+          dc(eval(if(len(compromise_type)>0, card_number_masked, NULL))) as total_compromised_cards
+
+        | fields _time risk* card_* merchant_* txn_* compromise_type total_*
+      ]]>
+    </query>
+    <earliest>0</earliest>
+    <sampleRatio>1</sampleRatio>
+  </search>
+  <fieldset submitButton="false">
+    <input type="text" token="merchant_name_regex" searchWhenChanged="true">
+      <label>Regex filter for merchant name:</label>
+      <default>"(?i)^."</default>
+      <prefix>| regex merchant_name=</prefix>
+    </input>
+    <input type="dropdown" token="include_risk_score" searchWhenChanged="true">
+      <label>Define risky cards for analysis:</label>
+      <choice value="0">Risk score&gt;0</choice>
+      <choice value="=100">Risk score&gt;=100</choice>
+      <choice value="=250">Risk score&gt;=250</choice>
+      <choice value="=450">Risk score&gt;=450</choice>
+      <default>=100</default>
+    </input>
+    <input type="radio" token="include_compromised_cards" searchWhenChanged="true">
+      <label>Compromised cards:</label>
+      <choice value="| eval x=0">Include compromised cards</choice>
+      <choice value="| where len(compromise_type)=0">Do not include compromised cards</choice>
+      <default>| eval x=0</default>
+    </input>
+    <input type="dropdown" searchWhenChanged="true" token="time_period">
+      <label>Select time period (of available data):</label>
+      <choice value="1">Last 24 hrs (full txn data)</choice>
+      <choice value="2">Last 2 days (full txn data)</choice>
+      <choice value="7">Last 7 days (full txn data)</choice>
+      <choice value="14">Last 14 days (full txn data)</choice>
+      <choice value="30">Last 30 days (full txn data)</choice>
+      <choice value="365*5">All Available Data (slow!)</choice>
+      <default>7</default>
+    </input>
+    <input type="radio" token="add_payment_terminal" searchWhenChanged="true">
+      <label>Payment Terminals Analysis:</label>
+      <choice value=" ">Group all terminals by location</choice>
+      <choice value="txn_terminal_id">Analyze each Payment Terminal</choice>
+      <default> </default>
+    </input>
+    <input type="radio" token="filter_results" searchWhenChanged="true">
+      <label>Filter results:</label>
+      <choice value="| where risky_cards_used&gt;(total_risky_cards/200) AND merchant_risk&gt;5 | bin merchant_risk span=10 | dedup 20 merchant_risk">Show top results only</choice>
+      <choice value="| bin merchant_risk span=10">Show all results</choice>
+      <default>| where risky_cards_used&gt;(total_risky_cards/200) AND merchant_risk&gt;5 | bin merchant_risk span=10 | dedup 20 merchant_risk</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <html>
+        <div>
+          <div>
+            <a style="float:left;font-weight:normal;font-size:120%;color:#EA4343;border:1px solid #CAA62C;padding:2px 8px;border-radius:8px;background-color:#ffffaa;" href="/app/$env:app$/$env:page$">Reset Dashboard</a>
+          </div>
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Risky Cards</title>
+      <single>
+        <search base="base_search">
+          <query>
+            <![CDATA[
+              timechart first(total_risky_cards)
+            ]]>
+          </query>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0xd93f3c","0xd93f3c"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="showSparkline">0</option>
+        <option name="showTrendIndicator">0</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Compromised Cards (included in Risky cards group)</title>
+      <single>
+        <search base="base_search">
+          <query>
+            <![CDATA[
+              timechart first(total_compromised_cards)
+            ]]>
+          </query>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0xd93f3c","0xd93f3c"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="showSparkline">0</option>
+        <option name="showTrendIndicator">0</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Possibly clean cards (zero calculated risk score)</title>
+      <single>
+        <search base="base_search">
+          <query>
+            <![CDATA[
+              timechart first(total_clean_cards)
+            ]]>
+          </query>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x65a637","0x65a637"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="showSparkline">0</option>
+        <option name="showTrendIndicator">0</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Ignored cards (risk score too low)</title>
+      <single>
+        <search base="base_search">
+          <query>
+            <![CDATA[
+              timechart first(total_other_cards)
+            ]]>
+          </query>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x888888","0x888888"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="showSparkline">0</option>
+        <option name="showTrendIndicator">0</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <search base="base_search">
+          <query>
+            <![CDATA[
+              stats
+                first(total_*) as total_*
+                dc(eval(if(risky=1,card_number_masked,NULL))) as risky_cards_used, values(eval(if(risky=1,card_number_masked,NULL))) as risky_cards
+                dc(eval(if(risky=0,card_number_masked,NULL))) as clean_cards_used,  values(eval(if(risky=0,card_number_masked,NULL))) as clean_cards
+                by merchant_name $add_payment_terminal$ txn_region
+
+              | eval merchant_risk=round(risky_cards_used/if(clean_cards_used=0,0.5,clean_cards_used))
+              $merchant_name_regex$
+              $filter_results$
+              | sort - merchant_risk risky_cards_used + clean_cards_used
+              | eval clean_cards_used=" "+clean_cards_used, txn_terminal_id=" "+txn_terminal_id
+              | table merchant_risk risky_cards_used clean_cards_used mer* txn*
+            ]]>
+          </query>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">heatmap</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <drilldown>
+          <link target="_blank">
+            <![CDATA[ /app/Splunk-SE-Fraud-Detection/payment_cards_detailed_txns?form.custom_filter=%22$click.value2$%22&form.time_period=earliest%3D0%20latest%3Dnow ]]>
+          </link>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+</form>

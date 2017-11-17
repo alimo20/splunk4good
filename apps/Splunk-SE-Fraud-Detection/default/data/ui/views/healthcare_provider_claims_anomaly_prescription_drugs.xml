@@ -1,0 +1,465 @@
+<form>
+  <label>Healthcare Provider Claims Anomaly: Prescription Drugs</label>
+  <init>
+    <!-- set tokens upon page init -->
+    <set token="ttt">1</set>
+  </init>
+  <search id="base_search1">
+    <query>
+      <![CDATA[
+              index=af-cms-drugs $selected_provspec$ $selected_state$ $selected_city$
+              | `x("Summarize (make single record) per drug, per doc:")`
+              | stats       sum(af__totaldrugcost)        as af__thisdrugcost_for_doc, first(af_city) as af_city, first(af_state) as af_state, first(af_provspec) as af_provspec, first(af_fullname) as af_fullname  by af_npi af_drugname
+              | eval doc_of_interest=1
+              | eventstats  sum(af__thisdrugcost_for_doc) AS af__alldrugscost_for_doc $find_doc_of_interest$ by af_npi
+
+              | `x("Drop smallest claimers.")`
+              | where doc_of_interest>0 AND af__alldrugscost_for_doc>=$min_total_claim$
+
+              | `x("Encode more information within af_npi befor losing it to 'chart'. Calculate normalized % of this drug orders for this doc vs. total $ orders for this doc. After 'chart' each new column will start with 'Drug:XXX'")`
+              | eval af_npi=af_npi."|tot=".af__alldrugscost_for_doc."|af_city=".af_city."|af_state=".af_state."|af_provspec=".af_provspec."|af_fullname=".af_fullname,
+              af__thisdrugpct_for_doc__norm=af__thisdrugcost_for_doc/af__alldrugscost_for_doc,
+              drug="Drug:"+af_drugname
+
+              | chart first(af__thisdrugpct_for_doc__norm) over af_npi by drug limit=0
+
+              | rex field=af_npi "\|tot=(?<af__total_claims>[^\|$]+)"
+              | rex field=af_npi "\|af_city=(?<af_city>[^\|$]+)"
+              | rex field=af_npi "\|af_state=(?<af_state>[^\|$]+)"
+              | rex field=af_npi "\|af_provspec=(?<af_provspec>[^\|$]+)"
+              | rex field=af_npi "\|af_fullname=(?<af_fullname>[^\|$]+)"
+              | eval af_fulladdr=af_city.", ".af_state
+              | rex field=af_npi "(?<af_npi>[^\|$]+)"
+
+              | fields af_* Drug*
+      ]]>
+    </query>
+    <earliest>0</earliest>
+    <sampleRatio>1</sampleRatio>
+  </search>
+  <search id="base_search2" base="base_search1">
+    <query>
+      <![CDATA[
+              | `x("Find anomaly with Machine Learning")`
+              | fillnull
+
+              | fit StandardScaler af_provspec
+              | fit KMeans SS_* Drug:* k=18 random_state=42
+              | eventstats count as cluster_size by cluster
+              | eval cluster=cluster + "(" + cluster_size + ")"
+
+              | `x("Calculate and keep top anomalous results")`
+              | eval ANOM_RATIO=0
+              | foreach Drug:* [eval "<<FIELD>>"=round(if('<<FIELD>>' < $drug_anomaly_ratio$ , 0, '<<FIELD>>'*100),2),ANOM_RATIO=ANOM_RATIO+('<<FIELD>>'*'<<FIELD>>')]
+              | where ANOM_RATIO>0
+
+              | fields af_* Drug* cluster* ANOM_*
+      ]]>
+    </query>
+  </search>
+  <search id="base_search2a" base="base_search1">
+    <query>
+      <![CDATA[
+              | `x("Find anomaly with Machine Learning for 3D visualization")`
+              | fillnull
+
+              | fit StandardScaler af_provspec
+              | fit PCA SS_* Drug:* k=3
+              | fit KMeans PC_* k=18 random_state=42
+              | eval PC_1=round(PC_1,3),PC_2=round(PC_2,3),PC_3=round(PC_3,3)
+              | eventstats count as cluster_size by cluster
+              | eval cluster=cluster + "(" + cluster_size + ")"
+
+              | fields af_* Drug* cluster* PC_*
+      ]]>
+    </query>
+  </search>
+  <fieldset submitButton="true" autoRun="false">
+    <input type="multiselect" token="selected_state" searchWhenChanged="true">
+      <label>Select State (OR logic):</label>
+      <fieldForLabel>af_state</fieldForLabel>
+      <fieldForValue>af_state_value</fieldForValue>
+      <search>
+        <query>| tstats summariesonly=t c FROM datamodel=cms_drugs BY cms_drugs.af_state
+| eval af_state_value='cms_drugs.af_state'
+| eval af_state='cms_drugs.af_state'." (".tostring(c)." claims)"
+| append
+    [| makeresults
+    | eval af_state="All States", af_state_value="*"
+    | fields af_*]
+| sort af_state_value
+| fields af_*</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+      <default>*</default>
+      <prefix>(</prefix>
+      <suffix>)</suffix>
+      <valuePrefix>cms_drugs.af_state="</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter> OR </delimiter>
+    </input>
+    <input type="multiselect" token="selected_city" searchWhenChanged="true">
+      <label>Select City (OR logic):</label>
+      <fieldForLabel>af_city</fieldForLabel>
+      <fieldForValue>af_city_value</fieldForValue>
+      <search>
+        <query>| tstats summariesonly=t c FROM datamodel=cms_drugs WHERE $selected_state$ BY cms_drugs.af_state cms_drugs.af_city
+| eval af_city_value='cms_drugs.af_city'
+| eval af_city='cms_drugs.af_city'.", ".'cms_drugs.af_state'." (".tostring(c)." claims)"
+| append
+    [| makeresults
+    | eval af_city="All Cities", af_city_value="*"
+    | fields af_*]
+| dedup af_city_value
+| sort af_city_value
+| fields af_*</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+      <default>*</default>
+      <prefix>(</prefix>
+      <suffix>)</suffix>
+      <valuePrefix>cms_drugs.af_city="</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter> OR </delimiter>
+    </input>
+    <input type="multiselect" token="selected_provspec" searchWhenChanged="true">
+      <label>Select provider specialty (OR logic):</label>
+      <fieldForLabel>af_provspec</fieldForLabel>
+      <fieldForValue>af_provspec_value</fieldForValue>
+      <search>
+        <query>| tstats summariesonly=t c FROM datamodel=cms_drugs WHERE ($selected_state$ AND $selected_city$) BY cms_drugs.af_provspec
+| rename cms_drugs.af_provspec TO af_provspec
+| eval af_provspec_value=af_provspec
+| eval af_provspec=af_provspec." (".tostring(c).")"
+| append
+    [| makeresults
+    | eval af_provspec="All Providers", af_provspec_value="*"
+    | fields af_prov*]
+| sort -c
+| fields af_prov*</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+      <default>Interventional Pain Management</default>
+      <prefix>(</prefix>
+      <suffix>)</suffix>
+      <valuePrefix>af_provspec="</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter> OR </delimiter>
+    </input>
+    <input type="dropdown" token="drug_group" searchWhenChanged="true" depends="find_doc_of_interest">
+      <label>Filter provider by Drug predisposition:</label>
+      <choice value="all">Include all</choice>
+      <choice value="narcotics">Opioids / Narcotics</choice>
+      <choice value="expensive">Most Expensive / Branded</choice>
+      <default>Opioids / Narcotics</default>
+      <change>
+        <condition value="all">
+          <set token="drug_regex"></set>
+          <set token="find_doc_of_interest"></set>
+          <set token="find_doc_of_interest2"></set>
+        </condition>
+        <condition value="narcotics">
+          <set token="drug_regex">(?im)(abstral|actiq|fentanyl|morphine|codeine|conzip|tramadol|demerol|meperidine|dilaudid|hydromorphone|dolophine|methadone|duragesic|exalgo|fentora|hydrocodone|kadian|lazanda|levorphanol|methadose|nucynta|opana|oxymorphone|opium|oxycodone|oxycontin|suboxone|buprenorphine|roxicodone|subsys|ultram|zohydro)</set>
+          <set token="find_doc_of_interest">c(eval(match(af_drugname,"$drug_regex$"))) as doc_of_interest</set>
+          <set token="find_doc_of_interest2">| regex Claim_Anomalies="$drug_regex$"</set>
+        </condition>
+        <condition value="expensive">
+          <set token="drug_regex">(?im)(abilify|revlimid|lantus|januvia|spiriva|advair|crestor|nexium|sovaldi|harvoni|Cinryze|Acthar|humira|Remodulin|Tyvaso|Remicade|Lucentis|Eylea|Neulasta|Rituxan|Tysabri|Vyvanse|Ativan|Daraprim|Provenge|Daklinza)</set>
+          <set token="find_doc_of_interest">c(eval(match(af_drugname,"$drug_regex$"))) as doc_of_interest</set>
+          <set token="find_doc_of_interest2">| regex Claim_Anomalies="$drug_regex$"</set>
+        </condition>
+      </change>
+    </input>
+    <input type="dropdown" token="min_total_claim" searchWhenChanged="true">
+      <label>Filter providers by Total Claim amount</label>
+      <choice value="0">Show All</choice>
+      <choice value="10000">Total claims &gt;=$10,000</choice>
+      <choice value="50000">Total claims &gt;=$50,000</choice>
+      <choice value="100000">Total claims &gt;=$100,000</choice>
+      <choice value="250000">Total claims &gt;=$250,000</choice>
+      <choice value="500000">Total claims &gt;=$500,000</choice>
+      <choice value="1000000">Total claims &gt;=$1,000,000</choice>
+      <choice value="5000000">Total claims &gt;=$5,000,000</choice>
+      <choice value="10000000">Total claims &gt;=$10,000,000</choice>
+      <default>1000000</default>
+    </input>
+    <input type="dropdown" token="drug_anomaly_ratio" searchWhenChanged="true">
+      <label>Single drug anomaly threshold:</label>
+      <choice value="0">Lowest Anomaly: Show all drugs</choice>
+      <choice value="0.05">&gt;=5%</choice>
+      <choice value="0.1">&gt;=10%</choice>
+      <choice value="0.2">&gt;=20%</choice>
+      <choice value="0.25">&gt;=25%</choice>
+      <choice value="0.33">&gt;=33%</choice>
+      <choice value="0.50">&gt;=50%</choice>
+      <choice value="0.75">&gt;=75%</choice>
+      <choice value="0.9">(Only Highest Anomaly) &gt;=90%</choice>
+      <default>0.2</default>
+    </input>
+    <input type="radio" token="list_drug_names" searchWhenChanged="true">
+      <label>List drug names:</label>
+      <choice value="Drug:*">List all drug names</choice>
+      <choice value="">Show anomaly summary only</choice>
+      <default>Drug:*</default>
+    </input>
+    <input type="link" token="___">
+      <label>Select visualization</label>
+      <choice value="GeoMap">GeoMap</choice>
+      <choice value="3D">3D</choice>
+      <default>GeoMap</default>
+      <change>
+        <condition value="GeoMap">
+          <set token="showGeoMap">true</set>
+          <unset token="show3D"></unset>
+        </condition>
+        <condition value="3D">
+          <set token="show3D">true</set>
+          <unset token="showGeoMap"></unset>
+        </condition>
+      </change>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <html>
+        <div>
+          <div>
+            <a style="float:left;font-weight:normal;font-size:120%;color:#EA4343;border:1px solid #CAA62C;padding:2px 8px;border-radius:8px;background-color:#ffffaa;" href="/app/$env:app$/$env:page$">Reset Dashboard</a>
+            <p style="float:right;font-weight:normal;font-size:120%;color:#0a80b2;border:1px solid #1e93c6;padding:2px 8px;border-radius:8px;background-color:#ffffff;margin:0;">Use cases:
+
+            <a style="font-weight:bold;" href="/app/$env:app$/$env:page$?form.selected_state=FL&amp;form.selected_city=*&amp;form.selected_provspec=Anesthesiology&amp;form.selected_provspec=Pain%20Management&amp;form.selected_provspec=Orthopedic%20Surgery&amp;form.selected_provspec=Neurology&amp;form.drug_group=narcotics&amp;form.min_total_claim=1000000&amp;form.drug_anomaly_ratio=0.50&amp;form.list_drug_names=Drug%3A*&amp;form.___=GeoMap">FL:PainM/Gen</a>
+            |
+            <a style="font-weight:bold;" href="/app/$env:app$/$env:page$?form.selected_state=MA&amp;form.selected_city=*&amp;form.selected_provspec=General%20Practice&amp;form.drug_group=narcotics&amp;form.min_total_claim=10000&amp;form.drug_anomaly_ratio=0.1&amp;form.list_drug_names=Drug%3A*&amp;form.___=GeoMap">MA:Gen/narc</a>
+            <a style="color:red;" target="_blank" href="http://www.mass.gov/ago/news-and-updates/press-releases/2017/2017-04-04-ludlow-doctor-pleads-guilty.html">◼</a>
+            |
+            <a style="font-weight:bold;" href="/app/$env:app$/$env:page$?form.selected_state=*&amp;form.selected_city=*&amp;form.selected_provspec=Physical%20Medicine%20and%20Rehabilitation&amp;form.min_total_claim=1000000&amp;form.drug_anomaly_ratio=0.05&amp;form.list_drug_names=Drug%3A*&amp;form.___=GeoMap">NW:Rehab/narc</a>
+            <a style="color:red;" target="_blank" href="https://www.justice.gov/opa/pr/detroit-area-physician-sentenced-45-months-prison-role-57-million-medicare-fraud-scheme">◼</a>
+            |
+            <a style="font-weight:bold;" href="/app/$env:app$/$env:page$?form.selected_state=*&amp;form.selected_city=*&amp;form.selected_provspec=Pediatric%20Medicine&amp;form.drug_group=narcotics&amp;form.min_total_claim=100000&amp;form.drug_anomaly_ratio=0.25&amp;form.list_drug_names=Drug%3A*&amp;form.___=GeoMap">NW:Pediatric/narc</a>
+            <a style="color:red;" target="_blank" href="http://www.sgvtribune.com/general-news/20160411/covina-doctor-pleads-guilty-to-federal-drug-money-laundering-charges">◼</a>
+            |
+            <a style="font-weight:bold;" href="/app/$env:app$/$env:page$?form.selected_state=*&amp;form.selected_city=*&amp;form.selected_provspec=Obstetrics%2FGynecology&amp;form.drug_group=narcotics&amp;form.drug_in_claim=(%3Fim).&amp;form.drug_in_anomaly=(%3Fim).&amp;form.min_total_claim=250000&amp;form.drug_anomaly_ratio=0.1&amp;form.list_drug_names=Drug%3A*&amp;form.___=GeoMap">NW:Gyn/narc/rap</a>
+            <a style="color:red;" target="_blank" href="http://www.morganton.com/news/breaking-morganton-doctor-banned-from-prescribing-opioids/article_5074e104-f88d-11e6-964a-0f68cadb37cb.html">◼</a>
+            |
+            <a style="font-weight:bold;" href="/app/$env:app$/$env:page$?form.selected_state=*&amp;form.selected_city=*&amp;form.selected_provspec=Interventional%20Pain%20Management&amp;form.drug_group=narcotics&amp;form.min_total_claim=1000000&amp;form.drug_anomaly_ratio=0.2&amp;form.list_drug_names=Drug%3A*&amp;form.___=GeoMap">NW:In.pain/4/narc</a>
+            <a style="color:red;" target="_blank" href="https://www.justice.gov/usao-sdal/pr/two-mobile-pain-doctors-convicted-after-seven-week-trial">◼</a>
+            <a style="color:red;" target="_blank" href="https://www.justice.gov/usao-cdca/pr/medical-doctor-arrested-federal-structuring-charges-making-cash-deposits-avoid-federal">◼</a>
+            <a style="color:red;" target="_blank" href="https://www.justice.gov/usao-sdca/pr/doctor-arrested-and-charged-providing-prescriptions-opioids-and-other-scheduled">◼</a>
+            |
+            <a style="font-weight:bold;" href="/app/$env:app$/$env:page$?form.selected_state=CT&amp;form.selected_city=*&amp;form.selected_provspec=Nurse%20Practitioner&amp;form.drug_group=narcotics&amp;form.min_total_claim=250000&amp;form.drug_anomaly_ratio=0.25&amp;form.list_drug_names=Drug%3A*&amp;form.___=GeoMap">CT:nurse/narc</a>
+            <a style="color:red;" target="_blank" href="https://www.nytimes.com/2015/06/26/business/nurse-pleads-guilty-to-taking-kickbacks-from-drug-maker.html">◼</a>
+            |
+            <a style="font-weight:bold;" href="/app/$env:app$/$env:page$?form.selected_state=*&amp;form.selected_city=*&amp;form.selected_provspec=Preventive%20Medicine&amp;form.drug_group=narcotics&amp;form.min_total_claim=10000&amp;form.drug_anomaly_ratio=0.33&amp;form.list_drug_names=Drug%3A*&amp;form.___=GeoMap">NW:Prev.Med/narc</a>
+            <a style="color:red;" target="_blank" href="http://5newsonline.com/2016/07/08/roland-doctor-charged-in-meth-manufacturing-bust/">◼</a>
+            |
+            <a style="font-weight:bold;" href="/app/$env:app$/$env:page$?form.selected_state=CA&amp;form.selected_city=*&amp;form.selected_provspec=Physician%20Assistant&amp;form.drug_group=narcotics&amp;form.min_total_claim=100000&amp;form.drug_anomaly_ratio=0.1&amp;form.list_drug_names=Drug%3A*&amp;form.___=GeoMap">CA:Ph.Assist/narc</a>
+            <a style="color:red;" target="_blank" href="http://www.eastbaytimes.com/2017/03/31/san-leandro-physicians-assistant-charged-with-distributing-oxycodone/">◼</a>
+            |
+            <a style="font-weight:bold;" href="/app/$env:app$/$env:page$?form.selected_state=*&amp;form.selected_city=*&amp;form.selected_provspec=Infectious%20Disease&amp;form.drug_group=narcotics&amp;form.min_total_claim=500000&amp;form.drug_anomaly_ratio=0.1&amp;form.list_drug_names=Drug%3A*&amp;form.___=GeoMap">NW:Infec/narc</a>
+            <a style="color:red;" target="_blank" href="http://www.njconsumeraffairs.gov/Actions/20161020_25MA06396100.pdf">◼</a>
+            </p>
+          </div>
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row depends="$showGeoMap$">
+    <panel>
+      <title>Detect anomalous healthcare providers by prescription drug claims with unsupervised Machine Learning. Anomalies are shown for drugs ($drug_group$) that represent more than $drug_anomaly_ratio$ of total Medicare claims per provider.
+      Data Source: Medicare Provider Utilization and Payment Data: Part D Prescriber</title>
+      <viz type="leaflet_maps_app.leaflet_maps">
+        <search base="base_search2">
+          <query>
+            <![CDATA[
+              | `x("Calculate drug violations for Geomap")`
+              | eval Claim_Anomalies=""
+              | eval goog1="<a style='color:red;' target='_blank' href='https://www.google.com/search?q=", goog2="'>", goog3="</a>"
+              | foreach Drug:* [ eval Claim_Anomalies=if('<<FIELD>>'<5 , Claim_Anomalies, mvappend(Claim_Anomalies, goog1."<<FIELD>>".goog2."<<FIELD>> (".'<<FIELD>>'."%)".goog3))]
+              | rex mode=sed field=Claim_Anomalies "s/Drug://g"
+              $find_doc_of_interest2$
+
+              | `x("Kill NULL-columns")`
+              | foreach Drug:* [ eval TMP__X=if('<<FIELD>>'=0 , null(), '<<FIELD>>') | rename TMP__X AS "<<FIELD>>"]
+
+              | lookup maxmind-state-city city AS af_city, state AS af_state
+              | fillnull
+              | where lat*lon!=0
+              | rename lat AS latitude, lon AS longitude
+              | eval hr="<hr style='margin:0;padding:0' />", br="<br style='margin:0;padding:0' />", eop="</p>", eospan="</span>", pbold="<p style='font-weight:bold;margin:0;padding:0;'>", spanbold="<span style='font-weight:bold;margin:0;padding:0;'>", predex="<p style='font-weight:bold;margin:0;padding:0;color:red;background-color:#FFFF88;border:1px solid #FFAAAA;border-radius:4px;padding:3px;'>",
+                  spangreen="<span style='font-weight:bold;color:green;margin:0;padding:0;'>", spanblue="<span style='font-weight:bold;color:blue;margin:0;padding:0;'>",
+                  description=
+                  pbold."<a target='_blank' href='/app/$env:app$/healthcare_provider_detailed_data?form.search_string=".af_npi."'>".af_fullname." (".af_npi.")"."</a>".eop.
+                  hr."Total claims($): ".spangreen.af__total_claims.eospan.hr."Specialty: ".spanblue.af_provspec.eospan.hr."Claim anomalies:".predex.mvjoin(mvfilter(match(Claim_Anomalies, ".")), ", ").eop.hr."Location: ".spanbold.af_fulladdr.eospan
+
+              | table latitude longitude description
+            ]]>
+          </query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="leaflet_maps_app.leaflet_maps.allPopups">0</option>
+        <option name="leaflet_maps_app.leaflet_maps.animate">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.cluster">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.contextMenu">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.criticalThreshold">50</option>
+        <option name="leaflet_maps_app.leaflet_maps.defaultHeight">700</option>
+        <option name="leaflet_maps_app.leaflet_maps.drilldown">0</option>
+        <option name="leaflet_maps_app.leaflet_maps.fullScreen">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.height">700</option>
+        <option name="leaflet_maps_app.leaflet_maps.layerControl">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.layerControlCollapsed">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.mapCenterLat">36.39</option>
+        <option name="leaflet_maps_app.leaflet_maps.mapCenterLon">-97.94</option>
+        <option name="leaflet_maps_app.leaflet_maps.mapCenterZoom">5</option>
+        <option name="leaflet_maps_app.leaflet_maps.mapTile">http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png</option>
+        <option name="leaflet_maps_app.leaflet_maps.maxClusterRadius">80</option>
+        <option name="leaflet_maps_app.leaflet_maps.maxSpiderfySize">100</option>
+        <option name="leaflet_maps_app.leaflet_maps.maxZoom">19</option>
+        <option name="leaflet_maps_app.leaflet_maps.measureActiveColor">#00ff00</option>
+        <option name="leaflet_maps_app.leaflet_maps.measureCompletedColor">#0066ff</option>
+        <option name="leaflet_maps_app.leaflet_maps.measureIconPosition">topright</option>
+        <option name="leaflet_maps_app.leaflet_maps.measureLocalization">en</option>
+        <option name="leaflet_maps_app.leaflet_maps.measurePrimaryAreaUnit">acres</option>
+        <option name="leaflet_maps_app.leaflet_maps.measurePrimaryLengthUnit">feet</option>
+        <option name="leaflet_maps_app.leaflet_maps.measureSecondaryAreaUnit">sqmiles</option>
+        <option name="leaflet_maps_app.leaflet_maps.measureSecondaryLengthUnit">miles</option>
+        <option name="leaflet_maps_app.leaflet_maps.measureTool">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.minZoom">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.multiplePopups">0</option>
+        <option name="leaflet_maps_app.leaflet_maps.pathColorList">#0003F0,#D43C29,darkgreen,0xe2d400,darkred,#23A378</option>
+        <option name="leaflet_maps_app.leaflet_maps.rangeOneBgColor">#B5E28C</option>
+        <option name="leaflet_maps_app.leaflet_maps.rangeOneFgColor">#6ECC39</option>
+        <option name="leaflet_maps_app.leaflet_maps.rangeThreeBgColor">#FD9C73</option>
+        <option name="leaflet_maps_app.leaflet_maps.rangeThreeFgColor">#F18017</option>
+        <option name="leaflet_maps_app.leaflet_maps.rangeTwoBgColor">#F1D357</option>
+        <option name="leaflet_maps_app.leaflet_maps.rangeTwoFgColor">#F0C20C</option>
+        <option name="leaflet_maps_app.leaflet_maps.scrollWheelZoom">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.showPathLines">0</option>
+        <option name="leaflet_maps_app.leaflet_maps.singleMarkerMode">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.spiderfyDistanceMultiplier">1</option>
+        <option name="leaflet_maps_app.leaflet_maps.warningThreshold">2</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+  <row depends="$showGeoMap$">
+    <panel>
+      <table>
+        <search base="base_search2">
+          <query>
+            <![CDATA[
+              | `x("Calculate drug violations for table")`
+              | eval Claim_Anomalies=""
+              | fillnull value=0
+              | foreach Drug:* [ eval Claim_Anomalies=if('<<FIELD>>'<5 , Claim_Anomalies, mvappend(Claim_Anomalies, "<<FIELD>> (".'<<FIELD>>'."%)"))]
+              | rex mode=sed field=Claim_Anomalies "s/Drug://g"
+              $find_doc_of_interest2$
+
+              | `x("Kill NULL-columns")`
+              | foreach Drug:* [ eval TMP__X=if('<<FIELD>>'=0 , null(), '<<FIELD>>') | rename TMP__X AS "<<FIELD>>"]
+
+              | sort - af__total_claims
+              | eval af_npi=" ".af_npi, af__total_claims=" ".af__total_claims, cluster_size=" ".cluster_size, ANOM_RATIO=ANOM_RATIO." "
+              | `x("sort cluster_size - ANOM_RATIO")`
+              | table cluster cluster_size af_npi Claim_Anomalies af__total_claims ANOM_RATIO af_city af_state af_provspec af_fullname af_fulladdr $list_drug_names$
+            ]]>
+          </query>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">heatmap</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="number" field="af__total_claims">
+          <option name="precision">2</option>
+          <option name="useThousandSeparators">true</option>
+          <option name="unit">$</option>
+          <option name="unitPosition">before</option>
+        </format>
+        <drilldown>
+          <link target="_blank">/app/Splunk-SE-Fraud-Detection/healthcare_provider_detailed_data?form.search_string=$row.af_npi$</link>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row depends="$show3D$">
+    <panel>
+      <title>3D view of data clusters</title>
+      <viz type="scatterplot3d_app.scatter3d">
+        <search base="base_search2a">
+          <query>
+            <![CDATA[
+              | dedup 200 cluster | table cluster PC_1, PC_2, PC_3
+            ]]>
+          </query>
+        </search>
+        <option name="height">700</option>
+        <option name="scatterplot3d_app.scatter3d.aspectMode">manual</option>
+        <option name="scatterplot3d_app.scatter3d.bgColor">black</option>
+        <option name="scatterplot3d_app.scatter3d.lineColor">#FFF</option>
+        <option name="scatterplot3d_app.scatter3d.lineWidth">0</option>
+        <option name="scatterplot3d_app.scatter3d.opacity">0.8</option>
+        <option name="scatterplot3d_app.scatter3d.showLegend">1</option>
+        <option name="scatterplot3d_app.scatter3d.size">8</option>
+        <option name="scatterplot3d_app.scatter3d.symbol">circle</option>
+        <option name="scatterplot3d_app.scatter3d.xAspectRatio">4</option>
+        <option name="scatterplot3d_app.scatter3d.xTitle">PC_1</option>
+        <option name="scatterplot3d_app.scatter3d.yAspectRatio">2</option>
+        <option name="scatterplot3d_app.scatter3d.yTitle">PC_2</option>
+        <option name="scatterplot3d_app.scatter3d.zAspectRatio">2</option>
+        <option name="scatterplot3d_app.scatter3d.zTitle">PC_3</option>
+      </viz>
+    </panel>
+  </row>
+  <row depends="$show3D$">
+    <panel>
+      <table>
+        <search base="base_search2a">
+          <query>
+            <![CDATA[
+              | `x("Calculate and keep top anomalous results")`
+              | eval ANOM_RATIO=0
+              | foreach Drug:* [eval "<<FIELD>>"=round(if('<<FIELD>>'<$drug_anomaly_ratio$ , 0, '<<FIELD>>'*100),2),ANOM_RATIO=ANOM_RATIO+('<<FIELD>>'*'<<FIELD>>')]
+              | where ANOM_RATIO>0
+
+              | `x("Calculate drug violations for table")`
+              | eval Claim_Anomalies=""
+              | fillnull value=0
+              | foreach Drug:* [ eval Claim_Anomalies=if('<<FIELD>>'<10 , Claim_Anomalies, mvappend(Claim_Anomalies, "<<FIELD>> (".'<<FIELD>>'."%)"))]
+              | rex mode=sed field=Claim_Anomalies "s/Drug://g"
+
+              | `x("Not filtering results based on desired anomaly drug regex match to make sure clusters data matches table data.")`
+              | `x("Kill NULL-columns")`
+              | foreach Drug:* [ eval TMP__X=if('<<FIELD>>'=0 , null(), '<<FIELD>>') | rename TMP__X AS "<<FIELD>>"]
+
+              | dedup 10 cluster
+              | eval af_npi=" ".af_npi, af__total_claims=" ".af__total_claims
+              | sort cluster_size - af__total_claims
+              | eval PC_1=" ".PC_1, PC_2=" ".PC_2, PC_3=" ".PC_3
+              | table PC_* cluster af_npi Claim_Anomalies af__total_claims af_city af_state af_provspec af_fullname af_fulladdr $list_drug_names$
+            ]]>
+          </query>
+        </search>
+        <option name="count">25</option>
+        <option name="dataOverlayMode">heatmap</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="number" field="af__total_claims">
+          <option name="precision">2</option>
+          <option name="unit">$</option>
+          <option name="unitPosition">before</option>
+          <option name="useThousandSeparators">true</option>
+        </format>
+      </table>
+    </panel>
+  </row>
+</form>

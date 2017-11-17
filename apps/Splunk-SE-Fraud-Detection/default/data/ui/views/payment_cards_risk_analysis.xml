@@ -1,0 +1,124 @@
+<form>
+  <label>Payment Cards: Risk Analysis</label>
+  <search id="base_search">
+    <query>
+      <![CDATA[
+        index=vpnet2 sourcetype=cards_txn2 ( $compromised_cards$ ) $time_period$ | fields _time card_* merchant_* txn_* compromise_type
+      ]]>
+    </query>
+    <earliest>0</earliest>
+    <sampleRatio>1</sampleRatio>
+  </search>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="dropdown" token="compromised_cards" searchWhenChanged="true">
+      <label>Compromised payment cards</label>
+      <choice value="*">Show everything</choice>
+      <choice value="NOT compromise_type=*">Exclude compromised cards</choice>
+      <choice value="compromise_type=*">Show only compromised cards</choice>
+      <default>*</default>
+    </input>
+    <input type="dropdown" searchWhenChanged="true" token="show_cards_by_risk">
+      <label>Display cards by risk</label>
+      <choice value="| eval x=0">Show all payment cards</choice>
+      <choice value="| where card_risk_score&gt;0">Show only risky cards</choice>
+      <default>| where card_risk_score&gt;0</default>
+    </input>
+    <input type="dropdown" token="time_period" searchWhenChanged="true">
+      <label>Select time period (of available data)</label>
+      <choice value="[search index=vpnet2 sourcetype=cards_txn2 [search index=vpnet2 sourcetype=cards_txn2 latest=now | head 1 | eval search=&quot; _time&gt;&quot;+tostring(_time-(12*3600))+&quot; _time&lt;=&quot;+tostring(_time-(0)) | fields search] card_number_masked!=XXXXXXXX* | top card_number_masked limit=0 | fields card_number_masked]">Last 12 hrs (full txn data)</choice>
+      <choice value="[search index=vpnet2 sourcetype=cards_txn2 [search index=vpnet2 sourcetype=cards_txn2 latest=now | head 1 | eval search=&quot; _time&gt;&quot;+tostring(_time-(1*24*3600))+&quot; _time&lt;=&quot;+tostring(_time-(0)) | fields search] card_number_masked!=XXXXXXXX* | top card_number_masked limit=0 | fields card_number_masked]">Last 24 hrs (full txn data)</choice>
+      <choice value="[search index=vpnet2 sourcetype=cards_txn2 [search index=vpnet2 sourcetype=cards_txn2 latest=now | head 1 | eval search=&quot; _time&gt;&quot;+tostring(_time-(2*24*3600))+&quot; _time&lt;=&quot;+tostring(_time-(0)) | fields search] card_number_masked!=XXXXXXXX* | top card_number_masked limit=0 | fields card_number_masked]">Last 2 days (full txn data)</choice>
+      <choice value="[search index=vpnet2 sourcetype=cards_txn2 [search index=vpnet2 sourcetype=cards_txn2 latest=now | head 1 | eval search=&quot; _time&gt;&quot;+tostring(_time-(7*24*3600))+&quot; _time&lt;=&quot;+tostring(_time-(0)) | fields search] card_number_masked!=XXXXXXXX* | top card_number_masked limit=0 | fields card_number_masked]">Last 7 days (full txn data)</choice>
+      <choice value="[search index=vpnet2 sourcetype=cards_txn2 latest=now | head 1 | eval search=&quot; _time&gt;&quot;+tostring(_time-(30*24*3600))+&quot; _time&lt;=&quot;+tostring(_time-(0)) | fields search] card_number_masked!=XXXXXXXX*">Last 30 days (selected range only)</choice>
+      <choice value="[search index=vpnet2 sourcetype=cards_txn2 latest=now | head 1 | eval search=&quot; _time&gt;&quot;+tostring(_time-(60*24*3600))+&quot; _time&lt;=&quot;+tostring(_time-(0)) | fields search] card_number_masked!=XXXXXXXX*">Last 60 days (selected range only)</choice>
+      <choice value="[search index=vpnet2 sourcetype=cards_txn2 latest=now | head 1 | eval search=&quot; _time&gt;&quot;+tostring(_time-(90*24*3600))+&quot; _time&lt;=&quot;+tostring(_time-(0)) | fields search] card_number_masked!=XXXXXXXX*">Last 90 days (selected range only)</choice>
+      <choice value="card_number_masked!=XXXXXXXX*">All Available Data (slow!)</choice>
+      <default>[search index=vpnet2 sourcetype=cards_txn2 [search index=vpnet2 sourcetype=cards_txn2 latest=now | head 1 | eval search=" _time&gt;"+tostring(_time-(2*24*3600))+" _time&lt;="+tostring(_time-(0)) | fields search] card_number_masked!=XXXXXXXX* | top card_number_masked limit=0 | fields card_number_masked]</default>
+      <initialValue>[search index=vpnet2 sourcetype=cards_txn2 [search index=vpnet2 sourcetype=cards_txn2 latest=now | head 1 | eval search=" _time&gt;"+tostring(_time-(2*24*3600))+" _time&lt;="+tostring(_time-(0)) | fields search] card_number_masked!=XXXXXXXX* | top card_number_masked limit=0 | fields card_number_masked]</initialValue>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <html>
+        <div>
+          <div>
+            <a style="float:left;font-weight:normal;font-size:120%;color:#EA4343;border:1px solid #CAA62C;padding:2px 8px;border-radius:8px;background-color:#ffffaa;" href="/app/$env:app$/$env:page$">Reset Dashboard</a>
+          </div>
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <search base="base_search">
+          <query>
+            <![CDATA[
+              fillnull value=""
+              | dedup _raw
+              | sort 0 card_id, _time
+              | streamstats window=2 current=1 dc(txn_region) as region_change, list(txn_region) as regions, dc(merchant_name) as merchant_change, range(_time) as time_delta by card_id
+
+              | eval region_change=region_change-1, merchant_change=merchant_change-1
+
+              | eval x="======== Calculating risk score for card"
+              | eval event_risk_messages="", event_risk_scores=0
+
+              | eval this_risk_score=50, this_risk_id=4, this_risk_message="Risk: fast region shift", this_risk_triggered=if(region_change>0 AND isnull(mvfind(regions,"^0?$")) AND time_delta<7200, 1, 0)
+              | eval event_risk_ids=if(this_risk_triggered>0,      mvappend(event_risk_ids, this_risk_id), event_risk_ids)
+              | eval event_risk_scores=if(this_risk_triggered>0,   mvappend(event_risk_scores, this_risk_score), event_risk_scores)
+              | eval event_risk_messages=if(this_risk_triggered>0, mvappend(event_risk_messages, "[+" + this_risk_score + "][RI:" + this_risk_id + "] "+this_risk_message), event_risk_messages)
+
+              | eval this_risk_score=15, this_risk_id=5, this_risk_message="Risk: fast merchant shift", this_risk_triggered=if(merchant_change>0 AND isnull(mvfind(regions,"^0?$")) AND time_delta<60, 1, 0)
+              | eval event_risk_ids=if(this_risk_triggered>0,      mvappend(event_risk_ids, this_risk_id), event_risk_ids)
+              | eval event_risk_scores=if(this_risk_triggered>0,   mvappend(event_risk_scores, this_risk_score), event_risk_scores)
+              | eval event_risk_messages=if(this_risk_triggered>0, mvappend(event_risk_messages, "[+" + this_risk_score + "][RI:" + this_risk_id + "] "+this_risk_message), event_risk_messages)
+
+              | eval x="======== Split multiple risks per event into separate (duplicate) events with separate risk data"
+              | eval event_risk_messages=mvfilter(match(event_risk_messages, ".."))
+              | eval event_risk_scores=mvfilter(match(event_risk_scores, "^[^0]"))
+              | eval event_risk_info=mvzip(mvzip(event_risk_ids, event_risk_scores, "|"), event_risk_messages, "|")
+              | fillnull
+              | mvexpand event_risk_info
+              | rex field=event_risk_info "(?<event_risk_id>[^\|]+)\|(?<event_risk_score>[^\|]+)\|(?<event_risk_message>[^\|]+)"
+
+              | eval x="======== Calculating risk summaries for the card"
+              | fillnull value=0 event_risk_score
+              | eventstats sum(event_risk_score) as card_risk_score, c as total_txns, sum(txn_amount) as sum_total_txns, min(txn_amount) as min_txn, max(txn_amount) as max_txn, avg(txn_amount) as avg_total_txns
+                by card_id
+              | eval card_risk_score=if(len(compromise_type)>0, card_risk_score+500, card_risk_score)
+              $show_cards_by_risk$ | eval x="<======== Show only risky cards"
+
+              | eval x="======== Calculating card risk messages summary with number of hits per each risk event type"
+              | eventstats c by card_id, event_risk_id
+              | eval event_risk_message_total=if(event_risk_score>0, c + " times: " + event_risk_message, 0)
+              | eventstats values(event_risk_message_total) as card_risk_messages by card_id
+              | eval card_risk_messages=if(len(compromise_type)>0, mvappend(card_risk_messages, "[+500] Marked as: " + compromise_type), card_risk_messages)
+              | eval card_risk_messages=mvfilter(match(card_risk_messages, ".."))
+
+              | dedup card_id
+
+              | eval x="======== Show results"
+              | sort 0 - card_risk_score, card_id, _time
+              | eval total_txns=" " + total_txns, sum_total_txns=" "+sum_total_txns, min_txn=" "+min_txn, max_txn=" "+max_txn, avg_total_txns=" "+tostring(round(avg_total_txns,2))
+              | table card_number_masked, card_risk_score, card_risk_messages, compromise_type, total_txns, sum_total_txns, min_txn, max_txn, avg_total_txns
+              | rename total_txns as "Total number of transactions", sum_total_txns as "Total value of all transactions", min_txn as "Smallest transaction", max_txn as "Largest transaction", avg_total_txns as "Average value of transactions"
+            ]]>
+          </query>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">heatmap</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <drilldown>
+          <link target="_blank">
+            <![CDATA[ /app/Splunk-SE-Fraud-Detection/payment_cards_detailed_txns?form.custom_filter=$click.value2$&form.time_period=earliest%3D0%20latest%3Dnow ]]>
+          </link>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+</form>

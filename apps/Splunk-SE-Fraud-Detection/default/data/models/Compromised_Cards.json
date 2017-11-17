@@ -1,0 +1,114 @@
+{
+    "modelName": "Compromised_Cards",
+    "displayName": "Compromised Cards",
+    "description": "",
+    "objectSummary": {
+        "Event-Based": 1,
+        "Transaction-Based": 0,
+        "Search-Based": 0
+    },
+    "objects": [
+        {
+            "objectName": "compromised_cards",
+            "displayName": "compromised_cards",
+            "parentName": "BaseEvent",
+            "fields": [
+                {
+                    "fieldName": "card_id",
+                    "owner": "compromised_cards",
+                    "type": "number",
+                    "fieldSearch": "card_id=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "card_id",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "card_number",
+                    "owner": "compromised_cards",
+                    "type": "string",
+                    "fieldSearch": "card_number=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "card_number",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "type",
+                    "owner": "compromised_cards",
+                    "type": "string",
+                    "fieldSearch": "type=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "type",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "_time",
+                    "owner": "BaseEvent",
+                    "type": "timestamp",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "_time",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "host",
+                    "owner": "BaseEvent",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "host",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "source",
+                    "owner": "BaseEvent",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "source",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "sourcetype",
+                    "owner": "BaseEvent",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "sourcetype",
+                    "comment": ""
+                }
+            ],
+            "calculations": [],
+            "constraints": [
+                {
+                    "search": "index=vpnet sourcetype=cards_compromised",
+                    "owner": "compromised_cards"
+                }
+            ],
+            "lineage": "compromised_cards"
+        }
+    ],
+    "objectNameList": [
+        "compromised_cards"
+    ]
+}

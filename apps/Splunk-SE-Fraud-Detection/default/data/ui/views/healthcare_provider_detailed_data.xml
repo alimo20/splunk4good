@@ -1,0 +1,495 @@
+<form>
+  <label>Healthcare Provider: Detailed Profile Analysis</label>
+  <init>
+    <!-- set tokens upon page init -->
+    <unset token="token_summary_panel"></unset>
+    <set token="token_prescriptions_panel">true</set>
+  </init>
+  <search id="base_search1">
+    <query>
+      <![CDATA[
+              | tstats summariesonly=t sum(cms_drugs.af__totaldrugcost) as af__thisdrugcost_for_doc FROM datamodel=cms_drugs WHERE (cms_drugs.af_provspec="$provider_specialty$" $typical_provider_scope$) BY cms_drugs.af_drugname
+| rename cms_drugs.af_drugname TO af_drugname
+| eventstats sum(af__thisdrugcost_for_doc) as af__alldrugscost
+| eval af__this_drug_pct = round(af__thisdrugcost_for_doc*100/af__alldrugscost, 2)
+| fields af_drugname af__this_drug_pct
+      ]]>
+    </query>
+    <earliest>0</earliest>
+    <sampleRatio>1</sampleRatio>
+  </search>
+  <fieldset submitButton="true" autoRun="false">
+    <input type="text" token="search_string" searchWhenChanged="true">
+      <label>Provider lookup: NPI, name, location...</label>
+      <default>1154580827</default>
+    </input>
+    <input type="dropdown" token="provider_npi" searchWhenChanged="true">
+      <label>Found providers:</label>
+      <fieldForLabel>prov_label</fieldForLabel>
+      <fieldForValue>prov_value</fieldForValue>
+      <search>
+        <query>index=af-cms-drugs (af_npi=$search_string$) OR ("$search_string$") OR ($search_string$) | head 1000 | dedup af_npi | head 100 | eval prov_label=af_npi.", ".af_fullname.", ".af_provspec.", ".af_city.", ".af_state, prov_value=af_npi | table prov_*</query>
+        <earliest>0</earliest>
+        <latest>now</latest>
+      </search>
+      <selectFirstChoice>true</selectFirstChoice>
+    </input>
+    
+    <input type="radio" token="typical_provider_scope" searchWhenChanged="true">
+      <label>Typical provider scope</label>
+      <default></default>
+      <fieldForLabel>af_state_label</fieldForLabel>
+      <fieldForValue>af_state</fieldForValue>
+      <search>
+        <query>index=af-cms-drugs af_npi=$provider_npi$ | head 1 | eval af_state_label="Statewide"| eval af_state=" AND cms_drugs.af_state=".af_state | fields af_state*</query>
+      </search>
+      <change>
+        <set token="typical_provider_label">$label$</set>
+      </change>
+      <choice value="">Nationwide</choice>
+    </input>
+    <input type="checkbox" token="show_panels" searchWhenChanged="true">
+      <label>Show Panels:</label>
+      <choice value="summary_panel">Summary panel</choice>
+      <choice value="paydocs_panel">Payments from manufacturers</choice>
+      <choice value="prescriptions_panel">Prescriptions data</choice>
+      <default>prescriptions_panel</default>
+      <change>
+        <eval token="token_summary_panel">if(match('show_panels', "summary"), "1", NULL)</eval>
+        <eval token="token_paydocs_panel">if(match('show_panels', "paydocs"), "1", NULL)</eval>
+        <eval token="token_prescriptions_panel">if(match('show_panels', "prescriptions"), "1", NULL)</eval>
+      </change>
+      <delimiter> </delimiter>
+    </input>
+    <input type="dropdown" token="provider_specialty" searchWhenChanged="true" depends="$not_existing$">
+      <label>Hidden</label>
+      <fieldForLabel>af_provspec</fieldForLabel>
+      <fieldForValue>af_provspec</fieldForValue>
+      <search>
+        <query>index=af-cms-drugs af_npi=$provider_npi$ | fillnull | eventstats sum(af__totaldrugcost) AS af_totalclaimsamt | eval af_totalclaimsamt_str="$$".tostring(af_totalclaimsamt, "commas")  | fields af_*</query>
+      </search>
+      <selectFirstChoice>true</selectFirstChoice>
+      <change>
+        <set token="token_af_fname">$row.af_fname$</set>
+        <set token="token_af_lname">$row.af_lname$</set>
+        <set token="token_af_fullname">$row.af_fullname$</set>
+        <set token="token_af_city">$row.af_city$</set>
+        <set token="token_af_state">$row.af_state$</set>
+        <set token="token_af_totalclaimsamt">$row.af_totalclaimsamt$</set>
+        <set token="token_af_totalclaimsamt_str">$row.af_totalclaimsamt_str$</set>
+      </change>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <html>
+        <div>
+          <div>
+            <a style="float:left;font-weight:normal;font-size:120%;color:#EA4343;border:1px solid #CAA62C;padding:2px 8px;border-radius:8px;background-color:#ffffaa;" href="/app/$env:app$/$env:page$">Reset Dashboard</a>
+          </div>
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row depends="$token_summary_panel$">
+    <panel>
+      <html>
+        <div>
+          <div>
+            <h1 style="color: #f5f5f5; background-color: #2f2f2f; border: 1px solid #aaaaaa; border-radius:8px; box-shadow: 5px 5px 10px #aaa;padding:5px 5px 5px 20px;margin:0;">Medicare Provider Utilization and Payment Data: Part D Prescriber Summary Table. Summary Data for NPI: <span style="color:#ffffaa;">$provider_npi$</span>
+            </h1>
+          </div>
+        </div>
+      </html>
+      <table>
+        <search>
+          <query>
+            <![CDATA[
+index=af-cms-summ af_npi=$provider_npi$
+| rename bene_count TO total_bene_count 
+
+| foreach *_drug_cost [
+  eval aaa_cat=mvappend(aaa_cat,"<<MATCHSEG1>>"),
+  aaa_days_supply=mvappend(aaa_days_supply, if(isnotnull('<<MATCHSEG1>>_day_supply'),'<<MATCHSEG1>>_day_supply',"-")),
+  aaa_total_claims=mvappend(aaa_total_claims, if(isnotnull('<<MATCHSEG1>>_claim_count'),'<<MATCHSEG1>>_claim_count',"-")),
+  aaa_total_beneficiaries=mvappend(aaa_total_beneficiaries, if(isnotnull('<<MATCHSEG1>>_bene_count'),'<<MATCHSEG1>>_bene_count',"-")),
+  aaa_drug_cost=mvappend(aaa_drug_cost, if(isnotnull('<<MATCHSEG1>>_drug_cost'),'<<MATCHSEG1>>_drug_cost',"-"))
+  ]
+| fields aaa_*
+| eval all_fields=mvzip(aaa_cat, mvzip(aaa_total_beneficiaries, mvzip(aaa_total_claims, mvzip(aaa_days_supply, aaa_drug_cost))))
+| mvexpand all_fields
+| rex field=all_fields "(?<Category_Drugs>[^,]+),(?<Total_beneficiaries>[^,]+),(?<Total_claims>[^,]+),(?<Days_supply>[^,]+),(?<Drug_cost>[^,]+)"
+| regex Category_Drugs!="(?i)^(lis|mapd|pdp|nonlis)"
+| fields - `infields` _time aaa_* all_fields
+| eval Days_supply_per_person=Days_supply/Total_beneficiaries
+| eval Days_supply_per_person=if(isnull(Days_supply_per_person), "-", round(Days_supply_per_person,1))
+| eval Category_Drugs=if(Category_Drugs="total", "Total (some drugs belongs to multiple categories)", Category_Drugs)
+| table Category* Drug_cost Total_claims Total_benef* Days_supply Days_supply_per_person *
+            ]]>
+          </query>
+          <earliest>0</earliest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="number" field="Drug_Cost">
+          <option name="precision">2</option>
+          <option name="useThousandSeparators">true</option>
+          <option name="unit">$</option>
+          <option name="unitPosition">before</option>
+        </format>          
+      </table>
+    </panel>
+  </row>
+  <row depends="$token_paydocs_panel$">
+    <panel>
+      <title>Payments from Drug Manufacturers to Provider</title>
+      <input type="text" token="paydocs_search1" searchWhenChanged="true" depends="$paydocs_specific$">
+        <label>Filter results / search:</label>
+        <default>*</default>
+      </input>
+      <input type="text" token="paydocs_search2" searchWhenChanged="true" depends="$paydocs_general$">
+        <label>Filter results / search:</label>
+        <default>$token_af_fname$ $token_af_lname$</default>
+      </input>
+      <input type="link" token="___">
+        <label>Select scope of payments data:</label>
+        <choice value="paydocs_name_specific">Provider specific</choice>
+        <choice value="paydocs_all_data">All Data</choice>
+        <default>paydocs_name_specific</default>
+        <change>
+          <condition value="paydocs_name_specific">
+            <set token="paydocs_specific">true</set>
+            <unset token="paydocs_general"></unset>
+          </condition>
+          <condition value="paydocs_all_data">
+            <set token="paydocs_general">true</set>
+            <unset token="paydocs_specific"></unset>
+          </condition>
+        </change>
+      </input>
+      <input type="dropdown" token="show_results_num" searchWhenChanged="true" depends="$paydocs_general$">
+        <label>Show up to number of results:</label>
+        <choice value="| head 100">&lt;100</choice>
+        <choice value="| head 1000">&lt;1,000</choice>
+        <choice value="| head 10000">&lt;10,000</choice>
+        <choice value="">Show all results</choice>
+        <default>| head 1000</default>
+      </input>
+      <html>
+        <div>
+          <div>
+            <h1 style="color: #f5f5f5; background-color: #2f2f2f; border: 1px solid #aaaaaa; border-radius:8px; box-shadow: 5px 5px 10px #aaa;padding:5px 5px 5px 20px;margin:0;">Aggregated payments to <span style="color:#f2b827;">$token_af_fullname$</span> from Drug Manufacturers: General Payments, Research Payments, Ownership and Investment Interests</h1>
+          </div>
+        </div>
+      </html>
+      <table depends="$paydocs_specific$">
+        <search>
+          <query>
+            <![CDATA[
+  index=af-cms-paydocs $token_af_fname$ $token_af_lname$ $paydocs_search1$
+    | eval manuf=Applicable_Manufacturer_or_Applicable_GPO_Making_Payment_Name 
+    | fields - *Manufacturer*
+    | foreach *_*_Name [eval af_fname=if("<<MATCHSEG2>>"="First" AND isnotnull('<<FIELD>>'), '<<FIELD>>', af_fname), af_lname=if("<<MATCHSEG2>>"="Last" AND isnotnull('<<FIELD>>'), '<<FIELD>>', af_lname)]
+    | foreach *_City   [eval af_city=if(isnotnull('<<FIELD>>'), '<<FIELD>>', af_city)]
+    | foreach *_State* [eval af_state=if(isnotnull('<<FIELD>>'), '<<FIELD>>', af_state)]
+    | search af_fname="$token_af_fname$" AND af_lname="$token_af_lname$" AND af_state="$token_af_state$"
+    | fields - `infields`
+    | rename manuf TO Manufacturer
+    | table af_fname af_lname af_city af_state *
+            ]]>
+          </query>
+          <earliest>0</earliest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+      <table depends="$paydocs_general$">
+        <search>
+          <query>
+            <![CDATA[
+  index=af-cms-paydocs $paydocs_search2$ $show_results_num$
+    | eval manuf=Applicable_Manufacturer_or_Applicable_GPO_Making_Payment_Name 
+    | fields - *Manufacturer*
+    | foreach *_*_Name [eval af_fname=if("<<MATCHSEG2>>"="First" AND isnotnull('<<FIELD>>'), '<<FIELD>>', af_fname), af_lname=if("<<MATCHSEG2>>"="Last" AND isnotnull('<<FIELD>>'), '<<FIELD>>', af_lname)]
+    | foreach *_City   [eval af_city=if(isnotnull('<<FIELD>>'), '<<FIELD>>', af_city)]
+    | foreach *_State* [eval af_state=if(isnotnull('<<FIELD>>'), '<<FIELD>>', af_state)]
+    | foreach Name_of_Associated_Covered_Drug_or_Biological* [eval Drugs=mvappend(drugs, '<<FIELD>>')]
+    | fields - `infields`
+    | rename manuf TO Manufacturer
+    | table af_fname af_lname af_city af_state Manufacturer Drugs Form_of_Payment_or_Transfer_of_Value *
+    | rename Form_of_Payment_or_Transfer_of_Value as Form_of_Payment
+            ]]>
+          </query>
+          <earliest>0</earliest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row depends="$token_prescriptions_panel$">
+    <panel>
+      <title></title>
+      <html>
+        <div>
+          <div>
+            <h1 style="color: #f5f5f5; background-color: #2f2f2f; border: 1px solid #aaaaaa; border-radius:8px;box-shadow: 5px 5px 10px #aaa;padding:5px 5px 5px 20px;margin:0;margin-top:20px;"><a style="color:#f5f5f5;" href="https://www.cms.gov/Research-Statistics-Data-and-Systems/Statistics-Trends-and-Reports/Medicare-Provider-Charge-Data/Part-D-Prescriber.html" target="_blank">Medicare Provider Utilization and Payment Data: Part D Prescriber Public Use File (PUF)</a>. Claim records found for <span style="color:#f2b827;">$token_af_fullname$</span> (<span style="color:#ed5f42;">$provider_specialty$</span>), NPI: <span style="color:#ffffaa;">$provider_npi$</span>. Total claims amount: <span style="color:#11ff11;">$token_af_totalclaimsamt_str$</span>
+            </h1>
+          </div>
+        </div>
+      </html>
+      <table>
+        <search>
+          <query>
+            <![CDATA[
+              index=af-cms-drugs af_npi=$provider_npi$
+| fillnull 
+| eventstats sum(af__totaldrugcost) AS af__totaldrugcost1 BY af_npi af_drugname 
+| `x("af__totaldrugcost is an alias and it's value won't change after eventstats above.")`
+| eval af__totaldrugcost=af__totaldrugcost1
+| dedup af_npi af_drugname 
+| eval af__totalclaimsamt=$token_af_totalclaimsamt$
+| eval pct_claim = round(af__totaldrugcost*100 / af__totalclaimsamt, 2)
+| eval af_fulladdr = `af_FullAddr` 
+| eval af_drugname=upper(af_drugname)
+| eval af_drug=af_drugname." (".af_drugnamegen.")" 
+
+| fillnull value="-"
+| fields - af_fname af_lname af_city af_state af_country af_straddr* af_zip* af_orgname af__totalclaims af__totaldayssupply af_gender
+| eval af__totaldrugcost=tonumber(af__totaldrugcost)
+| sort - af__totaldrugcost
+| eval af_npi_copy=af_npi,af_npi=af_npi." ", af__totalclaimsamt=" ".af__totalclaimsamt, af_proccode=" ".af_proccode
+
+
+| eval appended=0, af__paid_by_drug_manuf=0
+| append [
+  | tstats 
+  values(Name_of_Associated_Covered_Drug_or_Biological1) AS drug1
+  values(Name_of_Associated_Covered_Drug_or_Biological2) AS drug2
+  values(Name_of_Associated_Covered_Drug_or_Biological3) AS drug3
+  values(Name_of_Associated_Covered_Drug_or_Biological4) AS drug4
+  
+  WHERE index=af-cms-paydocs AND (
+    [ search index=af-cms-paydocs "$token_af_fname$" "$token_af_lname$"
+    | eval manuf=Applicable_Manufacturer_or_Applicable_GPO_Making_Payment_Name 
+    | fields - *Manufacturer*
+    | foreach *_*_Name [eval af_fname=if("<<MATCHSEG2>>"="First" AND isnotnull('<<FIELD>>'), '<<FIELD>>', af_fname), af_lname=if("<<MATCHSEG2>>"="Last" AND isnotnull('<<FIELD>>'), '<<FIELD>>', af_lname)]
+    | foreach *_City   [eval af_city=if(isnotnull('<<FIELD>>'), '<<FIELD>>', af_city)]
+    | foreach *_State* [eval af_state=if(isnotnull('<<FIELD>>'), '<<FIELD>>', af_state)]
+    | search af_fname="$token_af_fname$" AND af_lname="$token_af_lname$" AND af_state="$token_af_state$"
+    | stats 
+      values(manuf) AS manufs
+      values(Name_of_Associated_Covered_Drug_or_Biological1) AS drug1
+      values(Name_of_Associated_Covered_Drug_or_Biological2) AS drug2
+      values(Name_of_Associated_Covered_Drug_or_Biological3) AS drug3
+      values(Name_of_Associated_Covered_Drug_or_Biological4) AS drug4
+    | eval drugs=mvdedup(upper(mvappend(drug1, drug2, drug3, drug4)))
+    | eval s1="(Name_of_Associated_Covered_Drug_or_Biological*=\"".mvjoin(drugs, "\" OR Name_of_Associated_Covered_Drug_or_Biological*=\"")."\")"
+    | eval s2="(Applicable_Manufacturer_or_Applicable_GPO_Making_Payment_Name=\"".mvjoin(manufs, "\" OR Applicable_Manufacturer_or_Applicable_GPO_Making_Payment_Name=\"")."\")"
+    | eval search="(".s1." OR ".s2.")"
+    | fields search
+    ]
+  )
+  BY Applicable_Manufacturer_or_Applicable_GPO_Making_Payment_Name
+  
+| eval af_drugname=mvdedup(upper(mvappend(drug1, drug2, drug3, drug4)))
+| stats values(af_drugname) as af_drugname BY Applicable_Manufacturer_or_Applicable_GPO_Making_Payment_Name
+| eval af__paid_by_drug_manuf=1, appended=1
+
+| fields af_drugname Applicable_Manufacturer_or_Applicable_GPO_Making_Payment_Name af__paid_by_drug_manuf appended
+]
+
+| mvexpand af_drugname
+| rex mode=sed field=af_drugname "s/\s*([^\s]+).*/\1/"
+| eventstats max(af__paid_by_drug_manuf) AS af__paid_by_drug_manuf by af_drugname
+| eventstats values(Applicable_Manufacturer_or_Applicable_GPO_Making_Payment_Name) AS Manufacturer by af_drugname
+| where NOT appended=1
+
+| eval af__paid_by_drug_manuf=if(af__paid_by_drug_manuf=0, "No","Yes")
+| rename pct_claim TO "% claim", af__paid_by_drug_manuf TO "Provider paid by drug manufacturer?"
+| eval af__totaldrugcost=round(af__totaldrugcost,2)
+| table sourcetype af_npi af__totalclaimsamt af_provspec af_fullname af_fulladdr af__totaldrugcost "% claim" af_drug af_npi_copy af_drugname "Provider paid by drug manufacturer?" Manufacturer
+            ]]>
+          </query>
+          <earliest>0</earliest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <fields>af_provspec af_fullname af_fulladdr af__totaldrugcost "% claim" af_drug "Provider paid by drug manufacturer?" Manufacturer</fields>
+        <option name="count">25</option>
+        <option name="dataOverlayMode">heatmap</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">true</option>
+        <option name="wrap">true</option>
+        <format type="number" field="af__totalclaimsamt">
+          <option name="precision">2</option>
+          <option name="useThousandSeparators">true</option>
+          <option name="unit">$</option>
+          <option name="unitPosition">before</option>
+        </format>          
+        <format type="number" field="af__totaldrugcost">
+          <option name="precision">2</option>
+          <option name="useThousandSeparators">true</option>
+          <option name="unit">$</option>
+          <option name="unitPosition">before</option>
+        </format>          
+        <drilldown>
+          <condition field="af_drug">
+            <link target="_blank">https://www.google.com/search?q=$row.af_drugname$</link>
+          </condition>
+          <condition field="af_fullname">
+            <link target="_blank">https://www.google.com/search?q=$click.value2$ $row.af_npi_copy$</link>
+          </condition>
+          <condition field="af_npi">
+            <link target="_blank">https://npiregistry.cms.hhs.gov/registry/provider-view/$row.af_npi_copy$</link>
+          </condition>
+        </drilldown>
+        <format type="color" field="Provider paid by drug manufacturer?">
+          <colorPalette type="map">{"Yes":#df7c68}</colorPalette>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title></title>
+      <html>
+        <div>
+          <div>
+            <h1 style="color: #DDDDDD; background-color: #2f2f2f; border: 1px solid #aaaaaa; border-radius:8px; box-shadow: 5px 5px 10px #aaa;padding:5px 5px 5px 20px;margin:0;">
+              <span style="color:#23aeea;">$typical_provider_label$ provider profile</span> vs. <span style="color:#f2b827;">this provider's profile</span> for <span style="color:#ed5f42;">$provider_specialty$</span> (% of prescribed drugs)</h1>
+          </div>
+        </div>
+      </html>
+      <chart>
+        <search base="base_search1">
+          <query>
+            <![CDATA[
+
+            | append [search index=af-cms-drugs af_npi=$provider_npi$ 
+              | stats      sum(af__totaldrugcost) as drug_cost by af_drugname 
+              | eventstats sum(drug_cost) as total_cost
+              | eval sort_order=round(drug_cost*100/total_cost,2)
+              | fields af_drugname sort_order
+              ]
+            | stats first(af__this_drug_pct) as af__this_drug_pct, first(sort_order) as sort_order by af_drugname
+
+| sort 0 - af__this_drug_pct
+| head 50
+| fillnull
+| table af_drugname af__this_drug_pct sort_order
+            ]]>
+          </query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Drug name</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">% of total prescription</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">bar</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">1</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="height">900</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title></title>
+      <html>
+        <div>
+          <div>
+            <h1 style="color: #DDDDDD; background-color: #2f2f2f; border: 1px solid #aaaaaa; border-radius:8px; box-shadow: 5px 5px 10px #aaa;padding:5px 5px 5px 20px;margin:0;">
+              <span style="color:#f2b827;">This provider's profile</span> vs. <span style="color:#23aeea;">$typical_provider_label$ provider profile</span> for <span style="color:#ed5f42;">$provider_specialty$</span> (% of prescribed drugs)</h1>
+          </div>
+        </div>
+      </html>
+      <chart>
+        <search base="base_search1">
+          <query>
+            <![CDATA[
+            | append [search index=af-cms-drugs af_npi=$provider_npi$ 
+              | stats      sum(af__totaldrugcost) as drug_cost by af_drugname 
+              | eventstats sum(drug_cost) as total_cost
+              | eval sort_order=round(drug_cost*100/total_cost,2)
+              | fields af_drugname sort_order
+              ]
+            | stats first(af__this_drug_pct) as af__this_drug_pct, first(sort_order) as sort_order by af_drugname
+            | sort - sort_order
+            | head 50
+            | fillnull
+            | eval af_drugname=if(sort_order>0,af_drugname,""),af__this_drug_pct=if(sort_order>0,af__this_drug_pct,0)
+            | table af_drugname sort_order af__this_drug_pct
+            ]]>
+          </query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Drug name</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">% of total prescription</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">bar</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">1</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="height">900</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+</form>

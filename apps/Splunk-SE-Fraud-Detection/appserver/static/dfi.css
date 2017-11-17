@@ -1,0 +1,19 @@
+/* Cell Highlighting */
+/* 
+#forensic td {
+    background-color: #c1ffc3 !important;
+}
+*/
+
+#forensic td.range-ok {
+    background-color: #00D400 !important;
+    color: #EEE;
+    font-weight: bold;
+}
+
+#forensic td.range-error {
+    background-color: #D40000 !important;
+    color: #EEE;
+    font-weight: bold;
+}
+

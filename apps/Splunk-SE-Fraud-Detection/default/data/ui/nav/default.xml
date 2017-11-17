@@ -1,0 +1,24 @@
+<nav search_view="search" color="#00a9f8">
+  <view name="search" />
+  <view name="scenarios" default='true' />
+  <view name="dashboards" />
+  <collection label="Fraud Detection Use cases - Links">
+    <collection label="Healthcare Fraud">
+      <view name="healthcare_provider_claims_anomaly_prescription_drugs" />
+      <view name="healthcare_provider_detailed_data" />
+    </collection>
+    <collection label="Payment Cards Fraud">
+    	<view name="payment_cards_risk_analysis" />
+    	<view name="payment_cards_detailed_txns" />
+    	<view name="payment_cards_anomalous_cards__3d" />
+    	<view name="merchants_risk_analysis" />
+    </collection>
+    <collection label="Wire Transfer Fraud">
+    	<view name="fraud_overview_06" />
+    	<view name="fraud_03" />
+    	<view name="fraud_01" />
+    	<view name="fraud_04" />
+    	<view name="fraud_02" />
+    </collection>
+  </collection>
+</nav>

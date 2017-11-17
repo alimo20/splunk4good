@@ -1,0 +1,10 @@
+<dashboard script="contents.js" stylesheet="contents.css" hideEdit="true">
+  <label>Fraud Detection Use Cases</label>
+  <row depends="$_hidden_$">
+    <panel>
+      <html>
+        <div></div>
+      </html>
+    </panel>
+  </row>
+</dashboard>

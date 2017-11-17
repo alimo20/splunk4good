@@ -1,0 +1,93 @@
+<dashboard>
+  <label>About</label>
+  <row>
+    <panel>
+      <html>
+        <div>
+          <div>
+            
+<h1>Splunk Security Essentials For Fraud Detection</h1>
+
+<p>Learn how Splunk Enterprise may be used to detect various forms of fraud using the example scenarios in Splunk Security Essentials for Fraud Detection. Each detection use case includes a description of how it was implemented using the Search Processing Language (SPL) and the Machine Learning Toolkit (MLTK). The use cases include example data sets so you may run them yourself. After learning about these examples you should be ready to start experimenting with similar scenarios on your own data using Splunk Enterprise. </p>
+
+<p><b>What is the Splunk Security Essentials For Fraud Detection App?</b> <br />
+Learn ways to detect fraudsters with Splunk software by examining the example use cases in this free app. This app uses Splunk Enterprise and the power of our Search Processing Language (SPL) to showcase working examples of fraud detection. Each use case includes sample data and searches that can be used as a reference to help implement use cases in your environment. The example use cases give analysts the ability to detect potentially fraudulent activities in healthcare insurance claims, payment card purchases and wire transfers. Each use case includes a description, an explanation of how the search works and pointers to keep in mind when implementing similar use cases on your own data. </p>
+
+<p><b>Splunk Security Essentials For Fraud Detection</b><br />
+To get started, click “Use Cases” and start exploring the example use cases to see what may be relevant to your organization. After looking at the examples running on demo data, feel free to try out similar use cases in your own environment. As always with Splunk Enterprise, you should feel eager to click "Open" in search and make sure that the search matches your needs, or "Show SPL" to see a brief explanation.</p>
+
+<hr />
+<h2><b>Dependencies:</b></h2>
+<p>Splunk Security Essentials for Fraud Detection app depends on the following apps to be installed:</p>
+<ul>
+<li><em>Splunk Machine Learning Toolkit</em></li>
+<li><em>Python for Scientific Computing</em></li>
+<li><em>Clustered Single Value Map Visualization</em></li>
+<li><em>3D Scatterplot</em></li>
+</ul>
+<p>All above apps can be downloaded for free from <a href="https://splunkbase.splunk.com/" target="_blank" rel="noopener">Splunkbase</a>. When installing these apps please select the appropriate platform.</p>
+<p>Make sure these apps are properly installed in your Splunk environment before working with this app.</p>
+<hr />
+<h2><b>Data Size / Licensing:</b></h2>
+<p>The app comes with the necessary compressed data sets that are quite large and may expand into 12-15 GB of indexed data.</p>
+<p>This may generate license warning for you - however single warning should not affect your environment and in time it will clear up by itself.</p>
+<p>However if you have any concerns about this - please contact Splunk for assistance.</p>
+<hr />
+
+<h2><b>Hardware Recommendations:</b></h2>
+<p>Due to the large datasets and complex analytics that are part of certain dashboards, here are recommended minimal hardware requirements for this app to function efficiently:</p>
+<ul>
+  <li>RAM: <b>16GB</b></li>
+  <li>Free Disk space: <b>20GB</b></li>
+  <li>CPU class: <b>i7 or similar</b></li>
+</ul>
+
+<hr />
+<h2><b>Performance Impact:</b></h2>
+<p>The example use cases are intended to demonstrate possible detection logic. These use cases are not necessarily optimized for optimal performance. When implementing use cases in your environment based on this logic please make sure to optimize for your specific deployment and data sets.</p>
+<p>Each example use case includes an explanation of what the analytics are doing and how the search logic works. These searches can be copied for use as a starting point when developing your own fraud detection use cases in Splunk Enterprise.</p>
+<p>To get started, click on a use case to view results from a demo data set and learn how it was implemented. To implement similar use cases on your own data you will need to change the field names used in the example to the keys found in your own data sources.</p>
+
+<hr />
+<h2><b>Use Cases and Dashboards, description:</b></h2>
+<p> </p>
+<h3><span style="color: #008000;"><em>Healthcare Fraud</em></span></h3>
+<h4 style="padding-left: 30px;">Anomalous Providers:</h4>
+<p style="padding-left: 30px;">This use case assembles healthcare providers into peer groups based on their medical specialty. Unsupervised machine learning is then utilized to identify providers with highly abnormal prescription drug distributions and volumes in comparison to their peers. The results may be filtered down based on geography, specialty, drug type, total claims billed and anomalous drug %.</p>
+<h4 style="padding-left: 30px;">Provider Details:</h4>
+<p style="padding-left: 30px;">Details of each healthcare provider may be viewed by clicking on their name in the Anomalous Providers page. Each provider's prescription drug distribution and volumes is shown in comparison to other providers of their specialty. </p>
+<p style="padding-left: 30px;"> </p>
+<h3><span style="color: #008000;"><em>Payment Cards Fraud</em></span></h3>
+<h4 style="padding-left: 30px;">Suspect Cards:</h4>
+<p style="padding-left: 30px;">This use case uses fraud rules on card transactions to identify cards with suspect activity. Each suspect card lists the detection rules that fired including the number of times and score additions added. This use case includes multiple velocity based rules such as geographic and merchant changes which may indicate a cloned card. Clicking a suspect card number opens a view suspect card's transactions.</p>
+<h4 style="padding-left: 30px;">Card Transactions:</h4>
+<p style="padding-left: 30px;">A detailed list of transactions for a card may be viewed on this screen. The view may be filtered in a number of different ways including time and merchant.</p>
+<h4 style="padding-left: 30px;">Anomalous Cards:</h4>
+<p style="padding-left: 30px;">This use case identifies payment cards with highly anomalous transactions utilizing the Machine Learning Toolkit. The Clustering algorithm considers multiple fields in the transactions to identify the outliers. By default the "k" means clustering, k=18 algorithm is used as it gave the best results for the use case, however you may switch to other algorithms to see how the results differ. The 3D visualization is a great way to see how odd the suspect cards are when compared to all. </p>
+<h4 style="padding-left: 30px;">High Risk Merchants:</h4>
+<p style="padding-left: 30px;">This use case utilizes Splunk searches to identify merchants and card terminals that have interactions with an exceptionally high volume of risky cards. The view may be filtered by time, merchant name and risk rating. Clicking on a merchant name will open the "Card Transactions" view filtered for the specific merchant, so you may investigate the individual transactions.</p>
+
+
+<h3><span style="color: #008000;"><em>Wire Transfers</em></span></h3>
+<h4 style="padding-left: 30px;">Wire Transfer Fraud Posture:</h4>
+<p style="padding-left: 30px;">This dashboard displays aggregate metrics on wire transfer transactions, as well as, specific potentially fraudulent transactions ready for analyst review. Each originating bank account is identified by an IP address in this example data set. The application profiles each originating account in terms of the transfer destination accounts and amounts. A transfer is suspect if the destination and amount are highly anomalous based on the learned profile of the originating account. For example, if account A has never transferred to account B and the dollar value is 3x the average amount transferred by account A then it is suspect. The most suspect transfers may be fraudulent so they are exposed for an analyst to review.</p>
+
+<h4 style="padding-left: 30px;">Account Profiling:</h4>
+<p style="padding-left: 30px;">This dashboard provides a more detailed view of the processing taking place on the wire transfer transactions. The filters control the data displayed in the Fraud Events and Detailed Matching Fraudulent Transactions panes.</p>
+
+<h4 style="padding-left: 30px;">Account Behavior Profile:</h4>
+<p style="padding-left: 30px;">This view shows details for an originating account (IP address) and participation of transfers for the associated IP address. It is most useful to identify a suspect account on the Wire Transfer Fraud Posture page then come here to see details for the suspect account.</p>
+
+<h4 style="padding-left: 30px;">Wire Transfer Demo Data:</h4>
+<p style="padding-left: 30px;">This view lists the originating account (IP address) profiles used in the demo use cases. You can directly search for an account from here.</p>
+
+<hr />
+<p> </p>
+
+          </div>
+        </div>
+      </html>
+    </panel>
+  </row>
+
+</dashboard>

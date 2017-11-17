@@ -32,6 +32,8 @@ apps/user-prefs/
 !apps/*/local/
 !apps/*/local/serverclass.conf
 
+apps/Splunk-SE-Fraud-Detection/DATA/
+
 !system/
 system/*
 !system/local/

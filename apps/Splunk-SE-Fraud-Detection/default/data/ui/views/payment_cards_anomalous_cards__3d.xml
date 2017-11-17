@@ -1,0 +1,118 @@
+<form stylesheet="table_decorations.css, dark2.css" hideFooter="1">
+  <label>Payment Cards: Anomalous Cards - 3D</label>
+  <!-- Global search to populate everything in the panel -->
+  <search id="base_search">
+    <query>
+      <![CDATA[
+index=vpnet2 sourcetype=cards_txn2 | where len(txn_region)>0 | dedup _raw | sort 0 card_id, _time
+
+| streamstats window=2 current=1 dc(txn_region) as region_change, dc(merchant_name) as merchant_change, range(_time) as time_delta by card_id
+| eval region_change=region_change-1, merchant_change=merchant_change-1
+| where time_delta>0 | eval x="Throw away oldest event for each card"
+
+| stats
+  c as num_txns
+  max(txn_amount) as txn_amt_max, avg(txn_amount) as txn_amt_avg, stdev(txn_amount) as N_txn_amt_std, median(txn_amount) as txn_amt_median,
+  avg(time_delta) as N_td_avg, stdev(time_delta) as N_td_std
+  c(eval(merchant_change>0)) as merchant_changes_num
+  c(eval(region_change>0)) as region_changes_num
+  c(eval(time_delta<60   AND merchant_change>0)) as fast_merchant_change_num
+  c(eval(time_delta<7200 AND region_change>0)) as fast_region_change_num
+  by card_id
+| where num_txns>=5
+
+| eval R_merchant_changes_num_norm=merchant_changes_num/num_txns
+| eval R_region_changes_num_norm=region_changes_num/num_txns
+| eval txn_amt_std_norm=N_txn_amt_std/txn_amt_avg
+| eval td_std_norm=N_td_std/N_td_avg
+| fit StandardScaler txn* td_* R_*
+| fit PCA SS_* k=3
+$clustering_algo$
+| eventstats count as cluster_size by cluster
+| eval cluster=cluster + " (" + cluster_size + ")"
+| fields *
+]]>
+    </query>
+  </search>
+  <fieldset submitButton="true" autoRun="false">
+    <input type="dropdown" token="clustering_algo" searchWhenChanged="true">
+      <label>Clustering Algorithm</label>
+      <choice value="">All</choice>
+      <choice value="| fit DBSCAN PC_1, PC_2, PC_3 eps=2.5">DBSCAN eps=2.5</choice>
+      <choice value="| fit DBSCAN PC_1, PC_2, PC_3 eps=1.0">DBSCAN eps=1.0</choice>
+      <choice value="| fit DBSCAN PC_1, PC_2, PC_3 eps=0.5">DBSCAN eps=0.5</choice>
+      <choice value="| fit DBSCAN PC_1, PC_2, PC_3 eps=0.25">DBSCAN eps=0.25</choice>
+      <choice value="| fit DBSCAN PC_1, PC_2, PC_3 eps=0.1">DBSCAN eps=0.1</choice>
+      <choice value="| fit DBSCAN PC_1, PC_2, PC_3 eps=0.05">DBSCAN eps=0.05</choice>
+      <choice value="| fit DBSCAN PC_1, PC_2, PC_3 eps=0.01">DBSCAN eps=0.01</choice>
+      <choice value="| fit KMeans PC_1, PC_2, PC_3 k=10 random_state=84">KMeans k=10</choice>
+      <choice value="| fit KMeans PC_1, PC_2, PC_3 k=18 random_state=84">KMeans k=18</choice>
+      <default>| fit KMeans PC_1, PC_2, PC_3 k=18 random_state=84</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <html>
+        <div>
+          <div>
+            <a style="float:left;font-weight:normal;font-size:120%;color:#EA4343;border:1px solid #CAA62C;padding:2px 8px;border-radius:8px;background-color:#323200;" href="/app/$env:app$/$env:page$">Reset Dashboard</a>
+          </div>
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>3D view of data clusters</title>
+      <viz type="scatterplot3d_app.scatter3d">
+        <search base="base_search">
+          <query>dedup 50 cluster | table cluster PC_1, PC_2, PC_3</query>
+        </search>
+        <option name="height">800</option>
+        <option name="scatterplot3d_app.scatter3d.aspectMode">manual</option>
+        <option name="scatterplot3d_app.scatter3d.bgColor">black</option>
+        <option name="scatterplot3d_app.scatter3d.lineColor">#FFF</option>
+        <option name="scatterplot3d_app.scatter3d.lineWidth">0</option>
+        <option name="scatterplot3d_app.scatter3d.opacity">0.8</option>
+        <option name="scatterplot3d_app.scatter3d.rotate">$rotate$</option>
+        <option name="scatterplot3d_app.scatter3d.showLegend">1</option>
+        <option name="scatterplot3d_app.scatter3d.size">8</option>
+        <option name="scatterplot3d_app.scatter3d.speed">1</option>
+        <option name="scatterplot3d_app.scatter3d.symbol">circle</option>
+        <option name="scatterplot3d_app.scatter3d.xAspectRatio">4</option>
+        <option name="scatterplot3d_app.scatter3d.xTitle">PC_1</option>
+        <option name="scatterplot3d_app.scatter3d.yAspectRatio">2</option>
+        <option name="scatterplot3d_app.scatter3d.yTitle">PC_2</option>
+        <option name="scatterplot3d_app.scatter3d.zAspectRatio">2</option>
+        <option name="scatterplot3d_app.scatter3d.zTitle">PC_3</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Detected Anomalies:</title>
+      <table>
+        <search base="base_search">
+          <query>
+            <![CDATA[
+              | eval card_anomaly_ratio=abs(PC_1)+abs(PC_2)+abs(PC_3)
+              | sort cluster_size cluster - card_anomaly_ratio
+              | eval txn_max_avg=txn_amt_max+" / "+tostring(round(txn_amt_avg,2))
+              | table card_id num_txns txn_max_avg cluster PC_1, PC_2, PC_3 fast_*
+            ]]>
+          </query>
+        </search>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">true</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="count">20</option>
+        <drilldown>
+          <link target="_blank">
+            <![CDATA[ /app/Splunk-SE-Fraud-Detection/payment_cards_detailed_txns?form.custom_filter=*$click.value2$&form.time_period=earliest%3D0%20latest%3Dnow ]]>
+          </link>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+</form>

@@ -1,0 +1,59 @@
+<form>
+  <label>Wire Transfer Demo Data</label>
+  <description>This represent the view of profiled target accounts that are stored in "Key Value Store" database.</description>
+  <fieldset submitButton="true">
+    <input type="text" token="INPUT_KEY" searchWhenChanged="true">
+      <label>Key</label>
+      <prefix>key="</prefix>
+      <suffix>*"</suffix>
+      <seed>*</seed>
+    </input>
+    <input type="dropdown" token="INPUT_IP_ADDR" searchWhenChanged="true">
+      <label>IP Address</label>
+      <prefix>IP_ADDRESS="</prefix>
+      <suffix>*"</suffix>
+      <search>
+        <query>| inputlookup account_prof_kv | fields IP_ADDRESS | dedup IP_ADDRESS sortby IP_ADDRESS</query>
+      </search>
+      <fieldForLabel>IP_ADDRESS</fieldForLabel>
+      <fieldForValue>IP_ADDRESS</fieldForValue>
+      <initialValue>*</initialValue>
+    </input>
+    <input type="text" token="INPUT_TARGET_ACCT" searchWhenChanged="true">
+      <label>Target Account</label>
+      <seed>*</seed>
+      <prefix>TARGET_ACCT_HIST="</prefix>
+      <suffix>*"</suffix>
+      <default>*</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Search of Current Key Value Store Database</title>
+      <table>
+        <search>
+          <query>| inputlookup account_prof_kv | search $INPUT_IP_ADDR$ $INPUT_TARGET_ACCT$ | eval key=_key              | search $INPUT_KEY$ | eval PROFILED_ACCT_COUNT=mvcount(TARGET_ACCT_HIST)              | table key, IP_ADDRESS, TARGET_ACCT_HIST, PROFILED_ACCT_COUNT, TOTAL_TRANS_AMT, TOTAL_TRANS_COUNT, AVG_TRANS_AMT</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="rowNumbers">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="PROFILED_ACCT_COUNT">
+          <colorPalette type="minMidMax" maxColor="#D6563C" minColor="#FFFFFF"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+        <format type="color" field="TOTAL_TRANS_AMT">
+          <colorPalette type="minMidMax" maxColor="#D6563C" minColor="#FFFFFF"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+        <format type="color" field="AVG_TRANS_AMT">
+          <colorPalette type="minMidMax" maxColor="#1E93C6" minColor="#FFFFFF"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+</form>

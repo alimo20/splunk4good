@@ -1,0 +1,15 @@
+<dashboard>
+  <label>Entity Profiling Technique 1</label>
+  <row>
+    <panel>
+      <html>
+        <center>
+          <a href="/app/Splunk-SE-Fraud-Detection/fraud_overview_05/">
+            <img src="/static/app/Splunk-SE-Fraud-Detection/fraud_overview_04.jpg" width="1200" height="675" />
+          </a>
+        </center>
+      </html>
+    </panel>
+  </row>
+</dashboard>
+

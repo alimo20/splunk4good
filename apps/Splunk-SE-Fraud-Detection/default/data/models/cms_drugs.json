@@ -1,0 +1,246 @@
+{
+    "modelName": "cms_drugs",
+    "displayName": "cms_drugs",
+    "description": "",
+    "objectSummary": {
+        "Event-Based": 1,
+        "Transaction-Based": 0,
+        "Search-Based": 0
+    },
+    "objects": [
+        {
+            "objectName": "cms_drugs",
+            "displayName": "cms_drugs",
+            "parentName": "BaseEvent",
+            "fields": [
+                {
+                    "fieldName": "af__totalclaims",
+                    "owner": "cms_drugs",
+                    "type": "number",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af__totalclaims",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af__totaldayssupply",
+                    "owner": "cms_drugs",
+                    "type": "number",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af__totaldayssupply",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af__totaldrugcost",
+                    "owner": "cms_drugs",
+                    "type": "number",
+                    "fieldSearch": "af__totaldrugcost=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af__totaldrugcost",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_city",
+                    "owner": "cms_drugs",
+                    "type": "string",
+                    "fieldSearch": "af_city=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_city",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_country",
+                    "owner": "cms_drugs",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_country",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_drugname",
+                    "owner": "cms_drugs",
+                    "type": "string",
+                    "fieldSearch": "af_drugname=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_drugname",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_drugnamegen",
+                    "owner": "cms_drugs",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_drugnamegen",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_fname",
+                    "owner": "cms_drugs",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_fname",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_fullname",
+                    "owner": "cms_drugs",
+                    "type": "string",
+                    "fieldSearch": "af_fullname=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_fullname",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_lname",
+                    "owner": "cms_drugs",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_lname",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_npi",
+                    "owner": "cms_drugs",
+                    "type": "number",
+                    "fieldSearch": "af_npi=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_npi",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_orgname",
+                    "owner": "cms_drugs",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_orgname",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_provspec",
+                    "owner": "cms_drugs",
+                    "type": "string",
+                    "fieldSearch": "af_provspec=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_provspec",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_state",
+                    "owner": "cms_drugs",
+                    "type": "string",
+                    "fieldSearch": "af_state=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_state",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "_time",
+                    "owner": "BaseEvent",
+                    "type": "timestamp",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "_time",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "host",
+                    "owner": "BaseEvent",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "host",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "source",
+                    "owner": "BaseEvent",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "source",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "sourcetype",
+                    "owner": "BaseEvent",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "sourcetype",
+                    "comment": ""
+                }
+            ],
+            "calculations": [],
+            "constraints": [
+                {
+                    "search": "index=af-cms-drugs",
+                    "owner": "cms_drugs"
+                }
+            ],
+            "lineage": "cms_drugs"
+        }
+    ],
+    "objectNameList": [
+        "cms_drugs"
+    ]
+}

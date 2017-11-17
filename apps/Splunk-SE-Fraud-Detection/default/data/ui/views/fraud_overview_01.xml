@@ -1,0 +1,15 @@
+<dashboard>
+  <label>Fraud Profiling Platform Overview</label>
+  <row>
+    <panel>
+      <html>
+        <center>
+          <a href="/app/Splunk-SE-Fraud-Detection/fraud_overview_02/">
+            <img src="/static/app/Splunk-SE-Fraud-Detection/fraud_overview_01.jpg" width="1200" height="675" />
+          </a>
+        </center>
+      </html>
+    </panel>
+  </row>
+</dashboard>
+

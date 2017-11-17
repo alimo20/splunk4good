@@ -1,0 +1,186 @@
+{
+    "modelName": "Card_Transactions",
+    "displayName": "Card Transactions",
+    "description": "",
+    "objectSummary": {
+        "Event-Based": 1,
+        "Transaction-Based": 0,
+        "Search-Based": 0
+    },
+    "objects": [
+        {
+            "objectName": "card_transactions",
+            "displayName": "card_transactions",
+            "parentName": "BaseEvent",
+            "fields": [
+                {
+                    "fieldName": "card_number_masked",
+                    "owner": "card_transactions",
+                    "type": "string",
+                    "fieldSearch": "card_number_masked=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "card_number_masked",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "retailer_name",
+                    "owner": "card_transactions",
+                    "type": "string",
+                    "fieldSearch": "retailer_name=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "retailer_name",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "txn_country",
+                    "owner": "card_transactions",
+                    "type": "string",
+                    "fieldSearch": "txn_country=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "txn_country",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "txn_invoice_num",
+                    "owner": "card_transactions",
+                    "type": "number",
+                    "fieldSearch": "txn_invoice_num=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "txn_invoice_num",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "txn_terminal_id",
+                    "owner": "card_transactions",
+                    "type": "string",
+                    "fieldSearch": "txn_terminal_id=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "txn_terminal_id",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "txn_trace",
+                    "owner": "card_transactions",
+                    "type": "number",
+                    "fieldSearch": "txn_trace=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "txn_trace",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "txn_type",
+                    "owner": "card_transactions",
+                    "type": "string",
+                    "fieldSearch": "txn_type=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "txn_type",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "txn_amount",
+                    "owner": "card_transactions",
+                    "type": "number",
+                    "fieldSearch": "txn_amount=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "txn_amount",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "card_id",
+                    "owner": "card_transactions",
+                    "type": "number",
+                    "fieldSearch": "card_id=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "card_id",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "_time",
+                    "owner": "BaseEvent",
+                    "type": "timestamp",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "_time",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "host",
+                    "owner": "BaseEvent",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "host",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "source",
+                    "owner": "BaseEvent",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "source",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "sourcetype",
+                    "owner": "BaseEvent",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "sourcetype",
+                    "comment": ""
+                }
+            ],
+            "calculations": [],
+            "constraints": [
+                {
+                    "search": "index=vpnet sourcetype=cards_txn",
+                    "owner": "card_transactions"
+                }
+            ],
+            "lineage": "card_transactions"
+        }
+    ],
+    "objectNameList": [
+        "card_transactions"
+    ]
+}

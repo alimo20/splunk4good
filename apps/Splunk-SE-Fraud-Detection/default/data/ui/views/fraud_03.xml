@@ -1,0 +1,202 @@
+<form>
+  <label>Wire Transfer Fraud Posture</label>
+  <fieldset submitButton="true">
+    <input type="time" token="field1" searchWhenChanged="true">
+      <label></label>
+      <default>
+        <earliest>-15m</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Overall Fraud Status Posture</title>
+      <single>
+        <title>Fraud Status</title>
+        <search>
+          <query>index=af_wt_fraud_notables | stats count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="afterLabel">Transactions</option>
+        <option name="beforeLabel">Total</option>
+        <option name="underLabel">Current Fraud Transaction Status</option>
+        <option name="linkView">search</option>
+        <option name="drilldown">none</option>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x65a637","0x6db7c6","0xf7bc38","0xf58f39","0xd93f3c"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="trendInterval">auto</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+      <single>
+        <title>Total Protected Asset Amount</title>
+        <search>
+          <query>index=af_wt_fraud_notables | stats sum(AMOUNT) as AMOUNT</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="linkView">search</option>
+        <option name="afterLabel">Dollars</option>
+        <option name="beforeLabel">$</option>
+        <option name="underLabel">Total Amount Asset Protected</option>
+      </single>
+      <single>
+        <title>High Deviation Amount Fraud Assets</title>
+        <search>
+          <query>index=af_wt_fraud_notables DEVIATION_RATIO&gt;100 | stats sum(AMOUNT) as AMOUNT</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="afterLabel">Dollars</option>
+        <option name="beforeLabel">$</option>
+        <option name="underLabel">High Deviation Behavior AMOUNT</option>
+        <option name="linkView">search</option>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x65a637","0xf58f39"]</option>
+        <option name="rangeValues">[100]</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="trendInterval">auto</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>High Risk Fraud Transaction Status</title>
+      <chart>
+        <title>Fraud Status with Wired behavior amount deviation higher then 100% of average wire amounts per Customer</title>
+        <search>
+          <query>index=af_wt_fraud_notables DEVIATION_RATIO&gt;100 | timechart count, sum(AMOUNT) as AMOUNT</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.chart.overlayFields">AMOUNT</option>
+        <option name="charting.axisTitleY2.text">Dollar Amount</option>
+        <option name="charting.axisTitleY.text">Transaction Count</option>
+        <option name="charting.chart.showDataLabels">minmax</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Top Fraud Status by Customer</title>
+      <chart>
+        <title>Top Fraud Amounts by Customer</title>
+        <search>
+          <query>index=af_wt_fraud_notables DEVIATION_RATIO&gt;100 | stats  count, sum(AMOUNT) as AMOUNT by IP_ADDRESS | sort - count | head 10</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">bar</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.chart.overlayFields">AMOUNT</option>
+        <option name="charting.axisTitleY2.text">Dollar Amount</option>
+        <option name="charting.axisTitleY.text">Transaction Count</option>
+        <option name="charting.chart.showDataLabels">minmax</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+      </chart>
+    </panel>
+    <panel>
+      <table>
+        <title>Top Fraud Amounts by Customer : Table</title>
+        <search>
+          <query>index=af_wt_fraud_notables DEVIATION_RATIO&gt;100 | stats  count, sum(AMOUNT) as AMOUNT, last(AVG_TRANS_AMT) as AVG_TRANS_AMT, avg(DEVIATION_RATIO) as DEVIATION_RATIO by IP_ADDRESS | sort - count | head 10</query>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">heatmap</option>
+        <option name="drilldown">cell</option>
+        <option name="rowNumbers">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="IP_ADDRESS">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Detailed Fraud Incidents</title>
+      <input type="text" token="SEARCH_PATTERN" searchWhenChanged="true">
+        <label>SEARCH PATTERN</label>
+        <default>*</default>
+        <seed>*</seed>
+      </input>
+      <input type="time" token="TIME2" searchWhenChanged="true">
+        <label>SEARCH TIME RANGE</label>
+        <default>
+          <earliest>-4h@m</earliest>
+          <latest>now</latest>
+        </default>
+      </input>
+      <table>
+        <search>
+          <query>index=af_wt_fraud_notables $SEARCH_PATTERN$ | table _time, search_name, IP_ADDRESS, CURRENT_TRANS_ACCT, AMOUNT , AVG_TRANS_AMT, AVG_TRANS_AMT, DEVIATION_RATIO | where DEVIATION_RATIO&gt;50 | sort - _time</query>
+          <earliest>$TIME2.earliest$</earliest>
+          <latest>$TIME2.latest$</latest>
+        </search>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <option name="dataOverlayMode">heatmap</option>
+        <option name="drilldown">cell</option>
+        <option name="count">10</option>
+      </table>
+    </panel>
+  </row>
+</form>

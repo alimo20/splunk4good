@@ -1,0 +1,63 @@
+<dashboard>
+  <label>Generate Your Own Transaction</label>
+  <row>
+    <panel>
+      <html>
+
+        This is a wire transfer simulation tool. You can define your own user and wire money to a target account. Splunk fraud profiling app will learn your behavior and detect any activities that are not likely to be you.
+<blockquote>Splunk Bank protects my assets a 100%.  The least thing I have to worry about is the security of my assets in a bank!</blockquote>
+        
+<legend>Instruction for transaction simulation</legend>
+
+        Here is the instriation for having Splunk to learn about your behaivior
+        _
+        _
+        
+        <form id="wire_fund" action="http://demo-fraud.splunkoxygen.com/bin/wire_fund.php" method="POST">
+<fieldset>
+            <legend>Your Splunk Bank Account Info</legend>
+<div>
+              <label>
+                <label>Your Account Information :
+<select id="source_bank" name="source_bank">
+<option value="bank_of_splunk">Bank of Splunk</option>
+</select>
+<select id="source_acct" name="source_acct">
+<option value="00000007">00000007</option>
+</select>
+                </label>
+              </label>
+<div>
+                <label>Your IP Address
+<input id="source_ip" name="source_ip" required="" type="text" placeholder="0.0.0.0"/>
+</label>
+              </div>
+</div>
+          </fieldset>
+<fieldset>
+            <legend>Target Bank Account Info</legend>
+<div>
+              <label>Target Wires Account Information :
+<select id="target_bank" name="target_bank">
+<option value="bank_of_usa">Bank of USA</option>
+<option value="bank_of_england">Bank of England</option>
+<option value="bank_of_splunk">Bank of Splunk</option>
+</select>
+<input id="target_bank" name="target_acct" required="" type="text" placeholder="Select Target Account"/>
+</label>
+            </div>
+<div>
+              <label>Transfer Amount
+<input id="wire_amount" name="wire_amount" required="" type="date"/>
+</label>
+            </div>
+          </fieldset>
+<div>
+            <button type="submit">Submit Fund Tranfer Request</button>
+          </div>
+</form>
+        
+      </html>
+    </panel>
+  </row>
+</dashboard>

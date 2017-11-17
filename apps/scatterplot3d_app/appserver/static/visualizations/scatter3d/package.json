@@ -1,0 +1,22 @@
+{
+  "name": "scatterplot3d",
+  "version": "1.0.0",
+  "description": "scatterplot3d",
+  "main": "visualization.js",
+  "scripts": {
+    "build": "$SPLUNK_HOME/bin/splunk cmd node ./node_modules/webpack/bin/webpack.js",
+    "devbuild": "$SPLUNK_HOME/bin/splunk cmd node ./node_modules/webpack/bin/webpack.js --progress",
+    "watch": "$SPLUNK_HOME/bin/splunk cmd node ./node_modules/webpack/bin/webpack.js -d --watch --progress"
+  },
+  "author": "Xander Johnson",
+  "license": "MIT",
+  "devDependencies": {
+    "standard": "^10.0.3",
+    "webpack": "^1.12.6"
+  },
+  "dependencies": {
+    "jquery": "^2.2.0",
+    "plotly.js": "^1.29.3",
+    "underscore": "^1.8.3"
+  }
+}

@@ -1,0 +1,294 @@
+{
+    "modelName": "cms_proc",
+    "displayName": "cms_proc",
+    "description": "",
+    "objectSummary": {
+        "Event-Based": 1,
+        "Transaction-Based": 0,
+        "Search-Based": 0
+    },
+    "objects": [
+        {
+            "objectName": "cms_proc",
+            "displayName": "cms_proc",
+            "parentName": "BaseEvent",
+            "fields": [
+                {
+                    "fieldName": "af_city",
+                    "owner": "cms_proc",
+                    "type": "string",
+                    "fieldSearch": "af_city=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_city",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_country",
+                    "owner": "cms_proc",
+                    "type": "string",
+                    "fieldSearch": "af_country=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_country",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_fname",
+                    "owner": "cms_proc",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_fname",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_fullname",
+                    "owner": "cms_proc",
+                    "type": "string",
+                    "fieldSearch": "af_fullname=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_fullname",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_gender",
+                    "owner": "cms_proc",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_gender",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_lname",
+                    "owner": "cms_proc",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_lname",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_npi",
+                    "owner": "cms_proc",
+                    "type": "number",
+                    "fieldSearch": "af_npi=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_npi",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_orgname",
+                    "owner": "cms_proc",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_orgname",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_proccode",
+                    "owner": "cms_proc",
+                    "type": "number",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_proccode",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_procdescr",
+                    "owner": "cms_proc",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_procdescr",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_provcreds",
+                    "owner": "cms_proc",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_provcreds",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_proventtype",
+                    "owner": "cms_proc",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_proventtype",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_provspec",
+                    "owner": "cms_proc",
+                    "type": "string",
+                    "fieldSearch": "af_provspec=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_provspec",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_state",
+                    "owner": "cms_proc",
+                    "type": "string",
+                    "fieldSearch": "af_state=*",
+                    "required": true,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_state",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_straddr1",
+                    "owner": "cms_proc",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_straddr1",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_straddr2",
+                    "owner": "cms_proc",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_straddr2",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_zip",
+                    "owner": "cms_proc",
+                    "type": "number",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_zip",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "af_zip4",
+                    "owner": "cms_proc",
+                    "type": "number",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "af_zip4",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "_time",
+                    "owner": "BaseEvent",
+                    "type": "timestamp",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "_time",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "host",
+                    "owner": "BaseEvent",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "host",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "source",
+                    "owner": "BaseEvent",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "source",
+                    "comment": ""
+                },
+                {
+                    "fieldName": "sourcetype",
+                    "owner": "BaseEvent",
+                    "type": "string",
+                    "fieldSearch": "",
+                    "required": false,
+                    "multivalue": false,
+                    "hidden": false,
+                    "editable": true,
+                    "displayName": "sourcetype",
+                    "comment": ""
+                }
+            ],
+            "calculations": [],
+            "constraints": [
+                {
+                    "search": "index=af-cms-proc",
+                    "owner": "cms_proc"
+                }
+            ],
+            "lineage": "cms_proc"
+        }
+    ],
+    "objectNameList": [
+        "cms_proc"
+    ]
+}
