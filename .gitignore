@@ -33,6 +33,7 @@ apps/user-prefs/
 !apps/*/local/serverclass.conf
 
 apps/Splunk-SE-Fraud-Detection/DATA/
+apps/Splunk-SE-Fraud-Detection/bin/output/
 
 !system/
 system/*
