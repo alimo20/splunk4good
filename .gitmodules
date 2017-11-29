@@ -43,3 +43,6 @@
 [submodule "master-apps/irs_990_TA"]
 	path = master-apps/irs_990_TA
 	url = git@github.com:hobbes3/irs_990_TA.git
+[submodule "master-apps/Splunk-SE-Fraud-Detection_TA"]
+	path = master-apps/Splunk-SE-Fraud-Detection_TA
+	url = git@github.com:hobbes3/Splunk-SE-Fraud-Detection_TA.git
