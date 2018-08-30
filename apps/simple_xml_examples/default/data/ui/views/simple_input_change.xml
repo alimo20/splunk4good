@@ -1,6 +1,6 @@
 <dashboard>
   <label>Input Multi-token Setter</label>
-  <description></description>
+  <description>Set multiple tokens within form inputs to drive multiple searches, better labeling, and more.</description>
   <row>
     <panel>
       <title>Multi-token setter - conditional logic</title>

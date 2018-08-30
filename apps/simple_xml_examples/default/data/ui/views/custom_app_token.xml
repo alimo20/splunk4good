@@ -1,6 +1,7 @@
 <dashboard script="set_app_token.js,set_user_token.js">
 
-    <label>Define custom tokens</label>
+    <label>Custom token definitions</label>
+    <description>Use Javascript to set tokens in the panel titles, html panels, and for drilldown.</description>
 
     <row>
         <panel>

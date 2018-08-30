@@ -1,6 +1,6 @@
 <dashboard>
-    <label>Dashboard Element - Maps</label>
-    <description>Geographical data plotting on integrated maps.</description>
+    <label>Map Element</label>
+    <description>Plot geographical data on integrated maps.</description>
     <row>
 
         <map>

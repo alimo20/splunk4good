@@ -1,32 +1,86 @@
 {
     "Server Response Time": {
-      "value": "| inputlookup hostperf.csv | eval _time=strptime(_time, \"%Y-%m-%dT%H:%M:%S.%3Q%z\") | timechart span=10m max(rtmax) as responsetime | head 1000",
-      "label": "Server Response Time",
-      "outlierVariable": "responsetime",
-      "thresholdMethod": "MAD",
-      "thresholdMultiplier": 20,
-      "windowSize": 200
+        "title": "Detect Outliers in Server Response Time",
+        "type": "detect_numeric_outliers",
+        "dataSource": {
+            "searchString": "| inputlookup hostperf.csv | eval _time=strptime(_time, \"%Y-%m-%dT%H:%M:%S.%3Q%z\") | timechart span=10m max(rtmax) as responsetime | head 1000",
+            "type": "SPL",
+            "earliestTime": "",
+            "latestTime": ""
+        },
+        "searchStages": [
+            {
+                "type": "outlierdetection",
+                "outlierFields": [
+                    "responsetime"
+                ],
+                "thresholdMethod": "MAD",
+                "thresholdMultiplier": 20,
+                "windowSize": 200,
+                "useCurrentPoint": true
+            }
+        ]
     },
     "Employee Logins (prediction errors)": {
-      "value": "| inputlookup logins.csv | predict logins as prediction algorithm=LLP future_timespan=150 holdback=0 | where prediction!=\"\" AND logins!=\"\" | eval residual = prediction - logins",
-      "label": "Employee Logins (prediction errors)",
-      "outlierVariable": "residual",
-      "thresholdMethod": "MAD",
-      "thresholdMultiplier": 9,
-      "windowSize": 72
+        "title": "Detect Outliers in Number of Logins (vs. Predicted Value)",
+        "type": "detect_numeric_outliers",
+        "dataSource": {
+            "searchString": "| inputlookup logins.csv | predict logins as prediction algorithm=LLP future_timespan=150 holdback=0 | where prediction!=\"\" AND logins!=\"\" | eval residual = prediction - logins",
+            "type": "SPL",
+            "earliestTime": "",
+            "latestTime": ""
+        },
+        "searchStages": [
+            {
+                "type": "outlierdetection",
+                "outlierFields": [
+                    "residual"
+                ],
+                "thresholdMethod": "MAD",
+                "thresholdMultiplier": 9,
+                "windowSize": 72,
+                "useCurrentPoint": true
+            }
+        ]
     },
     "Supermarket Purchases": {
-      "value": "| inputlookup supermarket.csv | head 1000",
-      "label": "Supermarket Purchases",
-      "outlierVariable": "quantity",
-      "thresholdMethod": "Avg",
-      "thresholdMultiplier": 5
+        "title": "Detect Outliers in Supermarket Purchases",
+        "type": "detect_numeric_outliers",
+        "dataSource": {
+            "searchString": "| inputlookup supermarket.csv | head 1000",
+            "type": "SPL",
+            "earliestTime": "",
+            "latestTime": ""
+        },
+        "searchStages": [
+            {
+                "type": "outlierdetection",
+                "outlierFields": [
+                    "quantity"
+                ],
+                "thresholdMethod": "stdev",
+                "thresholdMultiplier": 5
+            }
+        ]
     },
     "Power Plant Humidity": {
-      "value": "| inputlookup power_plant.csv",
-      "label": "Power Plant Humidity",
-      "outlierVariable": "Humidity",
-      "thresholdMethod": "Avg",
-      "thresholdMultiplier": 3
+        "title": "Detect Outliers in Power Plant Humidity",
+        "type": "detect_numeric_outliers",
+        "dataSource": {
+            "searchString": "| inputlookup power_plant.csv",
+            "type": "SPL",
+            "earliestTime": "",
+            "latestTime": ""
+        },
+        "searchStages": [
+            {
+                "type": "outlierdetection",
+                "outlierFields": [
+                    "Humidity"
+                ],
+                "thresholdMethod": "stdev",
+                "thresholdMultiplier": 3
+            }
+        ]
     }
 }

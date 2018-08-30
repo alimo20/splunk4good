@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 # Copyright (C) 2015-2017 Splunk Inc. All Rights Reserved.
 import errno
+
 import pandas as pd
 
 import cexc
-import conf
 import models
-
+from util.base_util import MLSPLNotImplementedError
+from util.mlspl_loader import MLSPLConf
 from FitBatchProcessor import FitBatchProcessor
+from util.lookup_exceptions import ModelNotFoundException
 
 logger = cexc.get_logger(__name__)
 messages = cexc.get_messages_logger()
@@ -24,27 +26,29 @@ class FitPartialProcessor(FitBatchProcessor):
         - handling new categorical values as specified by the unseen_value param
     """
 
-    def __init__(self, process_options):
+    def __init__(self, process_options, searchinfo):
         """Initialize options for processor.
 
         Args:
-            dict: process options
+            process_options (dict): process options
+            client (SplunkRestProxy): splunk rest bouncer wrapper
         """
         # Split apart process & algo options
-        self.process_options, self.algo_options = self.split_options(process_options)
-
-        # TODO: delegate this to the relevant algorithms
-        self.process_options['handle_new_cat'] = self.get_unseen_value_behavior(process_options)
+        self.namespace = process_options.pop('namespace', None)
+        mlspl_conf = MLSPLConf(searchinfo)
+        self.process_options, self.algo_options = self.split_options(process_options, mlspl_conf)
+        self.searchinfo = searchinfo
 
         # Convenience / readability
         self.tmp_dir = self.process_options['tmp_dir']
 
         # Try load algo from a saved model
-        self.algo = self.initialize_algo_from_model(self.algo_options)
+        self.algo, self.algo_options = self.initialize_algo_from_model(self.algo_options, self.searchinfo,
+                                                                       namespace=self.namespace)
         if self.algo is None:
             # Initialize algo from scratch
-            self.algo = self.initialize_algo(self.algo_options)
-            # check if this algo supports partial_fit
+            self.algo = self.initialize_algo(self.algo_options, self.searchinfo)
+            # Ensure model name is present
             self.check_algo_options(self.algo, self.algo_options)
         else:
             # Check if the loaded model supports partial_fit
@@ -53,49 +57,27 @@ class FitPartialProcessor(FitBatchProcessor):
             self.warn_about_new_parameters()
 
         self.save_temp_model(self.algo_options, self.tmp_dir)
-        self.resource_limits = self.load_resource_limits(self.algo)
+        self.resource_limits = self.load_resource_limits(self.algo, mlspl_conf)
 
     @staticmethod
-    def get_unseen_value_behavior(process_options):
-        """Parse unseen_value if present & determine unseen_value behavior.
-
-        Args:
-            dict: process options
-
-        Returns:
-            str: string describing how to handle new categorical values during
-                a partial fit. The values can be seen in mlspl.conf
-        """
-
-        handle_new_cat = conf.get_mlspl_prop('handle_new_cat', stanza='default', default='default')
-
-        if 'params' in process_options:
-            if process_options['params'].get('unseen_value', []):
-                handle_new_cat = process_options['params']['unseen_value']
-                del process_options['params']['unseen_value']
-
-        return handle_new_cat
-
-    @staticmethod
-    def initialize_algo_from_model(algo_options):
+    def initialize_algo_from_model(algo_options, searchinfo, namespace):
         """Init algo from model if possible, and catch discrepancies.
 
         Args:
-            dict: algo options
+            algo_options (dict): algo options
+            searchinfo (dict): information required for search
+            namespace (string): namespace, 'user' or 'app'
         Returns:
-            algo: initialized algo
+            algo (object/None): loaded algo or None
+            algo_options (dict): algo option
         """
+        algo = None
         if 'model_name' in algo_options:
             try:
-                model_algo_name, algo, model_options = models.load_model(
-                    algo_options['model_name'])
-            except (OSError, IOError) as e:
-                if e.errno == errno.ENOENT:
-                    # No existing model with matching name found
-                    algo = None
-                else:
-                    raise RuntimeError('Failed to load model "%s". Error: %s.' % (
-                        algo_options['model_name'], str(e)))
+                model_algo_name, algo, model_options = models.base.load_model(
+                    algo_options['model_name'], searchinfo, namespace=namespace)
+            except ModelNotFoundException:
+                algo = None
             except Exception as e:
                 cexc.log_traceback()
                 raise RuntimeError('Failed to load model "%s". Exception: %s.' % (
@@ -105,7 +87,13 @@ class FitPartialProcessor(FitBatchProcessor):
                 FitPartialProcessor.catch_model_discrepancies(algo_options,
                                                               model_options,
                                                               model_algo_name)
-            return algo
+
+                # Pre 2.2 models do not save algo_name in their model options
+                # So we must re add them here to be compatible with 2.2+ versions
+                model_options['algo_name'] = algo_options['algo_name']
+                algo_options = model_options
+
+        return algo, algo_options
 
     @staticmethod
     def warn_about_new_parameters():
@@ -118,9 +106,9 @@ class FitPartialProcessor(FitBatchProcessor):
         """Check to see if algo name or input columns are different from the model.
 
         Args:
-            dict: algo options
-            dict: model options
-            str: name of algo from loaded model
+            algo_options (dict): algo options
+            model_options (dict): model options
+            model_algo_name (str): name of algo from loaded model
         """
         # Check for discrepancy between algorithm name of the model loaded and algorithm name specified in input
         try:
@@ -130,10 +118,11 @@ class FitPartialProcessor(FitBatchProcessor):
                 model_algo_name, algo_options['algo_name']))
 
         # Check for discrepancy between model columns and input columns
-        if (model_options['variables'] != algo_options.get('variables', []) or
-                ('explanatory_variables' in algo_options and
-                         model_options['explanatory_variables'] != algo_options.get(
-                         'explanatory_variables', []))):
+        model_target = model_options.get('target_variable', [])
+        algo_target = algo_options.get('target_variable', [])
+        model_features = model_options.get('feature_variables', [])
+        algo_features = algo_options.get('feature_variables', [])
+        if (model_target != algo_target or model_features != algo_features):
             raise RuntimeError("Model was trained on data with different columns than given input")
 
     @staticmethod
@@ -141,59 +130,59 @@ class FitPartialProcessor(FitBatchProcessor):
         """Validate processor options.
 
         Args:
-            algo: initialized algo
-            dict: algo options
+            algo (object): initialized algo
+            algo_options (dict): algo options
         """
-        if not hasattr(algo, 'partial_fit'):
-            raise RuntimeError('Algorithm "%s" does not support partial fit' % algo_options['algo_name'])
-
         if 'model_name' not in algo_options:
             raise RuntimeError('You must save a model if you fit the model with partial_fit enabled')
 
     @staticmethod
-    def fit(algo, df, handle_new_cat):
+    def fit(algo, df, options):
         """Perform the partial fit.
 
         Args:
-            algo: algo object
-            dataframe: dataframe to fit on
-            str: handle new cat value for partial fit
+            algo (object): algo object
+            df (dataframe): dataframe to fit on
+            options (dict): process options
+
         Returns:
-            algo: updated algorithm
+            algo (object): updated algorithm
         """
-        algo.partial_fit(df.copy(), handle_new_cat)
+        try:
+            algo.partial_fit(df, options)
+        except MLSPLNotImplementedError:
+            raise RuntimeError('Algorithm "%s" does not support partial fit' % options['algo_name'])
+        except Exception as e:
+            cexc.log_traceback()
+            raise RuntimeError('Error while fitting "%s" model: %s' % (options['algo_name'], str(e)))
+
         return algo
 
     def receive_input(self, df):
-        """Override batch processor, simply pass df to self.
+        """Override FitBatchProcessor, simply attach df to self.
 
         Args:
-            dataframe: dataframe to receive
+            df (dataframe): dataframe to receive
         """
         self.df = df
 
     def process(self):
         """Run fit and update algo."""
+        self.algo = self.match_and_assign_variables(self.df.columns, self.algo,
+                                                    self.algo_options)
         self.algo = self.fit(self.algo,
                              self.df,
-                             self.process_options['handle_new_cat'])
+                             self.algo_options)
 
     def get_output(self):
         """Predict if necessary & return appropriate dataframe.
 
         Returns:
-            dataframe: output dataframe
+            (dataframe): output dataframe
         """
-        output_name = self.algo_options.get('output_name', None)
-        prediction_df = self.algo.predict(self.df.copy(),
-                                          options=self.algo_options,
-                                          output_name=output_name
-                                          )
-        self.df.drop(prediction_df.columns,
-                     axis=1, errors='ignore',
-                     inplace=True
-                     )
-        self.df = pd.concat([self.df, prediction_df],
-                            axis=1, join_axes=[self.df.index]
-                            )
+        self.df = self.algo.apply(self.df, self.algo_options)
+        if self.df is None:
+            messages.warn('Apply method did not return any results.')
+            self.df = pd.DataFrame()
+
         return self.df

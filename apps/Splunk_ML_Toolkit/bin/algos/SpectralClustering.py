@@ -1,15 +1,16 @@
 #!/usr/bin/env python
+
+import numpy as np
 from sklearn.cluster import SpectralClustering as _SpectralClustering
 from sklearn.preprocessing import StandardScaler
-import pandas as pd
-import numpy as np
 
-from util.base_util import match_field_globs
+from base import BaseAlgo, ClustererMixin
+from util import df_util
 from util.param_util import convert_params
-from base import *
 
 
-class SpectralClustering(BaseMixin):
+class SpectralClustering(ClustererMixin, BaseAlgo):
+
     def __init__(self, options):
         self.handle_options(options)
 
@@ -18,37 +19,37 @@ class SpectralClustering(BaseMixin):
             floats=['gamma'],
             strs=['affinity'],
             ints=['k', 'random_state'],
-            aliases={
-                'k': 'n_clusters',
-                'random_state': 'random_state'
-            }
+            aliases={'k': 'n_clusters'},
         )
 
         self.estimator = _SpectralClustering(**out_params)
         self.scaler = StandardScaler()
 
-    def fit_predict(self, X, options=None, output_name=None):
-        if options is not None:
-            self.variables = match_field_globs(X.columns, self.variables)
-            self.drop_unused_fields(X, self.variables)
-            self.drop_na_columns(X)
-            self.warn_on_missing_fields(X, self.variables)
-            self.filter_non_numeric(X)
-            X = pd.get_dummies(X, prefix_sep='=', sparse=True)
+    def fit(self, df, options):
+        # Make a copy of data, to not alter original dataframe
+        X = df.copy()
 
-            output_name = 'cluster'
-            output = pd.DataFrame({output_name: np.empty(len(X))})
-            output[output_name] = np.nan
+        X, nans, _ = df_util.prepare_features(
+            X=X,
+            variables=self.feature_variables,
+            mlspl_limits=options.get('mlspl_limits'),
+        )
 
-            nans = self.drop_na_rows(X)
+        if len(X) > 0 and len(X) <= self.estimator.n_clusters:
+            raise RuntimeError(
+                "k must be smaller than the number of events used as input")
 
-            if len(X) > 0 and len(X) <= self.estimator.n_clusters:
-                raise RuntimeError("k must be smaller than the number of events used as input")
+        scaled_X = self.scaler.fit_transform(X.values)
+        y_hat = self.estimator.fit_predict(scaled_X)
+        y_hat = ['' if np.isnan(v) else str('%.0f' % v) for v in y_hat]
 
-            scaled = self.scaler.fit_transform(X.values)
-            y_hat = self.estimator.fit_predict(scaled)
-            y_hat = ['' if np.isnan(v) else str('%.0f' % v) for v in y_hat]
+        default_name = 'cluster'
+        output_name = options.get('output_name', default_name)
 
-            output.ix[~nans, output_name] = y_hat
-
-            return output
+        output = df_util.create_output_dataframe(
+            y_hat=y_hat,
+            nans=nans,
+            output_names=output_name,
+        )
+        df = df_util.merge_predictions(df, output)
+        return df

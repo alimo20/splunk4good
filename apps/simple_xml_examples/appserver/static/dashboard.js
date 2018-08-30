@@ -169,12 +169,19 @@ require([
                 }
 
                 // Create the source code viewer
+                var footer = $('#footer');
+                var SourceViewerEl = $('<div/>');
+                if (footer.length > 0) {
+                  SourceViewerEl.insertBefore(footer);
+                } else {
+                  SourceViewerEl.appendTo($('body'));
+                }
+
                 new SourceViewer({
                     model: model,
                     collection: sourceFileModels,
-                    el: $('<div/>').insertBefore($('#footer'))
+                    el: SourceViewerEl
                 }).render();
-
                 $('.main-section-body.dashboard-body').css('min-height', '100px');
             });
         });

@@ -29,8 +29,14 @@ CODECS = {
     ('numpy', 'complex256'): 'NDArrayWrapperCodec',
     ('numpy', 'dtype'): 'DTypeCodec',
 
+    ('mtrand', 'RandomState'): 'mtrandCodec',
+
+    ('scipy.sparse.csr', 'csr_matrix'): 'SparseMatrixCodec',
+
     ('pandas.core.frame', 'DataFrame'): 'SimpleObjectCodec',
     ('pandas.core.index', 'Index'): 'IndexCodec',
+    ('pandas.core.indexes.base', 'Index'): 'IndexCodec',
+    ('pandas.core.indexes.range', 'RangeIndex'): 'IndexCodec',
     ('pandas.core.index', 'Int64Index'): 'IndexCodec',
     ('pandas.core.internals', 'BlockManager'): 'BlockManagerCodec'
 }
@@ -219,9 +225,25 @@ class TreeCodec(BaseCodec):
         import sklearn.tree
 
         init_args = obj['init_args']
+
         state = obj['state']
 
+        # Add max_depth for backwards compatibility with PSC 1.2
+        # Previous version did not set the max_depth in the state when calling __getstate__
+        # https://github.com/scikit-learn/scikit-learn/blob/51a765acfa4c5d1ec05fc4b406968ad233c75162/sklearn/tree/_tree.pyx#L615
+
+        # and has been added in sklearn 0.18 to be used in both __getstate__ and __setstate__
+        # https://github.com/scikit-learn/scikit-learn/blob/ef5cb84a805efbe4bb06516670a9b8c690992bd7/sklearn/tree/_tree.pyx#L649
+        
+        # Older models will not have the max_depth in their stored state, such that a key error is raised.
+        # the max_depth is only used in the decision path method, which we don't currently use
+        # and is used to init an np array of zeros in version 0.18:
+        # https://github.com/scikit-learn/scikit-learn/blob/ef5cb84a805efbe4bb06516670a9b8c690992bd7/sklearn/tree/_tree.pyx#L926
+        # https://github.com/scikit-learn/scikit-learn/blob/ef5cb84a805efbe4bb06516670a9b8c690992bd7/sklearn/tree/_tree.pyx#L991
+        state['max_depth'] = 0
+
         t = sklearn.tree._tree.Tree(*init_args)
+
         t.__setstate__(state)
 
         return t
@@ -295,3 +317,57 @@ class TypeCodec(BaseCodec):
         module = importlib.import_module(obj['type'][0])
 
         return getattr(module, obj['type'][1])
+
+class mtrandCodec(BaseCodec):
+    @classmethod
+    def encode(cls, obj):
+        import numpy as np
+        assert type(obj) == np.random.mtrand.RandomState
+
+        init_args = obj.__reduce__()[1]
+        state = obj.__getstate__()
+
+        return {
+            '__mlspl_type': [type(obj).__module__, type(obj).__name__],
+            'init_args': init_args,
+            'state': state
+        }
+
+    @classmethod
+    def decode(cls, obj):
+        from numpy.random.mtrand import RandomState
+
+        init_args = obj['init_args']
+        state = obj['state']
+
+        t = RandomState(*init_args)
+        t.__setstate__(state)
+
+        return t
+
+class SparseMatrixCodec(BaseCodec):
+    @classmethod
+    def encode(cls, obj):
+        import numpy as np
+        from scipy import sparse
+        assert type(obj) == sparse.csr.csr_matrix
+
+        sio = StringIO()
+        np.savez(sio, data=obj.data, indices=obj.indices,
+                 indptr=obj.indptr, shape=obj.shape)
+        return {
+            '__mlspl_type': [type(obj).__module__, type(obj).__name__],
+            'sparse_npy': base64.b64encode(sio.getvalue())
+        }
+
+    @classmethod
+    def decode(cls, obj):
+        import numpy as np
+        from scipy.sparse.csr import csr_matrix
+
+        sio = StringIO(base64.b64decode(obj['sparse_npy']))
+        loader = np.load(sio)
+        return csr_matrix((loader['data'], loader['indices'], loader['indptr']),
+                          shape=loader['shape'])
+        
+

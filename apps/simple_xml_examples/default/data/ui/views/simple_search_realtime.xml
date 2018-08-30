@@ -1,6 +1,6 @@
 <dashboard>
-  <label>Realtime Search</label>
-  <description>Table, Chart and Event panels powered by inline and report realtime searches.</description>
+  <label>Real-time Search</label>
+  <description>Use a real-time search for continuous trend updating.</description>
   <row>
     <table>
       <title>Inline Search Table</title>

@@ -1,6 +1,6 @@
 <dashboard>
   <label>Chart Color Options</label>
-  <description>Leverage built-in chart color options to customize the dashboard look and feel</description>
+  <description>Use built-in chart color options to set background, foreground, font, and seriesColors.</description>
   <row>
     <panel>
       <chart>

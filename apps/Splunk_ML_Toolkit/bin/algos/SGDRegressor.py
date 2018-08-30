@@ -1,17 +1,19 @@
 #!/usr/bin/env python
 
+import pandas as pd
 from sklearn.linear_model import SGDRegressor as _SGDRegressor
 from sklearn.preprocessing import StandardScaler
-import pandas as pd
-import numpy as np
+
 import cexc
-
 from codec import codecs_manager
-from base import EstimatorMixin
+from base import RegressorMixin, BaseAlgo
 from util.param_util import convert_params
+from util import df_util
+from util.algo_util import add_missing_attr
 
 
-class SGDRegressor(EstimatorMixin):
+class SGDRegressor(RegressorMixin, BaseAlgo):
+
     def __init__(self, options):
         self.handle_options(options)
 
@@ -27,45 +29,81 @@ class SGDRegressor(EstimatorMixin):
         self.estimator = _SGDRegressor(**out_params)
         self.columns = None
 
-    def fit(self, X):
-        X, y, self.columns = self.preprocess_fit(X)
+    def fit(self, df, options):
+        # Make a copy of data, to not alter original dataframe
+        X = df.copy()
+
+        relevant_variables = self.feature_variables + [self.target_variable]
+        X, y, self.columns = df_util.prepare_features_and_target(
+            X=X,
+            variables=relevant_variables,
+            target=self.target_variable,
+            mlspl_limits=options.get('mlspl_limits'),
+        )
+
         scaled_X = self.scaler.fit_transform(X.values)
         self.estimator.fit(scaled_X, y.values)
 
-    def partial_fit(self, X, handle_new_cat):
-        X, y, columns = self.preprocess_fit(X)
+    def partial_fit(self, df, options):
+        # Handle backwards compatibility.
+        add_missing_attr(self.estimator, attr='max_iter', value=5, param_key='n_iter')
+        add_missing_attr(self.estimator, attr='tol', value=None)
+
+        # Make a copy of data, to not alter original dataframe
+        X = df.copy()
+
+        relevant_variables = self.feature_variables + [self.target_variable]
+        X, y, columns = df_util.prepare_features_and_target(
+            X=X,
+            variables=relevant_variables,
+            target=self.target_variable,
+            mlspl_limits=options.get('mlspl_limits'),
+        )
+
         if self.columns is not None:
-            self.handle_categorical(X, y, handle_new_cat, self.columns)
+            X, y = df_util.handle_new_categorical_values(X, y, options, self.columns)
             if X.empty:
                 return
         else:
             self.columns = columns
         self.scaler.partial_fit(X.values)
         scaled_X = self.scaler.transform(X.values)
-        self.estimator.partial_fit(scaled_X, y.values)
+        self.estimator.partial_fit(scaled_X, y)
         cexc.messages.warn('n_iter is set to 1 when partial fit is performed')
 
-    def predict(self, X, options=None, output_name=None):
+    def apply(self, df, options=None):
+        # Handle backwards compatibility.
+        add_missing_attr(self.estimator, attr='max_iter', value=5, param_key='n_iter')
+        add_missing_attr(self.estimator, attr='tol', value=None)
 
-        if options is not None:
-            X = self.preprocess_predict(X)
+        # Make a copy of data, to not alter original dataframe
+        X = df.copy()
 
-            # Allocate output DataFrame
-            if output_name is None:
-                output_name = 'predicted(%s)' % self.response_variable
-            output = pd.DataFrame({output_name: np.empty(len(X))})
-            output[output_name] = np.nan
+        X, nans, columns = df_util.prepare_features(
+            X=X,
+            variables=self.feature_variables,
+            final_columns=self.columns,
+            mlspl_limits=options.get('mlspl_limits'),
+        )
 
-            nans = self.drop_na_rows(X)
-            scaled_X = self.scaler.transform(X.values)
-            y_hat = self.estimator.predict(scaled_X)
+        scaled_X = self.scaler.transform(X.values)
+        y_hat = self.estimator.predict(scaled_X)
 
-            output.ix[~nans, output_name] = y_hat
+        default_name = 'predicted({})'.format(self.target_variable)
+        output_name = options.get('output_name', default_name)
 
-            self.rename_columns(output, options)
-            return output
+        output = df_util.create_output_dataframe(
+            y_hat=y_hat,
+            nans=nans,
+            output_names=output_name,
+        )
 
-    def summary(self):
+        df = df_util.merge_predictions(df, output)
+        return df
+
+    def summary(self, options):
+        if len(options) != 2:  # only model name and mlspl_limits
+            raise RuntimeError('"%s" models do not take options for summarization' % self.__class__.__name__)
         df = pd.DataFrame({'feature': self.columns,
                            'coefficient': self.estimator.coef_.ravel()})
         idf = pd.DataFrame({'feature': '_intercept',

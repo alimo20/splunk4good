@@ -1,6 +1,6 @@
 <form>
     <label>Scatter Chart</label>
-    <description>Scatter chart example</description>
+    <description>Scatter chart example.</description>
     <search id="base">
         <query>index = _internal | stats count, mode(status) by method, status, date_hour</query>
         <earliest>$time_token.earliest$</earliest>

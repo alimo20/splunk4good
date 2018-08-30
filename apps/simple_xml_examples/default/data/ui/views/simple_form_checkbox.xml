@@ -1,6 +1,6 @@
 <form>
-    <label>Check Box Input</label>
-    <description/>
+    <label>Checkbox Input</label>
+    <description>Include multiple checkbox selection.</description>
     <row>
         <panel>
             <!-- New in Splunk 6.1 use the checkbox input -->
@@ -14,7 +14,7 @@
                 <valuePrefix>sourcetype="</valuePrefix>
                 <valueSuffix>"</valueSuffix>
                 <!-- All the values and their valuePrefix and valueSuffix will be concatenated together with the delimiter between them -->
-                <delimiter>OR</delimiter>
+                <delimiter> OR </delimiter>
                 <fieldForLabel>sourcetype</fieldForLabel>
                 <fieldForValue>sourcetype</fieldForValue>
                 <search>

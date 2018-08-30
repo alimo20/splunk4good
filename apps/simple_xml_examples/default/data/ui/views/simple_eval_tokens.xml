@@ -1,5 +1,6 @@
 <dashboard stylesheet="eval_tokens.css">
-  <label>Eval Tokens</label>
+  <label>Eval Token Expressions</label>
+  <description>Use Splunk eval expressions within the token setter to format or transform values.</description>
   <row>
     <panel>
       <title></title>

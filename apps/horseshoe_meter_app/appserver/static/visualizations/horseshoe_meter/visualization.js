@@ -57,7 +57,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            vizUtils,
 	            d3
 	        ) {
-	 
+
 	    return SplunkVisualizationBase.extend({
 
 	        initialize: function() {
@@ -93,14 +93,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	            return formattedData;
 	        },
-	 
+
 	        updateView: function(data, config) {
 	            if (!data) {
 	                return;
 	            }
 
 	            this.$el.empty();
-	            
+
+	            this.useDrilldown = this._isEnabledDrilldown(config);
+
 	            var height = this.$el.height();
 	            var width = height;
 
@@ -119,9 +121,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            var useRangemap = vizUtils.normalizeBoolean(this._getEscapedProperty('useRangemap', config));
 
 	            var thresholdStyle = this._getEscapedProperty('thresholdStyle', config) || 'percentage';
-	            
+
 	            function calculateThreshold(number) {
-	                return thresholdStyle === 'percentage' ? 
+	                return thresholdStyle === 'percentage' ?
 	                    +minValue + (number / 100) * (maxValue - minValue) : number;
 	            }
 
@@ -144,7 +146,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    return arcScale(minValue);
 	                })
 	                .endAngle(function(d){
-	                    return arcScale(d)
+	                    return arcScale(d);
 	                })
 	                .innerRadius(innerRadius)
 	                .outerRadius(outerRadius)
@@ -154,10 +156,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    return arcScale(d);
 	                })
 	                .endAngle(function(d){
-	                    return arcScale(maxValue - 1)
+	                    return arcScale(maxValue);
 	                })
 	                .innerRadius(innerRadius)
 	                .outerRadius(outerRadius)
+
+	            var cursor = 'arrow';
+	            if (this.useDrilldown) {
+	                cursor = 'pointer';
+	            }
 
 	            var colorScale = d3.scale.threshold()
 	                .domain([midRangeThreshold, maxRangeThreshold])
@@ -175,7 +182,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                .datum(data.datum)
 	                .attr('d', meterArc)
 	                .style('fill', dialColor)
-	                .style('cursor', 'pointer')
+	                .style('cursor', cursor)
 	                .on('click', this._drilldown.bind(this));
 
 	            // Fill arc
@@ -185,11 +192,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                .style('fill', function(d){
 	                    return useRangemap ? colorScale(d) : valueColor;
 	                })
-	                .style('cursor', 'pointer')
+	                .style('cursor', cursor)
 	                .on('click', this._drilldown.bind(this));
 
 	            var textGroup = svg.append('g')
-	                .style('cursor', 'pointer')
+	                .style('cursor', cursor)
 	                .attr('transform', 'scale(' + scale + ')')
 	                .on('click', this._drilldown.bind(this));
 
@@ -218,15 +225,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                .attr('transform', 'translate(' + 0 + ',' + 30 + ')');
 	        },
 
-	         _drilldown: function() {
+	        _drilldown: function() {
 	            var data = this.getCurrentData();
-	            
+
 	            var payload = {
 	                action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
 	                data: {}
 	            };
 	            payload.data[data.field] = data.datum;
 	            this.drilldown(payload);
+	        },
+
+	        _isEnabledDrilldown: function(config) {
+	            if (config['display.visualizations.custom.drilldown'] && config['display.visualizations.custom.drilldown'] === 'all') {
+	                return true;
+	            }
+	            return false;
 	        },
 
 	        reflow: function(){

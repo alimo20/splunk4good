@@ -27,7 +27,7 @@ class ReservoirSampler(object):
     def _combine_dfs(self):
         if len(self._dfs) > 0:
             self._df = self._df.append(self._dfs)
-            self._df.drop_duplicates(subset='_slot', take_last=True, inplace=True)
+            self._df.drop_duplicates(subset='_slot', keep='last', inplace=True)
             self._dfs = []
             self._dfs_count = 0
 
@@ -38,7 +38,7 @@ class ReservoirSampler(object):
         self._combine_dfs()
         self._df.reset_index(drop=True, inplace=True)
 
-        return self._df.sort('_gindex').drop(['_gindex', '_slot'], axis=1)
+        return self._df.sort_values('_gindex').drop(['_gindex', '_slot'], axis=1)
 
     def append(self, new_df, copy=False):
         if len(new_df) == 0:

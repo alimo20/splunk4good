@@ -1,6 +1,6 @@
 <form>
     <label>Text Form Input Element</label>
-    <description>Top N Sourcetypes using Text Form Input</description>
+    <description>Set search terms by populating a form with textbox input.</description>
     <fieldset autoRun="true" submitButton="false">
         <input type="text" token="limit" searchWhenChanged="true">
             <label>Enter an integer N:</label>

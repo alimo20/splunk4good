@@ -1,6 +1,7 @@
 <dashboard script="table_icons_inline.js" stylesheet="table_decorations.css">
 
     <label>Table Icon Set (Inline)</label>
+    <description>Add icons to table cells based on custom conditions.</description>
 
     <row>
         <table id="table1">

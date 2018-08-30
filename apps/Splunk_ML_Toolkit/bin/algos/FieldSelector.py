@@ -1,11 +1,18 @@
 #!/usr/bin/env python
+
 import copy
 
+import numpy as np
 from sklearn.feature_selection import GenericUnivariateSelect, f_classif, f_regression
+
+import cexc
+from base import BaseAlgo
 from codec import codecs_manager
 from codec.codecs import BaseCodec
-from base import *
 from util.param_util import convert_params
+from util import df_util
+
+messages = cexc.get_messages_logger()
 
 
 class GenericUnivariateSelectCodec(BaseCodec):
@@ -36,19 +43,16 @@ class GenericUnivariateSelectCodec(BaseCodec):
         return new_obj
 
 
-class FieldSelector(SelectorMixin):
+class FieldSelector(BaseAlgo):
+
     def __init__(self, options):
         self.handle_options(options)
 
         out_params = convert_params(
             options.get('params', {}),
-            ints=[],
             floats=['param'],
             strs=['type', 'mode'],
-            aliases={
-                'k': 'param',
-                'type': 'score_func'
-            }
+            aliases={'type': 'score_func'},
         )
 
         if 'score_func' not in out_params:
@@ -65,7 +69,70 @@ class FieldSelector(SelectorMixin):
             if out_params['mode'] not in ('k_best', 'fpr', 'fdr', 'fwe', 'percentile'):
                 raise RuntimeError('mode can only be one of the following: fdr, fpr, fwe, k_best, and percentile')
 
+            if out_params['mode'] in ['fpr', 'fdr', 'fwe']:
+                if 'param' in out_params:
+                    if not 0 < out_params['param'] < 1:
+                        msg = 'Invalid param value for mode {}: param must be between 0 and 1.'.format(out_params['mode'])
+                        raise ValueError(msg)
+
+        # k_best and percentile require integer param
+        if 'param' in out_params and out_params.get('mode') not in ['fdr', 'fpr', 'fwe']:
+            original_value = out_params['param']
+            out_params['param'] = int(out_params['param'])
+            if out_params['param'] != original_value:
+                msg = 'param value {} is not an integer; mode={} requires an integer.'
+                msg = msg.format(original_value, out_params.get('mode', 'percentile'))
+                raise ValueError(msg)
+
         self.estimator = GenericUnivariateSelect(**out_params)
+
+    def handle_options(self, options):
+        if len(options.get('target_variable', [])) != 1 or len(options.get('feature_variables', [])) == 0:
+            raise RuntimeError('Syntax error: expected "<target> FROM <field> ..."')
+
+    def fit(self, df, options):
+        # Make a copy of data, to not alter original dataframe
+        X = df.copy()
+
+        relevant_variables = self.feature_variables + [self.target_variable]
+        X, y, self.columns = df_util.prepare_features_and_target(
+            X=X,
+            variables=relevant_variables,
+            target=self.target_variable,
+            mlspl_limits=options.get('mlspl_limits'),
+        )
+        self.estimator.fit(X.values, y.values)
+
+    def apply(self, df, options):
+        # Make a copy of data, to not alter original dataframe
+        X = df.copy()
+
+        X, nans, columns = df_util.prepare_features(
+            X=X,
+            variables=self.feature_variables,
+            final_columns=self.columns,
+            mlspl_limits=options.get('mlspl_limits'),
+        )
+        y_hat = self.estimator.transform(X.values)
+        mask = self.estimator.get_support()
+        columns_select = np.array(self.columns)[mask]
+        width = len(columns_select)
+
+        if width == 0:
+            messages.warn('No fields pass the current configuration. Consider changing your parameters.')
+
+        default_name = 'fs'
+        output_name = options.get('output_name', default_name)
+        output_names = [output_name + '_%s' % x for x in columns_select]
+
+        output = df_util.create_output_dataframe(
+            y_hat=y_hat,
+            nans=nans,
+            output_names=output_names,
+        )
+
+        df = df_util.merge_predictions(df, output)
+        return df
 
     @staticmethod
     def register_codecs():

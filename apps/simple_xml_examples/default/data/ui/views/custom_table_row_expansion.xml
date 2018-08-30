@@ -1,5 +1,6 @@
 <dashboard script="custom_table_row_expansion.js">
-    <label>Table Row Expansion (More Details)</label>
+    <label>Table Row Expansion</label>
+    <description>Show more information on click of expansion.</description>
     <row>
         <panel>
             <table id="expand_with_events">

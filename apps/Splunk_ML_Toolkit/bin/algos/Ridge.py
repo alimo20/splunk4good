@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
-from sklearn.linear_model import Ridge as _Ridge
 import pandas as pd
+from sklearn.linear_model import Ridge as _Ridge
+
+from base import BaseAlgo, RegressorMixin
 from codec import codecs_manager
 from util.param_util import convert_params
-from base import EstimatorMixin
 
 
-class Ridge(EstimatorMixin):
+class Ridge(RegressorMixin, BaseAlgo):
+
     def __init__(self, options):
         self.handle_options(options)
 
@@ -20,7 +22,10 @@ class Ridge(EstimatorMixin):
 
         self.estimator = _Ridge(**out_params)
 
-    def summary(self):
+    def summary(self, options):
+        if len(options) != 2:  # only model name and mlspl_limits
+            raise RuntimeError('"%s" models do not take options for summarization' % self.__class__.__name__)
+
         df = pd.DataFrame({'feature': self.columns,
                            'coefficient': self.estimator.coef_.ravel()})
         idf = pd.DataFrame({'feature': ['_intercept'],

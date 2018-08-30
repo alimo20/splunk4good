@@ -10,6 +10,24 @@ require([
     'bootstrap.affix',
     'bootstrap.scrollspy'
 ], function($, _, DashboardController, SplunkUtil, Backbone, ViewsCollection, ViewModel) {
+    var TAGS = {
+        'extension': {
+            label: _('Extension').t(),
+            tooltip: _('Uses external JS/CSS').t()
+        },
+        'new': {
+            label: _('New Example').t(),
+            tooltip: ''
+        },
+        'updated': {
+            label: _('Updated Example').t(),
+            tooltip: ''
+        },
+        'app_deps': {
+            label: _('App Dependency').t(),
+            tooltip: _('Requires installing other apps').t()
+        }
+    };
 
     var HIDE_MISSING_VIEWS = false;
     
@@ -72,16 +90,9 @@ require([
                         var $exampleContent = $('<div class="content"></div>').append($exampleTitle).append($exampleDescription);
                         var $tags =  $('<div class="tags"></div>').appendTo($exampleContent);
                         _.each(exampleInfo.get('tags'), function(tag){
-                            var tagTitle = tag;
-                            var tagText = tag;
-                            if (tag === "extension") {
-                                tagTitle = _("Uses external JS/CSS").t();
-                            } else if ( tag.toLowerCase() === "new") {
-                                tagText = _("New Example").t();
-                            } else if ( tag.toLowerCase() === "updated") {
-                                tagText = _("Updated Example").t();
-                            }
-                            $tags.append($('<span class="label"></span>').addClass(tag).attr('title', tagTitle).tooltip().text(tagText));
+                            var tooltip = TAGS[tag].tooltip;
+                            var label = TAGS[tag].label;
+                            $tags.append($('<span class="label"></span>').addClass(tag).attr('title', tooltip).tooltip().text(label));
                         });
                         var $versions =  $('<div class="versions"></div>').appendTo($exampleContent);
                         _.each(exampleInfo.get('partial_versions'), function(version){

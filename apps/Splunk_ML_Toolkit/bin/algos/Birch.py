@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
 from sklearn.cluster import Birch as _Birch
-from base import *
-from codec.flatten import flatten, expand
-from codec.codecs import BaseCodec
+
+from base import BaseAlgo, ClustererMixin
 from codec import codecs_manager
+from codec.codecs import BaseCodec
+from codec.flatten import flatten, expand
+from util import df_util
 from util.param_util import convert_params
 
 
@@ -30,35 +32,23 @@ class BirchCodec(BaseCodec):
         return expand(m, obj['refs'])
 
 
-class Birch(ClustererMixin):
+class Birch(ClustererMixin, BaseAlgo):
+
     def __init__(self, options):
         self.handle_options(options)
 
         out_params = convert_params(
             options.get('params', {}),
             ints=['k'],
-            aliases={
-                'k': 'n_clusters'
-            }
+            aliases={'k': 'n_clusters'},
         )
 
         self.estimator = _Birch(**out_params)
-        self.columns = None
 
-    def partial_fit(self, X, handle_new_cat):
-        X, columns = self.preprocess_fit(X)
-        if self.columns is not None:
-            self.handle_categorical(X, None, handle_new_cat, self.columns)
-            if X.empty:
-                return
-        else:
-            self.columns = columns
-        self.estimator.partial_fit(X)
-
-    def predict(self, X, options=None, output_name=None):
-        if options is not None:
-            func = super(self.__class__, self).predict
-            return self.apply_in_chunks(X, func, 10000, options, output_name)
+    def apply(self, df, options):
+        """Apply is overriden to make prediction on chunks of 10000 rows."""
+        func = super(self.__class__, self).apply
+        return df_util.apply_in_chunks(df, func, 10000, options)
 
     @staticmethod
     def register_codecs():

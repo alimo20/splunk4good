@@ -1,45 +1,46 @@
 #!/usr/bin/env python
-# Copyright (C) 2015-2017 Splunk Inc. All Rights Reserved.
-import sys
+# Copyright (C) 2015-2018 Splunk Inc. All Rights Reserved.
+from exec_anaconda import exec_anaconda_or_die
+exec_anaconda_or_die()
 
 import cexc
-import exec_anaconda
+from cexc import BaseChunkHandler
 
-try:
-    exec_anaconda.exec_anaconda()
-except Exception as e:
-    cexc.abort(e)
-    sys.exit(1)
-
-import conf
-from util.param_util import parse_args, is_truthy
+from util.param_util import parse_args, parse_namespace_model_name
 from util import command_util
+from util.mlspl_loader import MLSPLConf
+from util.search_util import add_distributed_search_info
 
 from chunked_controller import ChunkedController
-from cexc import BaseChunkHandler
 
 logger = cexc.get_logger('apply')
 messages = cexc.get_messages_logger()
 
 
 class ApplyCommand(BaseChunkHandler):
-    """ApplyCommand uses the ChunkedController & ApplyProcessor to make predictions."""
+    """ApplyCommand uses the ChunkedController & ApplyProcessor to make
+    predictions."""
 
     @staticmethod
     def handle_arguments(getinfo):
         """Take the getinfo metadata and return controller_options.
 
         Args:
-            dict: getinfo metadata
+            getinfo (dict): getinfo metadata
+
         Returns:
-            dict: options to be sent to controller
+            controller_options (dict): options to be sent to controller
         """
         if len(getinfo['searchinfo']['args']) == 0:
             raise RuntimeError('First argument must be a saved model.')
 
         raw_options = parse_args(getinfo['searchinfo']['raw_args'][1:])
         controller_options = ApplyCommand.handle_raw_options(raw_options)
-        controller_options['model_name'] = getinfo['searchinfo']['args'][0]
+        controller_options['namespace'], controller_options['model_name'] = parse_namespace_model_name(getinfo['searchinfo']['args'][0])
+
+        searchinfo = getinfo['searchinfo']
+        getinfo['searchinfo'] = add_distributed_search_info(process_options=None, searchinfo=searchinfo)
+        controller_options['mlspl_conf'] = MLSPLConf(getinfo['searchinfo'])
         return controller_options
 
     @staticmethod
@@ -47,9 +48,13 @@ class ApplyCommand(BaseChunkHandler):
         """Load command specific options.
 
         Args:
-            dict: raw options
+            raw_options (dict): raw options
+
+        Raises:
+            RuntimeError
+
         Returns:
-            dict: modified raw_options
+            raw_options (dict): modified raw_options
         """
         raw_options['processor'] = 'ApplyProcessor'
 
@@ -61,20 +66,20 @@ class ApplyCommand(BaseChunkHandler):
         """Parse search string, choose processor, initialize controller.
 
         Returns:
-            dict: get info response (command type) and required fields. This
+            (dict): get info response (command type) and required fields. This
                 response will be sent back to the CEXC process on the getinfo
                 exchange (first chunk) to establish our execution type and
                 required fields.
         """
-        self.controller_options = self.handle_arguments(self.getinfo)
-        self.controller = ChunkedController(self.getinfo, self.controller_options)
+        controller_options = self.handle_arguments(self.getinfo)
+        self.controller = ChunkedController(self.getinfo, controller_options)
 
         self.watchdog = command_util.get_watchdog(
             time_limit=-1,
             memory_limit=self.controller.resource_limits['max_memory_usage_mb']
         )
 
-        streaming_apply = is_truthy(conf.get_mlspl_prop('streaming_apply', default='f'))
+        streaming_apply = self.controller.resource_limits.get('streaming_apply', False)
         exec_type = 'streaming' if streaming_apply else 'stateful'
 
         required_fields = self.controller.get_required_fields()
@@ -87,12 +92,17 @@ class ApplyCommand(BaseChunkHandler):
         finishes negotiation of the termination of the process.
 
         Args:
-            dict: metadata information
-            str: body
+            metadata (dict): metadata information
+            body (str): data payload from CEXC
+
         Returns:
-            tuple: metadata, body
+            (dict): metadata to be sent back to CEXC
+            output_body (str): data payload to be sent back to CEXC
         """
-        # Get info exchange an initialize controller, processor, algorithm
+        if command_util.is_invalid_chunk(metadata):
+            logger.debug('Not running without session key.')
+            return {'finished': True}
+
         if command_util.is_getinfo_chunk(metadata):
             return self.setup()
 

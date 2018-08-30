@@ -1,11 +1,11 @@
 <dashboard>
   <label>Drilldown URL Field Value</label>
-  <description>Configure drilldown to redirect users to the URL value of the referer field</description>
+  <description>Configure drilldown to redirect users to the URL value of the referer field.</description>
   <row>
     <table>
       <search>
         <query>index=_internal http:// | head 50 | table _time user referer</query>
-        <earliest>-60m@m</earliest>
+        <earliest>-24h</earliest>
         <latest>now</latest>
       </search>
       <option name="count">10</option>

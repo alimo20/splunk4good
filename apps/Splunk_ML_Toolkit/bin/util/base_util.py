@@ -6,7 +6,7 @@ import fnmatch
 def is_valid_identifier(name):
     """Check if name is a valid identifier.
 
-    Returns True iff 'name' is a valid Python identifier. Such
+    Returns True if 'name' is a valid Python identifier. Such
     identifiers don't allow '.' or '/', so may also be used to ensure
     that name can be used as a filename without risk of directory
     traversal.
@@ -15,7 +15,15 @@ def is_valid_identifier(name):
 
 
 def match_field_globs(input_fields, requested_fields):
-    """Intersect input_fields with glob expansion of requested_fields."""
+    """Intersect input_fields with glob expansion of requested_fields.
+
+    Args:
+        input_fields (list): the fields that are present
+        requested_fields (list): the fields that are requested
+
+    Returns:
+        output_fields (list): matched field names
+    """
     output_fields = []
 
     for f in requested_fields:
@@ -30,3 +38,8 @@ def match_field_globs(input_fields, requested_fields):
             output_fields.append(f)
 
     return output_fields
+
+
+class MLSPLNotImplementedError(RuntimeError):
+    """Custom ML-SPL exception to capture not implemented errors."""
+    pass

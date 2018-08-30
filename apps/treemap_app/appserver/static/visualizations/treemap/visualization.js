@@ -228,10 +228,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	        _setupTooltips: function(children) {
 	            var that = this;
+
 	            children
 	                .on('mousemove', function(d) {
-
-	                    var pos = d3.mouse(this);
 
 	                    // Add tooltip content
 	                    that.tooltip
@@ -265,43 +264,40 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                            .html(function(m) { return m.value; });
 
 	                    // Position tooltip
+	                    getRect = function($el) {
+	                        return {
+	                            offset_l: $el.offset().left,
+	                            offset_t: $el.offset().top,
+	                            pos_l: $el.position().left,
+	                            pos_t: $el.position().top,
+	                            scroll_l: $el.scrollLeft(),
+	                            scroll_t: $el.scrollTop(),
+	                            w: $el.width(),
+	                            h: $el.height()
+	                        };
+	                    };
+
+	                    var pos = d3.mouse(this);
+	                    var facetsContainer = getRect(that.$el.closest('.facets-container'));
+	                    var container = getRect(that.$el);
 	                    var tooltipWidth = $(that.tooltip[0]).width();
 
-	                    that.tooltip.style('left', pos[0] < that.width / 2
-	                            ? (pos[0] + 22) + 'px'
-	                            : (pos[0] - tooltipWidth - 15) + 'px');
+	                    that.tooltip
+	                        .style('left', pos[0] < that.width / 2
+	                            ? (container.pos_l + pos[0] + 22) + 'px'
+	                            : (container.pos_l + pos[0] - tooltipWidth - 15) + 'px');
 
-	                    if(pos[1] < that.height / 2) {
-	                        that.tooltip
-	                            .style('top', pos[1] + 'px')
-	                            .style('bottom', null);
-	                    }
-	                    else {
-	                        that.tooltip
-	                            .style('top', null)
-	                            .style('bottom', that.height - pos[1] + 2 + (that.maxCategoriesExceeded ? MSG_AREA_HEIGHT : 0) + 'px');
-	                    }
+	                    that.tooltip.style('top', container.offset_t + pos[1] + facetsContainer.scroll_t - facetsContainer.offset_t + 'px');
 
 	                    that.tooltip.classed('tooltip-top-left', false);
 	                    that.tooltip.classed('tooltip-bottom-left', false);
 	                    that.tooltip.classed('tooltip-top-right', false);
 	                    that.tooltip.classed('tooltip-bottom-right', false);
-
 	                    if(pos[0] < that.width / 2) {
-	                        if(pos[1] < that.height / 2) {
-	                            that.tooltip.classed('tooltip-top-left', true);
-	                        }
-	                        else {
-	                            that.tooltip.classed('tooltip-bottom-left', true);
-	                        }
+	                        that.tooltip.classed('tooltip-top-left', true);
 	                    }
 	                    else {
-	                        if(pos[1] < that.height / 2) {
-	                            that.tooltip.classed('tooltip-top-right', true);
-	                        }
-	                        else {
-	                            that.tooltip.classed('tooltip-bottom-right', true);
-	                        }
+	                        that.tooltip.classed('tooltip-top-right', true);
 	                    }
 	                })
 	                .on('mouseout', function(d) {
@@ -344,7 +340,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    return (h < 0 ? 0 : h);
 	                })
 	                .attr('style', function(d) {
-	                    
+
 	                    function getRectFill(){
 	                        //don't fill parents
 	                        if(that.colorMode === 'categorical') {
@@ -362,9 +358,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                            else {
 	                                return d.children ? null : that.colors(that.categories(d.value));
 	                            }
-	                        }    
+	                        }
 	                    }
-	                    
+
 	                    var rectFill = getRectFill();
 	                    return rectFill ? 'fill: ' + rectFill + ';' : '';
 	                });
@@ -392,7 +388,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            this.showLabels = vizUtils.normalizeBoolean(this._getEscapedProperty('showLabels', config), { default: true });
 	            this.showLegend = vizUtils.normalizeBoolean(this._getEscapedProperty('showLegend', config), { default: true });
 	            this.showTooltip = vizUtils.normalizeBoolean(this._getEscapedProperty('showTooltip', config), { default: true });
-	            
+
 	            this.maxCategories = stringToInt(this._getEscapedProperty('maxCategories', config), 10);
 
 	            this.useColors = vizUtils.normalizeBoolean(this._getEscapedProperty('useColors', config), { default: true });
@@ -401,6 +397,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            this.minColor = this._getEscapedProperty('minColor', config) || '#d93f3c';
 	            this.maxColor = this._getEscapedProperty('maxColor', config) || '#3fc77a';
 	            this.numOfBins = this._getEscapedProperty('numOfBins', config) || 6;
+	        },
+
+	        _isEnabledDrilldown: function(config) {
+	            if (config['display.visualizations.custom.drilldown'] && config['display.visualizations.custom.drilldown'] === 'all') {
+	                return true;
+	            }
+	            return false;
 	        },
 
 	        // Optionally implement to format data returned from search.
@@ -618,7 +621,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            height = (height <= 0 ? DEFAULT_HEIGHT - MARGIN.top - MARGIN.bottom - (this.maxCategoriesExceeded ? MSG_AREA_HEIGHT : 0) : height);
 
 	            this.width = width;
-	            this.height = height; 
+	            this.height = height;
 
 	            this.xscale = d3.scale.linear()
 	                .domain([0, width])
@@ -629,6 +632,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                .range([0, height]);
 
 	            this._getColors(data); //Setup the Color scale
+
+	            this.useDrilldown = this._isEnabledDrilldown(config);
 
 	            //Add the components
 	            var treemap = d3.layout.treemap()
@@ -765,6 +770,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                .attr('class', 'child')
 	                .call(that._resizeRects.bind(that));
 
+	            //Only show cursor:pointer when drilldown is active
+	            if(that.useDrilldown) {
+	                children.classed('drillable', true);
+	            }
+
 	            //Only show tooltip when option is active
 	            if(this.showTooltip) {
 	                this._setupTooltips(children);
@@ -774,6 +784,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            if(d.depth === 0) {
 	                if(that.useZoom) {
 	                    children.classed('zoomable', true);
+	                }
+
+	                //Hide the cursor:pointer when cursor:zoom-in is active
+	                if(that.useDrilldown) {
+	                    children.classed('drillable', false);
 	                }
 
 	                g.append('rect')
@@ -841,7 +856,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	                t1.selectAll('.node-label').style('display', 'none');
 	                t1.selectAll('.foreignobj').call(that._resizeObject.bind(that));
-	                
+
 	                t2.selectAll('.foreignobj').call(that._resizeObject.bind(that));
 
 	                // Resize text containers, render text if there is space
@@ -886,7 +901,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
-	 * jQuery JavaScript Library v2.2.2
+	 * jQuery JavaScript Library v2.2.1
 	 * http://jquery.com/
 	 *
 	 * Includes Sizzle.js
@@ -896,7 +911,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	 * Released under the MIT license
 	 * http://jquery.org/license
 	 *
-	 * Date: 2016-03-17T17:51Z
+	 * Date: 2016-02-22T19:11Z
 	 */
 
 	(function( global, factory ) {
@@ -952,7 +967,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 	var
-		version = "2.2.2",
+		version = "2.2.1",
 
 		// Define a local copy of jQuery
 		jQuery = function( selector, context ) {
@@ -1163,7 +1178,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 		},
 
 		isPlainObject: function( obj ) {
-			var key;
 
 			// Not plain objects:
 			// - Any object or value whose internal [[Class]] property is not "[object Object]"
@@ -1173,18 +1187,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 				return false;
 			}
 
-			// Not own constructor property must be Object
 			if ( obj.constructor &&
-					!hasOwn.call( obj, "constructor" ) &&
-					!hasOwn.call( obj.constructor.prototype || {}, "isPrototypeOf" ) ) {
+					!hasOwn.call( obj.constructor.prototype, "isPrototypeOf" ) ) {
 				return false;
 			}
 
-			// Own properties are enumerated firstly, so to speed up,
-			// if last one is own, then all properties are own
-			for ( key in obj ) {}
-
-			return key === undefined || hasOwn.call( obj, key );
+			// If the function hasn't returned already, we're confident that
+			// |obj| is a plain object, created by {} or constructed with new Object
+			return true;
 		},
 
 		isEmptyObject: function( obj ) {
@@ -8217,12 +8227,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 		}
 	} );
 
-	// Support: IE <=11 only
-	// Accessing the selectedIndex property
-	// forces the browser to respect setting selected
-	// on the option
-	// The getter ensures a default option is selected
-	// when in an optgroup
 	if ( !support.optSelected ) {
 		jQuery.propHooks.selected = {
 			get: function( elem ) {
@@ -8231,16 +8235,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 					parent.parentNode.selectedIndex;
 				}
 				return null;
-			},
-			set: function( elem ) {
-				var parent = elem.parentNode;
-				if ( parent ) {
-					parent.selectedIndex;
-
-					if ( parent.parentNode ) {
-						parent.parentNode.selectedIndex;
-					}
-				}
 			}
 		};
 	}
@@ -8435,8 +8429,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 
-	var rreturn = /\r/g,
-		rspaces = /[\x20\t\r\n\f]+/g;
+	var rreturn = /\r/g;
 
 	jQuery.fn.extend( {
 		val: function( value ) {
@@ -8512,15 +8505,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 			option: {
 				get: function( elem ) {
 
-					var val = jQuery.find.attr( elem, "value" );
-					return val != null ?
-						val :
-
-						// Support: IE10-11+
-						// option.text throws exceptions (#14686, #14858)
-						// Strip and collapse whitespace
-						// https://html.spec.whatwg.org/#strip-and-collapse-whitespace
-						jQuery.trim( jQuery.text( elem ) ).replace( rspaces, " " );
+					// Support: IE<11
+					// option.value not trimmed (#14858)
+					return jQuery.trim( elem.value );
 				}
 			},
 			select: {
@@ -8573,7 +8560,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 					while ( i-- ) {
 						option = options[ i ];
 						if ( option.selected =
-							jQuery.inArray( jQuery.valHooks.option.get( option ), values ) > -1
+								jQuery.inArray( jQuery.valHooks.option.get( option ), values ) > -1
 						) {
 							optionSet = true;
 						}
@@ -10268,6 +10255,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 
+	// Support: Safari 8+
+	// In Safari 8 documents created via document.implementation.createHTMLDocument
+	// collapse sibling forms: the second one becomes a child of the first one.
+	// Because of that, this security measure has to be disabled in Safari 8.
+	// https://bugs.webkit.org/show_bug.cgi?id=137337
+	support.createHTMLDocument = ( function() {
+		var body = document.implementation.createHTMLDocument( "" ).body;
+		body.innerHTML = "<form></form><form></form>";
+		return body.childNodes.length === 2;
+	} )();
+
+
 	// Argument "data" should be string of html
 	// context (optional): If specified, the fragment will be created in this context,
 	// defaults to document
@@ -10280,7 +10279,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 			keepScripts = context;
 			context = false;
 		}
-		context = context || document;
+
+		// Stop scripts or inline event handlers from being executed immediately
+		// by using document.implementation
+		context = context || ( support.createHTMLDocument ?
+			document.implementation.createHTMLDocument( "" ) :
+			document );
 
 		var parsed = rsingleTag.exec( data ),
 			scripts = !keepScripts && [];

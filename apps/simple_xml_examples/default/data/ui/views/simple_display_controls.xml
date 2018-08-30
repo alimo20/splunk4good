@@ -1,6 +1,6 @@
 <dashboard>
   <label>Dashboard Display Controls</label>
-  <description></description>
+  <description>Turn on or off display of common components like the header, footer, edit controls.</description>
   <row>
     <panel>
       <html>

@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 
-import sys
-from sklearn.linear_model import LinearRegression as _LinearRegression
 import pandas as pd
+from sklearn.linear_model import LinearRegression as _LinearRegression
+
+from base import RegressorMixin, BaseAlgo
 from codec import codecs_manager
-from base import EstimatorMixin
 from util.param_util import convert_params
 
 
-class LinearRegression(EstimatorMixin):
+class LinearRegression(RegressorMixin, BaseAlgo):
+
     def __init__(self, options):
         self.handle_options(options)
 
@@ -19,7 +20,9 @@ class LinearRegression(EstimatorMixin):
 
         self.estimator = _LinearRegression(**out_params)
 
-    def summary(self):
+    def summary(self, options):
+        if len(options) != 2:  # only model name and mlspl_limits
+            raise RuntimeError('"%s" models do not take options for summarization' % self.__class__.__name__)
         df = pd.DataFrame({'feature': self.columns,
                            'coefficient': self.estimator.coef_.ravel()})
         idf = pd.DataFrame({'feature': ['_intercept'],

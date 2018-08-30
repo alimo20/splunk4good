@@ -1,6 +1,6 @@
 <dashboard>
-    <label>Simple Layout Panels</label>
-    <description>Each row can have up to 3 panels.</description>
+    <label>Multiple Panels to a Row</label>
+    <description>Organize similar content in a single row.</description>
     <row>
         <single>
             <title>Single panel 1</title>

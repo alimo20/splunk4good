@@ -1,6 +1,6 @@
 <form>
-    <label>Element Refresh Controls</label>
-    <description/>
+    <label>Element Footer and Refresh Controls</label>
+    <description>Control refresh time and element footer display.</description>
     <row>
         <panel>
             <single>

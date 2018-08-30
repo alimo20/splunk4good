@@ -1,5 +1,7 @@
 <dashboard>
-  <label>Single Value Color</label>
+  <label>Single Value With Color</label>
+  <description>Display single value with color options.</description>
+
   <row>
     <panel>
       <title>Temperatures</title>

@@ -1,52 +1,59 @@
-<dashboard script="autodiscover.js">
-    <label>D3 Parallel Coordinates</label>
-
-    <row>
-        <html>
-            <h2>Metrics: Pipeline</h2>
-
-            <div id="custom_search"
-                 class="splunk-manager"
-                 data-require="splunkjs/mvc/searchmanager"
-                 data-options='{
-                        "search": "index=_internal sourcetype=splunkd component=Metrics group=pipeline | dedup 2 name,processor | table name processor cpu_seconds executes cummulative_hits",
-                        "earliest_time": "-1h"
-                    }'>
-            </div>
-
-            <div id="custom"
-                 class="splunk-view"
-                 data-require="app/simple_xml_examples/components/parallelcoords/parallelcoords"
-                 data-options='{
-                        "managerid": "custom_search",
-                        "height": 400
-                    }'>
-            </div>
-
-        </html>
-    </row>
-    <row>
-        <html>
-            <h2>Metrics: Queue</h2>
-
-            <div id="custom_search2"
-                 class="splunk-manager"
-                 data-require="splunkjs/mvc/searchmanager"
-                 data-options='{
-                        "search": "index=_internal sourcetype=splunkd component=Metrics group=queue | dedup name | table name max_size_kb current_size largest_size smallest_size",
-                        "earliest_time": "-1h"
-                    }'>
-            </div>
-
-            <div id="custom2"
-                 class="splunk-view"
-                 data-require="app/simple_xml_examples/components/parallelcoords/parallelcoords"
-                 data-options='{
-                        "managerid": "custom_search2",
-                        "height": 300
-                    }'>
-            </div>
-
-        </html>
-    </row>
+<dashboard>
+  <label>Parallel Coordinates</label>
+  <description>Parallel coordinates are used to show multidimensional patterns in a data set.</description>
+  <row>
+    <panel>
+      <title>Default Categorical Colorization</title>
+      <viz type="parallel_coordinates_app.parallel_coordinates">
+        <search>
+          <query>| inputlookup nutrients.csv | head 1500 | stats count by group calories "protein (g)" "water (g)" | fields - count</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="parallel_coordinates_app.parallel_coordinates.colorMode">categorical</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Default Sequential Colorization</title>
+      <viz type="parallel_coordinates_app.parallel_coordinates">
+        <search>
+          <query>| inputlookup nutrients.csv | head 1500 | stats count by calories group "protein (g)" "water (g)" | fields - count</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="parallel_coordinates_app.parallel_coordinates.colorMode">sequential</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Maximum # of Categorical Values 35</title>
+      <viz type="parallel_coordinates_app.parallel_coordinates">
+        <search>
+          <query>| inputlookup nutrients.csv | head 1500 | stats count by name calories "protein (g)" "water (g)" | fields - count</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="parallel_coordinates_app.parallel_coordinates.colorMode">categorical</option>
+        <option name="parallel_coordinates_app.parallel_coordinates.maxCategories">35</option>
+        <option name="height">600</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Default Sequential Colorization, Large Data Set</title>
+      <viz type="parallel_coordinates_app.parallel_coordinates">
+        <title>For data sets larger than 2000 rows, the visualization will render progressively to avoid locking the browser.</title>
+        <search>
+          <query>| inputlookup nutrients.csv | head 2500 | stats count by calories group "protein (g)" "water (g)" | fields - count</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="parallel_coordinates_app.parallel_coordinates.colorMode">sequential</option>
+      </viz>
+    </panel>
+  </row>
 </dashboard>

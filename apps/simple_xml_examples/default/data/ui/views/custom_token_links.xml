@@ -1,5 +1,6 @@
 <dashboard script="tokenlinks.js">
-    <label>Token Links</label>
+    <label>Custom Token Links</label>
+    <description>Set tokens from links or buttons in HTML panels.</description>
 
     <search id="base1">
         <query>index=_internal | timechart count by sourcetype</query>

@@ -3,12 +3,16 @@
 import pandas as pd
 
 import cexc
-import conf
-import models
+from BaseProcessor import BaseProcessor
+from models import deletemodels
+import models.base
 from sampler import ReservoirSampler
 from util.param_util import is_truthy, convert_params
-from util.base_util import is_valid_identifier
-from BaseProcessor import BaseProcessor
+from util.base_util import match_field_globs
+from util.base_util import MLSPLNotImplementedError
+from util.algos import initialize_algo_class
+from util.mlspl_loader import MLSPLConf
+
 
 logger = cexc.get_logger(__name__)
 messages = cexc.get_messages_logger()
@@ -17,42 +21,46 @@ messages = cexc.get_messages_logger()
 class FitBatchProcessor(BaseProcessor):
     """The fit batch processor receives and returns pandas DataFrames."""
 
-    def __init__(self, process_options):
+    def __init__(self, process_options, searchinfo):
         """Initialize options for processor.
 
         Args:
-            dict: process options
+            process_options (dict): process options
+            searchinfo (dict): information required for search
         """
         # Split apart process & algo options
-        # TODO: remove self.algo_options, and to delegate all uses of algo_options to the algo itself
-        self.process_options, self.algo_options = self.split_options(process_options)
+        self.namespace = process_options.pop('namespace', None)
+        mlspl_conf = MLSPLConf(searchinfo)
+        self.process_options, self.algo_options = self.split_options(process_options, mlspl_conf)
+        self.searchinfo = searchinfo
 
         # Convenience / readability
-        do_apply = self.process_options['do_apply']
         self.tmp_dir = self.process_options['tmp_dir']
 
-        self.algo = self.initialize_algo(self.algo_options)
-        self.check_algo_options(do_apply, self.algo_options, self.algo)
+        self.algo = self.initialize_algo(self.algo_options, self.searchinfo)
+
+        self.check_algo_options(self.algo_options, self.algo)
         self.save_temp_model(self.algo_options, self.tmp_dir)
-        self.resource_limits = self.load_resource_limits(self.algo_options['algo_name'])
+
+        self.resource_limits = self.load_resource_limits(self.algo_options['algo_name'], mlspl_conf)
 
         self._sampler_time = 0.0
-        self.sampler_limits = self.load_sampler_limits(self.process_options, self.algo_options['algo_name'])
+        self.sampler_limits = self.load_sampler_limits(self.process_options, self.algo_options['algo_name'], mlspl_conf)
         self.sampler = self.get_sampler(self.sampler_limits)
 
     @staticmethod
-    def split_options(options):
-        """Pop do_apply and tmp_dir from the options. Also, parse sample count
+    def split_options(options, mlspl_conf):
+        """Pop tmp_dir from the options. Also, parse sample count
         and sample seed from original params and add them to process options.
 
         Args:
-            dict: process options
+            options (dict): process options
+            mlspl_conf (obj): the conf utility for mlspl conf settings
 
         Returns:
-            tuple: the returned tuple contains two dictionaries
-                - the process options we use here
-                - the algo options passed to the algorithm
-         """
+            process_options (dict): the process options we use here
+            algo_options (dict): the algo options to be passed to the algo
+        """
         sample_params = {}
         if 'params' in options:
             try:
@@ -60,7 +68,7 @@ class FitBatchProcessor(BaseProcessor):
                                                ignore_extra=True,
                                                ints=['sample_count',
                                                      'sample_seed']
-                                               )
+                                              )
             except ValueError as e:
                 raise RuntimeError(str(e))
 
@@ -72,6 +80,8 @@ class FitBatchProcessor(BaseProcessor):
 
         # copy everything from leftover options to algo options
         algo_options = options.copy()
+        algo_name = algo_options['algo_name']
+        algo_options['mlspl_limits'] = mlspl_conf.get_stanza(algo_name)
 
         # brand new process options
         process_options = {}
@@ -82,101 +92,88 @@ class FitBatchProcessor(BaseProcessor):
 
         # needed by processor, not algorithm
         process_options['tmp_dir'] = algo_options.pop('tmp_dir')
-        process_options['do_apply'] = algo_options.pop('do_apply')
 
         return process_options, algo_options
 
     @staticmethod
-    def initialize_algo(algo_options):
-        """Import and initialize the algorithm.
-
-        Args:
-            dict: algo_options
-        Returns:
-            object: initialized algo
-        """
+    def initialize_algo(algo_options, searchinfo):
+        algo_name = algo_options['algo_name']
         try:
-            assert is_valid_identifier(algo_options['algo_name'])
-            algos = __import__("algos", fromlist=["*"])
-            algo_module = getattr(algos, algo_options['algo_name'])
-            algo_class = getattr(algo_module, algo_options['algo_name'])
-        except (AttributeError, AssertionError) as e:
-            raise RuntimeError('Failed to load algorithm "%s"' % algo_options['algo_name'])
-        try:
-            algo = algo_class(algo_options)
+            algo_class = initialize_algo_class(algo_name, searchinfo)
+            return algo_class(algo_options)
         except Exception as e:
             cexc.log_traceback()
             raise RuntimeError('Error while initializing algorithm "%s": %s' % (
-                algo_options['algo_name'], str(e)))
-        return algo
+                algo_name, str(e)))
+
 
     @staticmethod
-    def check_algo_options(do_apply, algo_options, algo):
+    def check_algo_options(algo_options, algo):
         """Raise errors if options are incompatible
 
         Args:
-            bool: do_apply flag
-            dict: algo_options
-            algo: initialized algo
+            algo_options (dict): algo options
+            algo (dict): initialized algo object
+
         Raises:
             RuntimeError
         """
-
-        # Ensure model present if no apply
-        if not do_apply and 'model_name' not in algo_options:
-            raise RuntimeError('You must save a model if you are not applying it.')
-        # TODO: avoid hasattr
         # Pre-validate whether or not this algo supports saved models.
-        if 'model_name' in algo_options and not hasattr(algo, 'predict'):
-            raise RuntimeError('Algorithm "%s" does not support saved models' % algo_options['algo_name'])
+        if 'model_name' in algo_options:
+            try:
+                algo.register_codecs()
+            except MLSPLNotImplementedError:
+                raise RuntimeError('Algorithm "%s" does not support saved models' % algo_options['algo_name'])
+            except Exception as e:
+                logger.debug("Error while calling algorithm's register_codecs method. {}".format(str(e)))
+                raise RuntimeError('Error while initializing algorithm. See search.log for details.')
 
     @staticmethod
-    def fit(df, algo, algo_options):
-        """Perform the literal fitting process, and predict if fit_predict.
-
-        Some of the algorithms only support a fit_predict method. This means
-        that they cannot predict independently of fitting the model. Thus, for
-        algorithms that do not have fit_predict, we set prediction_df to an empty
-        dataframe that we will update with a predict method later.
+    def match_and_assign_variables(columns, algo, algo_options):
+        """Match field globs and attach variables to algo.
 
         Args:
-            dataframe: dataframe to work with
-            algo: loaded algo
-            dict: algo_options
-        Returns:
-            algo: updated algo object
-            dataframe: output dataframe
-        """
-        try:
-            # TODO: avoid hasattr
-            if hasattr(algo, 'fit_predict'):
-                output_name = algo_options.get('output_name', None)
-                prediction_df = algo.fit_predict(df.copy(), options=algo_options, output_name=output_name)
-            else:
-                algo.fit(df.copy())
-                # empty output for now
-                prediction_df = pd.DataFrame()
-        except Exception as e:
-            cexc.log_traceback()
-            raise RuntimeError('Error while fitting "%s" model: %s' % (algo_options['algo_name'], str(e)))
+            columns (list): columns from dataframe
+            algo (object): initialized algo object
+            algo_options (dict): algo options
 
-        return algo, prediction_df
+        """
+        if hasattr(algo, 'feature_variables'):
+            algo.feature_variables = match_field_globs(columns, algo.feature_variables)
+        else:
+            algo.feature_variables = []
+
+        # Batch fit
+        if 'target_variable' in algo_options:
+            target_variable = algo_options['target_variable'][0]
+
+            if target_variable in algo.feature_variables:
+                algo.feature_variables.remove(target_variable)
+
+        # Partial fit
+        elif hasattr(algo, 'target_variable'):
+            if algo.target_variable in algo.feature_variables:
+                algo.feature_variables.remove(algo.target_variable)
+
+        return algo
 
     @staticmethod
-    def load_sampler_limits(process_options, algo_name):
+    def load_sampler_limits(process_options, algo_name, mlspl_conf):
         """Read sampling limits from conf file and decide sample count.
 
         Args:
-            dict: process options
-            str: algo name
+            process_options (dict): process options
+            algo_name (str): algo name
+            mlspl_conf (obj): the conf utility for mlspl conf settings
+
         Returns:
-            dict: sampler limits
+            sampler_limits (dict): sampler limits
         """
         sampler_limits = {}
 
         # setting up the logic to choose the sample count
-        sampler_limits['use_sampling'] = is_truthy(str(conf.get_mlspl_prop('use_sampling', algo_name, 'yes')))
-        max_inputs = int(conf.get_mlspl_prop('max_inputs', algo_name, -1))
+        sampler_limits['use_sampling'] = is_truthy(str(mlspl_conf.get_mlspl_prop('use_sampling', algo_name, 'yes')))
+        max_inputs = int(mlspl_conf.get_mlspl_prop('max_inputs', algo_name, -1))
         if process_options['sample_count']:
             sampler_limits['sample_count'] = min(process_options['sample_count'], max_inputs)
         else:
@@ -191,19 +188,21 @@ class FitBatchProcessor(BaseProcessor):
         """Initialize the sampler and use resource limits from processor.
 
         Args:
-            dict: sampler limits
+            sampler_limits (dict): sampler limits
+
         Returns:
-            sampler: sampler object
+            (object): sampler object
         """
         return ReservoirSampler(sampler_limits['sample_count'], random_state=sampler_limits['sample_seed'])
 
     @staticmethod
     def check_sampler(sampler_limits, algo_name):
-        """Inform user if sampling is on or raise error if sampling is off and events exceed limit.
+        """Inform user if sampling is on or raise error if sampling is off and
+        events exceed limit.
 
         Args:
-            dict: sampler limits
-            str: algo name
+            sampler_limits (dict): sampler limits
+            algo_name (str): algo name
         """
         if is_truthy(sampler_limits['use_sampling']):
             messages.warn(
@@ -214,19 +213,23 @@ class FitBatchProcessor(BaseProcessor):
                 algo_name, sampler_limits['sample_count']))
 
     @staticmethod
-    def load_resource_limits(algo_name):
+    def load_resource_limits(algo_name, mlspl_conf):
         """Load algorithm specific resource limits.
 
         Args:
-            str: algo_name
+            algo_name (str): algo_name
+            mlspl_conf (obj): the conf utility for mlspl conf settings
 
         Returns:
-            dictionary of resource limits including max_fit_time, max_memory_usage_mb, and max_model_size_mb
+            resource_limits (dict): dictionary of resource limits including
+                max_fit_time, max_memory_usage_mb, and max_model_size_mb
         """
+        
+
         resource_limits = {}
-        resource_limits['max_memory_usage_mb'] = int(conf.get_mlspl_prop('max_memory_usage_mb', algo_name, -1))
-        resource_limits['max_fit_time'] = int(conf.get_mlspl_prop('max_fit_time', algo_name, -1))
-        resource_limits['max_model_size_mb'] = int(conf.get_mlspl_prop('max_model_size_mb', algo_name, -1))
+        resource_limits['max_memory_usage_mb'] = int(mlspl_conf.get_mlspl_prop('max_memory_usage_mb', algo_name, -1))
+        resource_limits['max_fit_time'] = int(mlspl_conf.get_mlspl_prop('max_fit_time', algo_name, -1))
+        resource_limits['max_model_size_mb'] = int(mlspl_conf.get_mlspl_prop('max_model_size_mb', algo_name, -1))
         return resource_limits
 
     @staticmethod
@@ -234,12 +237,12 @@ class FitBatchProcessor(BaseProcessor):
         """Save temp model for follow-up apply.
 
         Args:
-            dict: algo options
-            str: temp directory to save model to
+            algo_options (dict): algo options
+            tmp_dir (str): temp directory to save model to
         """
         if 'model_name' in algo_options:
             try:
-                models.save_model(algo_options['model_name'], None,
+                models.base.save_model(algo_options['model_name'], None,
                                   algo_options['algo_name'], algo_options,
                                   model_dir=tmp_dir, tmp=True)
             except Exception as e:
@@ -251,24 +254,33 @@ class FitBatchProcessor(BaseProcessor):
         """Ask algo for relevant variables and return as relevant fields.
 
         Returns:
-            list: relevant fields
+            relevant_fields (list): relevant fields
         """
-        relevant_fields = self.algo.get_relevant_variables()
+        relevant_fields = []
+        if 'feature_variables' in self.algo_options:
+            self.algo.feature_variables = self.algo_options['feature_variables']
+            relevant_fields.extend(self.algo_options['feature_variables'])
+
+        if 'target_variable' in self.algo_options:
+            self.algo.target_variable = self.algo_options['target_variable'][0]
+            relevant_fields.extend(self.algo_options['target_variable'])
+
         return relevant_fields
 
     def save_model(self):
         """Attempt to save the model, delete the temporary model."""
         if 'model_name' in self.algo_options:
             try:
-                models.save_model(self.algo_options['model_name'], self.algo,
+                models.base.save_model(self.algo_options['model_name'], self.algo,
                                   self.algo_options['algo_name'], self.algo_options,
-                                  max_size=self.resource_limits['max_model_size_mb'])
+                                  max_size=self.resource_limits['max_model_size_mb'],
+                                  searchinfo=self.searchinfo, namespace=self.namespace)
             except Exception as e:
                 cexc.log_traceback()
                 raise RuntimeError('Error while saving model "%s": %s' % (self.algo_options['model_name'], e))
             try:
-                models.delete_model(self.algo_options['model_name'], model_dir=self.tmp_dir,
-                                    tmp=True)
+                deletemodels.delete_model(self.algo_options['model_name'],
+                                    model_dir=self.tmp_dir, tmp=True)
             except Exception as e:
                 cexc.log_traceback()
                 logger.warn('Exception while deleting tmp model "%s": %s', self.algo_options['model_name'], e)
@@ -277,7 +289,7 @@ class FitBatchProcessor(BaseProcessor):
         """Receive dataframe and append to sampler if necessary.
 
         Args:
-            dataframe: dataframe we receive from controller
+            df (dataframe): dataframe received from controller
         """
         if self.sampler_limits['sample_count'] - len(df) < self.sampler.count <= self.sampler_limits['sample_count']:
             self.check_sampler(sampler_limits=self.sampler_limits, algo_name=self.algo_options['algo_name'])
@@ -291,38 +303,62 @@ class FitBatchProcessor(BaseProcessor):
     def process(self):
         """Get dataframe, update algo, and possibly make predictions."""
         self.df = self.sampler.get_df()
-        self.algo, self.prediction_df = self.fit(self.df, self.algo, self.algo_options)
+        self.algo = self.match_and_assign_variables(self.df.columns, self.algo, self.algo_options)
+        self.algo, self.df, self.has_applied = self.fit(self.df, self.algo, self.algo_options)
+
+    @staticmethod
+    def fit(df, algo, algo_options):
+        """Perform the literal fitting process.
+
+        This method updates the algo by fitting with input data. Some of the
+        algorithms additionally make predictions within their fit method, thus
+        the predictions are returned in dataframe type. Some other algorithms do
+        not make prediction in their fit method, thus None is returned.
+
+        Args:
+            df (dataframe): dataframe to fit the algo
+            algo (object): initialized/loaded algo object
+            algo_options (dict): algo options
+
+        Returns:
+            algo (object): updated algo object
+            df (dataframe):
+                - if algo.fit makes prediction, return prediction
+                - if algo.fit does not make prediction, return input df
+            has_applied (bool): flag to indicate whether df represents
+                original df or prediction df
+        """
+        try:
+            prediction_df = algo.fit(df, algo_options)
+        except Exception as e:
+            cexc.log_traceback()
+            raise RuntimeError('Error while fitting "%s" model: %s' % (algo_options['algo_name'], str(e)))
+
+        has_applied = isinstance(prediction_df, pd.DataFrame)
+
+        if has_applied:
+            df = prediction_df
+
+        return algo, df, has_applied
 
     def get_output(self):
         """Override get_output from BaseProcessor.
 
-        Check if algo has fit_predict method and already made
-        prediction, otherwise make prediction.
-
-        Check for and handle special ARIMA behavior.
+        Check if prediction was already made, otherwise make prediction.
 
         Returns:
-            dataframe: output
+            (dataframe): output dataframe
         """
-        output_name = self.algo_options.get('output_name', None)
+        if not self.has_applied:
+            try:
+                self.df = self.algo.apply(self.df, self.algo_options)
+            except Exception as e:
+                cexc.log_traceback()
+                logger.debug('Error during apply phase of fit command. Check apply method of algorithm.')
+                raise RuntimeError('Error while fitting "%s" model: %s' % (self.algo_options['algo_name'], str(e)))
 
-        if len(self.prediction_df) == 0:
-            self.prediction_df = self.algo.predict(self.df.copy(),
-                                                   options=self.algo_options,
-                                                   output_name=output_name
-                                                   )
+        if self.df is None:
+            messages.warn('Apply method did not return any results.')
+            self.df = pd.DataFrame()
 
-        # TODO: ARIMA should not get to be special and affect any of the processor logic here:
-        if type(self.prediction_df) is dict and self.prediction_df['append'] is False:
-            self.df = self.prediction_df['output']
-        else:
-            self.df.drop(self.prediction_df.columns,
-                         axis=1, errors='ignore',
-                         inplace=True
-                         )
-
-            self.df = pd.concat([self.df, self.prediction_df],
-                                axis=1,
-                                join_axes=[self.df.index]
-                                )
         return self.df

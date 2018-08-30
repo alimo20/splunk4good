@@ -1,19 +1,23 @@
 #!/usr/bin/env python
 
 from sklearn.svm import SVC
+
 from codec import codecs_manager
-from base import *
+from base import BaseAlgo, ClassifierMixin
 from util.param_util import convert_params
 
 
-class SVM(EstimatorMixin):
+class SVM(ClassifierMixin, BaseAlgo):
+
     def __init__(self, options):
         self.handle_options(options)
 
-        out_params = convert_params(options.get('params', {}), floats=['gamma', 'C'])
+        out_params = convert_params(
+            options.get('params', {}),
+            floats=['gamma', 'C'],
+        )
 
-        self.estimator = SVC(class_weight='auto', **out_params)
-        self.is_classifier = True
+        self.estimator = SVC(class_weight='balanced', **out_params)
 
     @staticmethod
     def register_codecs():

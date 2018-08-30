@@ -5,7 +5,8 @@ define([
             'api/SplunkVisualizationUtils',
             'd3',
             'moment',
-            '../contrib/d3-timeline'
+            '../contrib/d3-timeline',
+            'bootstrap/js/tooltip'
         ],
         function(
             $,
@@ -13,7 +14,8 @@ define([
             SplunkVisualizationBase,
             vizUtils,
             d3,
-            moment
+            moment,
+            bs
         ) {
 
     // Truncates a string to a length, optionally adding a suffix
@@ -22,7 +24,7 @@ define([
         suffix = suffix || '...';
         str = str || 'null';
         if (str.length > maxLength) {
-            str = str.substring(0, maxLength + 1); 
+            str = str.substring(0, maxLength + 1);
             str = str + suffix;
         }
         return str;
@@ -39,7 +41,7 @@ define([
 
     var LEGEND_WIDTH = 200;
     var LEGEND_MARGIN = 40;
-    var LEGEND_RECT_SIZE = 18;                                  
+    var LEGEND_RECT_SIZE = 18;
     var LEGEND_SPACING = 8;
     var LEGEND_MARGIN_TOP = 30;
 
@@ -48,9 +50,9 @@ define([
     var ITEM_HEIGHT = 20;
     var ITEM_MARGIN = 5;
     var CHART_PADDING = 15;
- 
+
     return SplunkVisualizationBase.extend({
- 
+
         initialize: function() {
             SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
 
@@ -58,6 +60,7 @@ define([
             this.$el.addClass('splunk-timeline');
 
             this.compiledTooltipTemplate = _.template(this._tooltipTemplate);
+            this.tooltipContainer = $('<div class="splunk-timeline-tooltip" style="position:relative"></div>').appendTo('body');
         },
 
         formatData: function(data) {
@@ -165,13 +168,16 @@ define([
                 }
             }
         },
- 
+
         updateView: function(data, config) {
 
             if (!data || data.length < 1) {
                 return
             }
             this.$el.empty();
+            this.tooltipContainer.empty();
+            this.useDrilldown = this._isEnabledDrilldown(config);
+
             var fields = data.fields;
             var indexes = data.indexes;
             var width = this.$el.width();
@@ -218,7 +224,7 @@ define([
                         domain.push(interpolateNum(x/(numOfBins-1)));
                         range.push(interpolateColor(x/(numOfBins-1)));
                     }
-                    
+
                     colorScale = d3.scale.ordinal()
                                 .domain(domain)
                                 .range(range);
@@ -226,7 +232,7 @@ define([
                     var categoryDomain = [];
                     var categoryRange = [];
 
-                    // binning 
+                    // binning
                     for (var i = 0; i < colorCategories.length; i++) {
                         var colorCategory = colorCategories[i];
                         var bin = -1;
@@ -242,7 +248,7 @@ define([
                     categoryScale = d3.scale.ordinal()
                                         .domain(categoryDomain)
                                         .range(categoryRange);
-                } 
+                }
 
             } else {
                 chartWidth = width - 25;
@@ -257,6 +263,8 @@ define([
             var containerEl = d3.select(this.el);
 
             var that = this;
+
+            var tooltipContainer = this.tooltipContainer;
             var chart = d3.timeline()
                 .orient('top')
                 .showAxisTop()
@@ -279,20 +287,9 @@ define([
 
                     // label alignment and content generation
                     var tagName = el.node().tagName;
-                    var tooltipX = 0;
-                    var tooltipY = 0;
-
-                    if (tagName === 'rect') {
-                        tooltipX = +el.attr('x') + (+el.attr('width')) + TIMELINE_LABEL_MARGIN + 8;
-                        tooltipY = +el.attr('y') + (+el.attr('height') / 2);
-                    } else if (tagName === 'circle') {
-                        tooltipX = +el.attr('cx') + ((+el.attr('r'))) + TIMELINE_LABEL_MARGIN + 5;
-                        tooltipY = +el.attr('cy');
-                    }
-
-                    tooltipY = tooltipY - containerEl[0][0].scrollTop;
-
-                    tooltip.html('');
+                    var elementX = 0;
+                    var elementY = 0;
+                    var elementWidth = 0;
 
                     var timeSpanString = d3.time.format(tooltipTimeFormat)(new Date(d.starting_time)) +
                             (d.ending_time ? ' - ' + d3.time.format(tooltipTimeFormat)(new Date(d.ending_time)) : '');
@@ -306,54 +303,36 @@ define([
                         color: (useColors ? colorScale(categoryScale(d.category)) : 'white')
                     });
 
-                    tooltip.html(tooltipContent);
-
-                    var tooltipHeight = $(tooltip[0]).height();
-                    var tooltipWidth = $(tooltip[0]).width();
-
-                    tooltip.classed('tooltip-top-left', false);
-                    tooltip.classed('tooltip-bottom-left', false);
-                    tooltip.classed('tooltip-top-right', false);
-                    tooltip.classed('tooltip-bottom-right', false);
-
-                    // Left side
-                    if(tooltipX < chartWidth / 2) {
-                        if (tooltipY < height / 2) {
-                            tooltip.classed('tooltip-top-left', true);
-                        }
-                        else {
-                            tooltipY = tooltipY - tooltipHeight + 10;
-                            tooltip.classed('tooltip-bottom-left', true);
-                        }
+                    if (tagName === 'rect') {
+                        elementX = +el.attr('x');
+                        elementY = +el.attr('y');
+                    } else if (tagName === 'circle') {
+                        elementX = +el.attr('cx');
+                        elementY = +el.attr('cy');
                     }
-                    // Right side
-                    else {
 
-                        // On the right side of the viz we move the tootip to the left by the
-                        // size of the el and the size of the tooltip
-                        var shapeSizeOffset = tagName === 'rect' ? +el.attr('x') : +el.attr('cx') - (+el.attr('r'))
-                        tooltipX = shapeSizeOffset - tooltipWidth - 12;
-                        if(tooltipY < height / 2) {
-                            tooltip.classed('tooltip-top-right', true);
-                        }
-                        else {
-                            tooltipY = tooltipY - tooltipHeight + 10;
-                            tooltip.classed('tooltip-bottom-right', true);
-                        }
+                    if (elementY > height/2) {
+                        var placement = "top";
+                    } else {
+                        var placement = "bottom";
                     }
-                    
-                    tooltip
-                        .style('left', tooltipX + 'px')
-                        .style('top', tooltipY + 'px')
-                        .style('transform', 'translate(' + tooltipX + ',' + tooltipY + ')')
-                        .style('opacity', '1');
+
+                    $(el).tooltip({
+                        animation: false,
+                        'title': tooltipContent,
+                        'html': true,
+                        'container': tooltipContainer,
+                        'placement': placement
+                    })
+                    .tooltip('show');
+
                 })
                 .mouseout(function(d, i, el) {
                     el.attr('fill-opacity', .5)
                         .attr('stroke-width', 1);
                     containerEl.selectAll('circle, rect').transition(200).style('opacity', 1);
-                    tooltip.style('opacity', '0');
-                    tooltip.classed('left', false);
+
+                    $(el).tooltip('destroy');
                 })
                 .click(this._drilldown.bind(this))
                 .labelFormat(function(label) {
@@ -420,10 +399,10 @@ define([
                     .append('g')
                     .attr('class', 'legend')
                     .attr('transform', function(d, i) {
-                        var height = LEGEND_RECT_SIZE + LEGEND_SPACING;           
-                        var horz = width - LEGEND_WIDTH;                     
-                        var vert = i * height + LEGEND_MARGIN_TOP;                  
-                        return 'translate(' + horz + ',' + vert + ')';        
+                        var height = LEGEND_RECT_SIZE + LEGEND_SPACING;
+                        var horz = width - LEGEND_WIDTH;
+                        var vert = i * height + LEGEND_MARGIN_TOP;
+                        return 'translate(' + horz + ',' + vert + ')';
                     })
                     .on('mouseover', function(d, i) {
                         var currentLegendEl = d3.select(this);
@@ -442,22 +421,29 @@ define([
                             .style('font-weight', 'normal');
                         containerEl.selectAll('circle, rect').transition(250).style('opacity', 1);
                     })
-                legend.append('rect')                                     
-                  .attr('width', LEGEND_RECT_SIZE)                          
+                legend.append('rect')
+                  .attr('width', LEGEND_RECT_SIZE)
                   .attr('height', LEGEND_RECT_SIZE)
-                  .attr('class', function(d) { return 'ccat-' + d; })                         
-                  .attr('fill', colorScale) 
+                  .attr('class', function(d) { return 'ccat-' + d; })
+                  .attr('fill', colorScale)
                   .attr('fill-opacity', .5)
-                  .attr('stroke-width', 1)                                  
-                  .style('stroke', colorScale);                                
-                  
-                legend.append('text')                                     
-                  .attr('x', LEGEND_RECT_SIZE + 2 * LEGEND_SPACING)              
-                  .attr('y', LEGEND_RECT_SIZE - LEGEND_SPACING + LEGEND_RECT_SIZE / 6)              
+                  .attr('stroke-width', 1)
+                  .style('stroke', colorScale);
+
+                legend.append('text')
+                  .attr('x', LEGEND_RECT_SIZE + 2 * LEGEND_SPACING)
+                  .attr('y', LEGEND_RECT_SIZE - LEGEND_SPACING + LEGEND_RECT_SIZE / 6)
                   .text(function(d) { return (colorMode === 'categorical' ? '' : '>= ') + truncate(d, 18); })
                   .append('title')
                     .text(function(d) { return (colorMode === 'categorical' ? '' : '>= ') + d; });
             }
+
+            if (this.useDrilldown) {
+                this.$el.addClass('timeline-drilldown');
+            } else {
+                this.$el.removeClass('timeline-drilldown');
+            }
+
             return this;
         },
 
@@ -505,8 +491,15 @@ define([
             } else {
                 drilldownDescription.data[timeField.name] = d.starting_time;
             }
-            
+
             this.drilldown(drilldownDescription, d3.event);
+        },
+
+        _isEnabledDrilldown: function(config) {
+            if (config['display.visualizations.custom.drilldown'] && config['display.visualizations.custom.drilldown'] === 'all') {
+                return true;
+            }
+            return false;
         },
 
         _tooltipTemplate: '\
@@ -517,7 +510,6 @@ define([
                         <p><span><%= secondFieldName %>: </span><span style="color:<%= color %>;"><%= category %></span></p>\
                     <% } %>\
                 </div>\
-        ',
-
+        '
     });
 });

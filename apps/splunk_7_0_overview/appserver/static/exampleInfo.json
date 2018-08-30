@@ -1,0 +1,73 @@
+[
+{
+    "id": "metrics_store",
+    "title": "Metrics Store",
+    "short-description": "New data store for native support of metrics data",
+    "category": "Platform"
+}
+
+,
+{
+    "id": "metrics_gdi",
+    "title": "GDI support for line metric protocols",
+    "short-description": "Native support for metric data from statsD and CollectD agents",
+    "category": "Platform"
+},
+
+{
+    "id": "metrics_commands",
+    "title": "Metrics SPL Commands",
+    "short-description": "New SPL commands specifically geared at working with metrics data",
+    "category": "Platform"
+},
+
+{
+    "id": "mltk_updates",
+    "title": "Machine Learning Toolkit 2.3 and 2.4",
+    "short-description": "Introducing an improved ML-SPL API making it easier to import new algorithms, ARIMA algorithm for forecasting with ACF and PACF algorithms and a new model management interface with role-based access controls.",
+    "category": "Platform"
+},
+
+{
+    "id": "faster_dma",
+    "title": "Faster Search Performance and Data Model Acceleration",
+    "short-description": "Improvements to core search technology improve Data Model Acceleration times and summarization responsiveness.",
+    "category": "Platform"
+},
+
+{
+    "id": "mc_views",
+    "title": "Monitoring Console Views",
+    "short-description": "New views for Regex CPU Profiling to help fine tune your environment.",
+    "category": "Platform"
+},
+
+{
+    "id": "event_annotations",
+    "title": "Event Annotations",
+    "short-description": "Overlay time-series charts with dynamic, discrete events to provide relevant context.",
+    "category": "User Experience"
+},
+
+{
+    "id": "chart_options",
+    "title": "Chart Enhancements",
+    "short-description": "Several new charting options to improve metric and multi-series monitoring use cases.",
+    "category": "User Experience"
+},
+
+{
+    "id": "report_actions",
+    "title": "Report Actions Enhancements",
+    "short-description": "Leverage custom actions within the scheduled report workflow.",
+    "category": "User Experience"
+},
+
+{
+    "id": "cloud_self_service",
+    "title": "Splunk Cloud Self-Service App Management",
+    "short-description": "Splunk Cloud App Management provides self-service install, update, and uninstall of Splunk certified and internally built apps with the click of a button.",
+    "category": "User Experience"
+}
+
+]

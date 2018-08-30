@@ -1,5 +1,6 @@
 <dashboard>
-    <label>Event</label>
+    <label>Event Viewer Element</label>
+    <description>Visualize the raw data indexed by Splunk Enterprise, with field metadata.</description>
     <row>
         <event>
             <title>Internal Sourcetype Metrics</title>

@@ -59,7 +59,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        ) {
 
 	    // These ranges are hardcoded as they are the builtin
-	    // splunk time units. Any other range is calculated from 
+	    // splunk time units. Any other range is calculated from
 	    // the range of the data
 	    // NOTE: _.range excludes the final value, so they are all 1 over
 	    var TIME_RANGES = {
@@ -67,9 +67,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        'date_minute': _.range(0, 60),
 	        'date_mday': _.range(1, 32),
 	        'date_month': [
-	            'january', 'february', 'march', 
-	            'april', 'may', 'june', 
-	            'july', 'august', 'september', 
+	            'january', 'february', 'march',
+	            'april', 'may', 'june',
+	            'july', 'august', 'september',
 	            'october', 'november', 'december'
 	        ],
 	        'date_second': _.range(0, 60),
@@ -92,14 +92,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        suffix = suffix || '...';
 	        str = str || 'null';
 	        if (str.length > maxLength) {
-	            str = str.substring(0, maxLength + 1); 
+	            str = str.substring(0, maxLength + 1);
 	            str = str + suffix;
 	        }
 	        return str;
 	    }
 
 	    // Rounds to thousands and adds a 'K'
-	    var roundToThousands = function(value) {  
+	    var roundToThousands = function(value) {
 	        if (value > 1000) {
 	            value = Math.round((value / 1000)) + 'K';
 	        }
@@ -108,7 +108,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    var formatHours = function(x) {
 	        var parsed = parseInt(x, 10);
-	        if (x < 12) { 
+	        if (x < 12) {
 	            return (x === 0 ? 12 : x) + "AM";
 	        }
 	        else {
@@ -119,9 +119,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    var formatLabel = function(x) {
 	        return x;
 	    }
-	 
+
 	    return SplunkVisualizationBase.extend({
-	 
+
 	        initialize: function() {
 	            SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
 
@@ -158,14 +158,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                );
 	            }
 
-	            // Get dimension names 
+	            // Get dimension names
 	            this.xDimension = fields[0].name;
 	            this.yDimension = fields[1].name;
-	           
+
 	            var categories = {};
 	            var currentCategory = 1;
 
-	            // We keep the possible values of 
+	            // We keep the possible values of
 	            // x for calculating the x scale later
 	            var xValues = [];
 	            var colorCategories = [];
@@ -179,7 +179,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                var count = parseInt(row[2], 10);
 
 	                var xValue = row[0];
-	               
+
 	                if (_.isNaN(+category)) {
 	                    nonNumericalCategories = true;
 	                } else {
@@ -197,8 +197,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                countData[name]['total'] += count;
 	                countData[name]['counts'].push({
 	                    yValue: name,
-	                    xValue: xValue, 
-	                    count: count, 
+	                    xValue: xValue,
+	                    count: count,
 	                    category: category
 	                });
 	                colorCategories.push(category);
@@ -206,30 +206,32 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	            // Dedupe range values
 	            xValues = _.uniq(xValues);
-	            
+
 	            if(_.contains(_.keys(TIME_RANGES), this.yDimension)){
-	                countData = _.sortBy(countData, function(t){ 
-	                    return _.indexOf(TIME_RANGES[this.yDimension], t.name) 
+	                countData = _.sortBy(countData, function(t){
+	                    return _.indexOf(TIME_RANGES[this.yDimension], t.name)
 	                }.bind(this));
 	            }
 
-	            var metadata = { 
+	            var metadata = {
 	                xValues: xValues,
 	                colorCategories: _.uniq(colorCategories),
 	                nonNumericalCategories: nonNumericalCategories
-	            };        
+	            };
 
 	            data['metadata'] = metadata;
 	            data['countData'] = _.values(countData);
 
 	            return data;
 	        },
-	 
-	        updateView: function(data, config) {            
+
+	        updateView: function(data, config) {
 	            if (!data || data.rows.length < 1) {
 	                return
 	            }
-	            
+
+	            this.useDrilldown = this._isEnabledDrilldown(config);
+
 	            var radiusScale = this._getEscapedProperty('radiusScale', config) || 'local';
 	            var useColors = vizUtils.normalizeBoolean(this._getEscapedProperty('useColors', config));
 	            var colorMode = this._getEscapedProperty('colorMode', config) || 'categorical';
@@ -240,7 +242,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            var showLegend = useColors;
 	            var colorScale;
 	            var categoryScale;
-	           
+
 	            var that = this;
 
 	            if (useColors) {
@@ -296,7 +298,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    categoryScale = d3.scale.ordinal()
 	                                        .domain(categoryDomain)
 	                                        .range(categoryRange);
-	                } 
+	                }
 	            } else {
 	                categoryScale = d3.scale.ordinal()
 	                        .domain(data.metadata.colorCategories)
@@ -311,18 +313,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            var metadata = data.metadata;
 	            var countData = data.countData;
 
-	            var formatXAxisLabel = (this.xDimension === 'date_hour') ? 
+	            var formatXAxisLabel = (this.xDimension === 'date_hour') ?
 	                formatHours :
 	                function(x) {
 	                    return labelRotation === 'angle' ? truncate(x, 4) : truncate(x, 9);
 	                };
 	            var formatYAxisLabel = function(label) {
-	                return truncate(label, 15);   
+	                return truncate(label, 15);
 	            };
 	            var formatCount = roundToThousands;
 
 	            var containerHeight = this.$el.height();
-	            var containerWidth = this.$el.width(); 
+	            var containerWidth = this.$el.width();
 
 	            // Clear svg
 	            var svg = $(this._viz.svg[0]);
@@ -338,8 +340,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                .append('g')
 	                .attr('width', graphWidth)
 	                .attr('height', graphHeight)
-	                .attr('transform', 'translate('  
-	                        + (this._viz.margin.left + LABEL_WIDTH) + ','  
+	                .attr('transform', 'translate('
+	                        + (this._viz.margin.left + LABEL_WIDTH) + ','
 	                        + this._viz.margin.top + ')');
 
 	            var colors = [
@@ -350,7 +352,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                '#cc5068', '#73427f'
 	            ];
 
-	            // If we have a hardcoded set of xValues, we use it, 
+	            // If we have a hardcoded set of xValues, we use it,
 	            // otherwise it comes from the data
 	            var xValues =  TIME_RANGES[this.xDimension]
 	                || metadata.xValues;
@@ -360,7 +362,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            if (isNumericList(xValues)) {
 	                var start = _.min(xValues);
 	                var end = _.max(xValues);
-	         
+
 	                xScale = d3.scale.linear()
 	                    .domain([start, end])
 	                    .range([0, graphWidth - this._viz.margin.right]);
@@ -375,18 +377,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            var xAxis = d3.svg.axis()
 	                .scale(xScale)
 	                .ticks(xValues.length + 1)
-	                .tickFormat(formatXAxisLabel)  
+	                .tickFormat(formatXAxisLabel)
 	                .orient('top');
 
 	            var axisContainer = graph.append('g')
 	                .attr('class', 'x axis')
 	                .call(xAxis);
-	                
+
 	            var axisText = axisContainer.selectAll('text')
-	            
+
 	            axisText
 	                .attr('data-label-input', function(d) { return d; })
-	                
+
 	            axisText
 	                .append('title')
 	                .attr('data-label-input', function(d) { return d; })
@@ -436,7 +438,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            var col = graphWidth / xValues.length;
 
 	            var dataMax = _.max(_.pluck(_.flatten(_.pluck(countData, 'counts')), 'count'));
-	           
+
 	            var rows = countData.length;
 
 	            // maximum radius & row height will be calculated dynamically
@@ -456,12 +458,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            svg.height(Math.max(overflowHeight, legendHeight));
 
 	            _.each(countData, function(row, j) {
-	                
+
 	                // Scaler for radius
 	                var scaleMax = (radiusScale === 'global') ? dataMax : _.max(_.pluck(_.flatten(row.counts), 'count'));
 	                var rScale = d3.scale.linear()
 	                    .domain([
-	                        0, 
+	                        0,
 	                        scaleMax
 	                    ])
 	                    .range([MIN_RADIUS, maxRadius])
@@ -469,7 +471,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	                // Append a category class
 	                var g = graph.append('g')
-	                    .attr('class','dimension') 
+	                    .attr('class','dimension')
 	                    .attr('data-category', row.category);
 
 	                // Add circles
@@ -483,8 +485,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    .data(row['counts'])
 	                    .enter()
 	                    .append('text')
-	                    .attr('data-ccat', function(d, i) { 
-	                        return colorMode === 'categorical' ? d.category : categoryScale(d.category); 
+	                    .attr('data-ccat', function(d, i) {
+	                        return colorMode === 'categorical' ? d.category : categoryScale(d.category);
 	                    });
 
 	                // Position and color the circles
@@ -493,11 +495,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    .attr('cy', j * rowHeight + rowHeight)
 	                    .attr('r', function(d) { return rScale(d.count); })
 	                    .attr('data-column', function(d, i) { return d.xValue })
-	                    .attr('data-ccat', function(d, i) { 
-	                        return colorMode === 'categorical' ? d.category : categoryScale(d.category); 
+	                    .attr('data-ccat', function(d, i) {
+	                        return colorMode === 'categorical' ? d.category : categoryScale(d.category);
 	                    })
-	                    .style('fill', function(d, i) { 
-	                        return useColors ? colorScale(categoryScale(d.category)) : 'rgb(30, 147, 198)'; 
+	                    .style('fill', function(d, i) {
+	                        return useColors ? colorScale(categoryScale(d.category)) : 'rgb(30, 147, 198)';
 	                    })
 	                    .append('svg:title')
 	                        .text(function(d) { return d.count; });
@@ -553,7 +555,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    .style('opacity', 0)
 
 	                labels
-	                    .attr('transform', function(d, i){ 
+	                    .attr('transform', function(d, i){
 	                        return 'translate(' +
 	                            (xScale(d.xValue) - maxRadius) + ',' + ((j * rowHeight) + maxRadius) +
 	                        ')';
@@ -621,7 +623,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        return 'translate(' + (graphWidth + LEGEND_SPACING) + ',0)';
 	                    })
 	                    .attr('height', colorScale.domain() * (2 * LEGEND_CIRCLE_RADIUS + LEGEND_SPACING));
-	                    
+
 
 	                var legendItems = legend.selectAll('.legend-item')
 	                    .data(colorScale.domain())
@@ -629,10 +631,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    .append('g')
 	                    .attr('class', 'legend-item')
 	                    .attr('transform', function(d, i) {
-	                        var height = 2 * LEGEND_CIRCLE_RADIUS + LEGEND_SPACING;           
-	                        var vert = i * height;                  
-	                        return 'translate(' + 0 + ',' + vert + ')';        
-	                    }) 
+	                        var height = 2 * LEGEND_CIRCLE_RADIUS + LEGEND_SPACING;
+	                        var vert = i * height;
+	                        return 'translate(' + 0 + ',' + vert + ')';
+	                    })
 	                    .on('mouseover', function(d, i) {
 	                        d3.select(this).select('text')
 	                            .style('font-weight', 'bold');
@@ -661,22 +663,28 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                                .duration(120)
 	                                .style('opacity', 0);
 	                    })
-	                    
-	                legendItems.append('circle')                                     
-	                  .attr('r', LEGEND_CIRCLE_RADIUS)                        
-	                  .attr('fill', colorScale);                               
-	                  
-	                legendItems.append('text')                                     
-	                  .attr('x', 2 * LEGEND_CIRCLE_RADIUS + LEGEND_SPACING)              
+
+	                legendItems.append('circle')
+	                  .attr('r', LEGEND_CIRCLE_RADIUS)
+	                  .attr('fill', colorScale);
+
+	                legendItems.append('text')
+	                  .attr('x', 2 * LEGEND_CIRCLE_RADIUS + LEGEND_SPACING)
 	                  .attr('y', 4)
 	                  .text(function(d) { return truncate((colorMode === 'categorical' ? '' : '>= ') + d, 18); })
 	                  .append('title')
 	                  .text(function(d) { return (colorMode === 'categorical' ? '' : '>= ') + d; });
 	            }
-	                
+
+	            if (this.useDrilldown) {
+	                this.$el.addClass('punchcard-drilldown');
+	            } else {
+	                this.$el.removeClass('punchcard-drilldown');
+	            }
+
 	            return this;
 	        },
-	        
+
 	        _punchDrilldown: function(d){
 	            var drilldownDescription = {
 	                action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
@@ -684,18 +692,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            };
 	            drilldownDescription.data[this.xDimension] = d.xValue;
 	            drilldownDescription.data[this.yDimension] = d.yValue;
-	            
+
 	            this.drilldown(drilldownDescription, d3.event);
 	        },
-	        
+
 	         _axisLabelDrilldown: function(key, labelText){
 	            var drilldownDescription = {
 	                action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
 	                data: {}
 	            };
-	            
+
 	            drilldownDescription.data[key] = labelText;
-	            
+
 	            this.drilldown(drilldownDescription, d3.event);
 	        },
 
@@ -713,6 +721,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        _getEscapedProperty: function(name, config) {
 	            var propertyValue = config[this.getPropertyNamespaceInfo().propertyNamespace + name];
 	            return vizUtils.escapeHtml(propertyValue);
+	        },
+
+	        _isEnabledDrilldown: function(config) {
+	            if (config['display.visualizations.custom.drilldown'] && config['display.visualizations.custom.drilldown'] === 'all') {
+	                return true;
+	            }
+	            return false;
 	        }
 
 	    });

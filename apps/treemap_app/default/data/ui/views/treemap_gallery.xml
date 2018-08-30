@@ -1,13 +1,14 @@
 <form>
   <label>Treemap Gallery</label>
+  <fieldset submitButton="false"></fieldset>
   <row>
     <panel>
       <title>Credit Card Transactions by Card Provider</title>
-      <viz type="treemap_app.treemap">state,city,card_provider,response_code,amount<search>
+      <viz type="treemap_app.treemap">
+        <search>
           <query>| inputlookup treemap_dataset.csv | stats sum(amount) as Dollars by card_provider, response_code</query>
           <earliest>0</earliest>
-        </search>
-        <option name="treemap_app.treemap.useZoom">true</option>
+        </search>state,city,card_provider,response_code,amount<option name="treemap_app.treemap.useZoom">true</option>
         <option name="treemap_app.treemap.showLabels">true</option>
         <option name="treemap_app.treemap.showLegend">true</option>
         <option name="treemap_app.treemap.showTooltip">true</option>
@@ -84,6 +85,36 @@
         <option name="treemap_app.treemap.minColor">#d93f3c</option>
         <option name="treemap_app.treemap.maxColor">#3fc77a</option>
         <option name="treemap_app.treemap.numOfBins">6</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Treemap with Trellis Layout</title>
+      <viz type="treemap_app.treemap">
+        <search>
+          <query>| inputlookup treemap_dataset.csv 
+| stats sum(amount) as Dollars by card_provider, response_code, state
+| sort response_code, card_provider, state</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="treemap_app.treemap.colorMode">categorical</option>
+        <option name="treemap_app.treemap.maxCategories">10</option>
+        <option name="treemap_app.treemap.maxColor">#3fc77a</option>
+        <option name="treemap_app.treemap.minColor">#d93f3c</option>
+        <option name="treemap_app.treemap.numOfBins">6</option>
+        <option name="treemap_app.treemap.showLabels">1</option>
+        <option name="treemap_app.treemap.showLegend">false</option>
+        <option name="treemap_app.treemap.showTooltip">1</option>
+        <option name="treemap_app.treemap.useColors">1</option>
+        <option name="treemap_app.treemap.useZoom">1</option>
+        <option name="trellis.enabled">1</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trellis.splitBy">response_code</option>
       </viz>
     </panel>
   </row>

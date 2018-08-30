@@ -1,5 +1,6 @@
 <dashboard>
   <label>Table Formats</label>
+  <description>Format columns using built-in table formats (coloring, number formatting).</description>
   <row>
     <panel>
       <table>

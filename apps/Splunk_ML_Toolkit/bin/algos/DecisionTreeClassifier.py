@@ -1,20 +1,22 @@
 #!/usr/bin/env python
 
 from sklearn.tree import DecisionTreeClassifier as _DecisionTreeClassifier
+
+from base import ClassifierMixin, BaseAlgo
 from codec import codecs_manager
-from base import *
 from util.param_util import convert_params
+from util.algo_util import tree_summary
 
 
-class DecisionTreeClassifier(TreeEstimatorMixin):
+class DecisionTreeClassifier(ClassifierMixin, BaseAlgo):
+
     def __init__(self, options):
-        super(DecisionTreeClassifier, self).__init__()
         self.handle_options(options)
 
         out_params = convert_params(
             options.get('params', {}),
             ints=['random_state', 'max_depth', 'min_samples_split', 'max_leaf_nodes'],
-            strs=['criterion', 'splitter', 'max_features']
+            strs=['criterion', 'splitter', 'max_features'],
         )
 
         # whitelist valid values for criterion, as error raised by sklearn for invalid values is uninformative
@@ -43,8 +45,12 @@ class DecisionTreeClassifier(TreeEstimatorMixin):
         except:
             pass
 
-        self.estimator = _DecisionTreeClassifier(class_weight='auto', **out_params)
-        self.is_classifier = True
+        self.estimator = _DecisionTreeClassifier(class_weight='balanced', **out_params)
+
+    def summary(self, options):
+        if 'args' in options:
+            raise RuntimeError('Summarization does not take values other than parameters')
+        return tree_summary(self, options)
 
     @staticmethod
     def register_codecs():

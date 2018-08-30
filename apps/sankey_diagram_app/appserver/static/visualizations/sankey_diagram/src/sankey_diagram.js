@@ -22,7 +22,7 @@ function(
         DEFAULT_HEIGHT = 500,
         LEGEND_WIDTH = 125;
 
-    //Sort and only allow top 3 and put the rest in "Others" bucket.    
+    //Sort and only allow top 3 and put the rest in "Others" bucket.
     var MAX_TOOLTIP_VALUES = 3;
 
     var MARGIN = {top: 15, right: 15, bottom: 15, left: 15};
@@ -238,7 +238,9 @@ function(
 
             tr.append('td')
                     .attr('class', 'title')
-                    .html(function(m) { return (prefix ? '- ' : '') + m.title; });
+                    .html(function(m) {
+                        return '<span style="color:' + (m.color || 'white') + ';">' + (prefix ? '- ' : '') + m.title + '</span>';
+                    });
 
             tr.append('td')
                     .attr('class', 'value')
@@ -249,8 +251,8 @@ function(
 
                 tr.append('td')
                         .attr('class', 'value value2')
-                        .html(function(m) { 
-                            return (isNaN(filterFloat(m.colorVal)) ? m.colorVal : f.integer(m.colorVal)); 
+                        .html(function(m) {
+                            return (isNaN(filterFloat(m.colorVal)) ? m.colorVal : f.integer(m.colorVal));
                         });
             }
             else {
@@ -272,7 +274,7 @@ function(
             // Enter
             var linksEnterSelection = links.enter()
                 .append('path')
-                .attr('data-shape-name', function(d) { 
+                .attr('data-shape-name', function(d) {
                     return d.source.name.replace(/\//g, '-') + '_' + d.target.name.replace(/\//g, '-'); })
                 .attr('class', 'link');
 
@@ -313,6 +315,8 @@ function(
             });
 
             links.classed('backwards', function(d) { return that.styleBackwards && d.target.x < d.source.x; });
+
+            links.classed('link-drilldown', function() {return this.useDrilldown; }.bind(this));
 
             // Exit
             links.exit().remove();
@@ -483,7 +487,12 @@ function(
                                 if(d.name !== targetLink.source.name) {
                                     var obj = {
                                         title: targetLink.source.name,  //link is from source
-                                        value: parseInt(targetLink.value)
+                                        value: parseInt(targetLink.value),
+                                        color: that.color(
+                                            (that.colorMode === 'categorical') ?
+                                                (targetLink.source.name.replace(/ .*/, '')) :
+                                                (that.category(that.mode === 'double' ? targetLink.colorVal : targetLink.value))
+                                        )
                                     };
                                     if(that.mode === 'double') obj.colorVal = parseInt(targetLink.colorVal);
 
@@ -509,7 +518,12 @@ function(
                                 if(d.name !== sourceLink.target.name) {
                                     var obj = {
                                         title: sourceLink.target.name,  //link is from target
-                                        value: parseInt(sourceLink.value)
+                                        value: parseInt(sourceLink.value),
+                                        color: that.color(
+                                            (that.colorMode === 'categorical') ?
+                                                sourceLink.target.name.replace(/ .*/, '') :
+                                                that.category((that.mode === 'double') ? sourceLink.colorVal : sourceLink.value)
+                                        )
                                     };
                                     if(that.mode === 'double') obj.colorVal = parseInt(sourceLink.colorVal);
 
@@ -586,18 +600,41 @@ function(
                         var table = that.tooltip.append('table');
                         var tr = table.append('tr');
                         tr.append('td').attr('class', 'labelTxt').html(function(m) { return 'Source'; });
-                        tr.append('td').attr('class', 'nodeName').html(function(m) { return d.source.name; });
+                        tr.append('td').attr('class', 'nodeName').html(function(m) {
+                            return '<span style="color:' + ((that.colorMode === 'categorical') ?
+                                that.color(d.source.name.replace(/ .*/, '')) : 'white') + '">' + d.source.name + '</span>';
+                        });
                         tr = table.append('tr');
                         tr.append('td').attr('class', 'labelTxt').html(function(m) { return 'Target'; });
-                        tr.append('td').attr('class', 'nodeName').html(function(m) { return d.target.name; });
+                        tr.append('td').attr('class', 'nodeName').html(function(m) {
+                            return '<span style="color:' + ((that.colorMode === 'categorical') ?
+                                that.color(d.target.name.replace(/ .*/, '')) : 'white') + '">' + d.target.name + '</span>';
+                        });
 
                         //Tooltip with the source and target names and values.
                         var toolTipData = [];
 
-                        toolTipData.push({ title: that.measureOneName, value: d.value });
+                        toolTipData.push({
+                            title: that.measureOneName,
+                            value: d.value,
+                            // if the viz is in double mode, the streams and nodes will be colored
+                            // based on colorVal -> it doesn't make sense to colorize the first tooltip item
+                            color: that.mode === 'double' ?
+                                'white' : that.color(
+                                    (that.colorMode === 'categorical') ?
+                                        d.source.name.replace(/ .*/, '') : that.category(d.value)
+                                )
+                        });
 
                         if(that.mode === 'double') {
-                            toolTipData.push({ title: that.measureTwoName, value: d.colorVal });
+                            toolTipData.push({
+                                title: that.measureTwoName,
+                                value: d.colorVal,
+                                color: that.color(
+                                    (that.colorMode === 'categorical') ?
+                                        d.source.name.replace(/ .*/, '') : that.category(d.colorVal)
+                                )
+                            });
                         }
 
                         that._updateTooltipTable(toolTipData);
@@ -608,7 +645,7 @@ function(
         onLinkClick: function(d) {
             if(d3.event.defaultPrevented) {
                 return;
-            } 
+            }
             if(this.showTooltip) {
                 this.tooltip.style('display', 'none');
             }
@@ -642,6 +679,8 @@ function(
             this.minColor = this._getEscapedProperty('minColor', config) || '#d93f3c';
             this.maxColor = this._getEscapedProperty('maxColor', config) || '#3fc77a';
             this.numOfBins = this._getEscapedProperty('numOfBins', config) || 6;
+
+            this.useDrilldown = this._isEnabledDrilldown(config);
 
             this.showSelf = vizUtils.normalizeBoolean(this._getEscapedProperty('showSelf', config), { default: false });
             this.showBackwards = vizUtils.normalizeBoolean(
@@ -817,12 +856,12 @@ function(
 
                 keys.enter().append('li')
                         .attr('class', 'key')
-                        .style('border-left-color', function(d) { 
-                            return that.color(d); 
+                        .style('border-left-color', function(d) {
+                            return that.color(d);
                         })
                         .append('span')
                         .text(function(d) {
-                            if(that.colorMode === 'categorical') { 
+                            if(that.colorMode === 'categorical') {
                                 return d;
                             }
                             else {
@@ -839,6 +878,13 @@ function(
                     }
                 }
             }
+        },
+
+         _isEnabledDrilldown: function(config) {
+            if (config['display.visualizations.custom.drilldown'] && config['display.visualizations.custom.drilldown'] === 'all') {
+                return true;
+            }
+            return false;
         },
 
         // Search data params

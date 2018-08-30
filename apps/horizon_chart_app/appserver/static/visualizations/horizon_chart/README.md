@@ -1,7 +1,7 @@
 # Horizon Chart
 
 Documentation:
-http://docs.splunk.com/Documentation/CustomViz/1.0/HorizonChart/HorizonChartIntro
+http://docs.splunk.com/Documentation/HorizonChart/1.2.0/HorizonChartViz/HorizonChartIntro
 
 ## Sample Searches
 

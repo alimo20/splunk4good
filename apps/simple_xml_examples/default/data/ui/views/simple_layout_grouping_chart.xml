@@ -1,6 +1,6 @@
 <dashboard>
-    <label>Simple Layout Grouping Chart</label>
-    <description>Grouping multiple panels into one column. There can be one or more columns per dashboard row.</description>
+    <label>Panel Grouping with Charts</label>
+    <description>Group multiple charts, tables, html panels, or events, aligning vertically.</description>
     <row>
         <panel>
             <!-- 2 panels are grouped into 1 column -->

@@ -46,5 +46,5 @@ define([
                 '<tbody></tbody>' +
             '</table>' +
         '</div>'
-    });;
+    });
 });

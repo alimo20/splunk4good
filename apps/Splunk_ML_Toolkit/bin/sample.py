@@ -6,6 +6,7 @@ import random
 import math
 from util.chunk_util import read_chunk, write_chunk, log_and_warn, log_and_die
 from util.param_util import parse_args, convert_params
+from util.file_util import fix_line_ending
 
 ##################
 # sample
@@ -57,15 +58,7 @@ from util.param_util import parse_args, convert_params
 # syntax = fieldname=<string>
 # description = The name of the field in which to store the partition number. Defaults to 'partition_number'.
 
-# Windows will mangle our line-endings unless we do this.
-if sys.platform == "win32":
-    import os
-    import msvcrt
-
-    msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
-    msvcrt.setmode(sys.stderr.fileno(), os.O_BINARY)
-    msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
-
+fix_line_ending()
 csv.field_size_limit(10485760)
 
 DEBUG = True
@@ -100,9 +93,9 @@ def main():
 
     if 'params' in options:
         try:
-            params = convert_params(options['params'], ints=['seed', 'count', 'partitions'], floats=['ratio'],
+            params = convert_params(options.get('params', {}), ints=['seed', 'count', 'partitions'], floats=['ratio'],
                                     strs=['fieldname', 'proportional'], aliases={})
-        except Exception as e:
+        except RuntimeError as e:
             log_and_die(out_metadata, str(e))
 
         if 'seed' in params:

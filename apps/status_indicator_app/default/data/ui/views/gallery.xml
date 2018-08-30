@@ -77,4 +77,32 @@
       </viz>
     </panel>
   </row>
+  <row>
+    <panel>
+      <title>Status Indicator with Trellis Layout</title>
+      <viz type="status_indicator_app.status_indicator">
+        <search>
+          <query>| inputlookup status_indicator_data.csv 
+| head 10 
+| stats values(value) as value, values(icon_value), values(color_value) by category 
+| eval value = value % 1000 
+| eval 3=3</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">152</option>
+        <option name="status_indicator_app.status_indicator.colorBy">field_value</option>
+        <option name="status_indicator_app.status_indicator.fillTarget">text</option>
+        <option name="status_indicator_app.status_indicator.icon">field_value</option>
+        <option name="status_indicator_app.status_indicator.showOption">1</option>
+        <option name="status_indicator_app.status_indicator.staticColor">#555</option>
+        <option name="status_indicator_app.status_indicator.useColors">true</option>
+        <option name="trellis.enabled">1</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">small</option>
+      </viz>
+    </panel>
+  </row>
 </dashboard>

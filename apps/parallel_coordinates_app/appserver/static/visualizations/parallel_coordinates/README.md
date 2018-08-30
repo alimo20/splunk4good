@@ -1,7 +1,7 @@
 # Parallel Coordinates Visualization
 
 Documentation:
-http://docs.splunk.com/Documentation/CustomViz/1.0.0/ParallelCoordinates/ParallelCoordIntro
+http://docs.splunk.com/Documentation/ParallelCoordinates/1.2.0/ParallelCoordinatesViz/ParallelCoordIntro
 
 ## Sample Searches
 

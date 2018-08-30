@@ -1,23 +1,15 @@
 #!/usr/bin/env python
-# Copyright (C) 2015-2017 Splunk Inc. All Rights Reserved.
-import sys
+# Copyright (C) 2015-2018 Splunk Inc. All Rights Reserved.
+from exec_anaconda import exec_anaconda_or_die
+exec_anaconda_or_die()
+
 import os
-
-import cexc
-import exec_anaconda
-
-try:
-    exec_anaconda.exec_anaconda()
-except Exception as e:
-    cexc.abort(e)
-    sys.exit(1)
-
-import cexc
 import conf
 from cStringIO import StringIO
 from util.param_util import is_truthy, parse_args, convert_params
 from util import command_util
 
+import cexc
 from chunked_controller import ChunkedController
 from cexc import BaseChunkHandler
 
@@ -37,9 +29,11 @@ class FitCommand(cexc.BaseChunkHandler):
         """Take the getinfo metadata and return controller_options.
 
         Args:
-            dict: getinfo metadata from first chunk
+            getinfo (dict): getinfo metadata from first chunk
+
         Returns:
-            dict: options to be passed to controller
+            controller_options (dict): options to be passed to controller
+            partial_fit (bool): boolean flag to indicate partial fit
         """
         if len(getinfo['searchinfo']['raw_args']) == 0:
             raise RuntimeError('First argument must be an "algorithm"')
@@ -54,10 +48,10 @@ class FitCommand(cexc.BaseChunkHandler):
         """Load command specific options.
 
         Args:
-            dict: options from handle_arguments
+            controller_options (dict): options from handle_arguments
         Returns:
-            tuple: a dict of controller options and secondly a boolean flag
-                for partial fit
+            controller_options (dict): dict of controller options
+            partial_fit (dict): boolean flag for partial fit
         """
         controller_options['processor'] = 'FitBatchProcessor'
         partial_fit = False
@@ -65,7 +59,8 @@ class FitCommand(cexc.BaseChunkHandler):
         if 'params' in controller_options:
             try:
                 fit_params = convert_params(
-                    controller_options['params'], ignore_extra=True,
+                    params=controller_options['params'],
+                    ignore_extra=True,
                     bools=['apply', 'partial_fit'])
             except ValueError as e:
                 raise RuntimeError(str(e))
@@ -73,6 +68,9 @@ class FitCommand(cexc.BaseChunkHandler):
             if 'apply' in fit_params:
                 controller_options['apply'] = fit_params['apply']
                 del controller_options['params']['apply']
+
+                if 'model_name' not in controller_options and not fit_params['apply']:
+                    raise RuntimeError('You must save a model if you are not applying it.')
 
             if 'partial_fit' in fit_params:
                 partial_fit = fit_params['partial_fit']
@@ -87,7 +85,7 @@ class FitCommand(cexc.BaseChunkHandler):
         """Get options, start controller & watchdog, return command type.
 
         Returns:
-            dict: get info response (command type) and required fields
+            (dict): get info response (command type) and required fields
         """
         self.controller_options, self.partial_fit = self.handle_arguments(self.getinfo)
         self.controller = ChunkedController(self.getinfo, self.controller_options)
@@ -104,16 +102,25 @@ class FitCommand(cexc.BaseChunkHandler):
         """Collect output body from controller.
 
         Returns:
-            string: body
+            (str): body
         """
         return self.controller.output_results()
 
     def handler(self, metadata, body):
         """Main handler we override from BaseChunkHandler.
 
+        Args:
+            metadata (dict): metadata information
+            body (str): data payload from CEXC
+
         Returns:
-            tuple: metadata, body
+            (dict): metadata to be sent back to CEXC
+            output_body (str): data payload to be sent back to CEXC
         """
+        if command_util.is_invalid_chunk(metadata):
+            logger.debug('Not running without session key.')
+            return {'finished': True}
+
         if command_util.is_getinfo_chunk(metadata):
             return self.setup()
 

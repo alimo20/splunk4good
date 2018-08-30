@@ -1,5 +1,6 @@
 <dashboard>
-    <label>Choropleth Map - Color Modes</label>
+    <label>Choropleth Map Color Modes</label>
+    <description>Choose between three color modes and find one that best fits your data.</description>
 
     <row>
         

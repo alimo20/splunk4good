@@ -1,6 +1,6 @@
 <form>
-    <label>Multi Select Input</label>
-    <description/>
+    <label>Multiselect Input</label>
+    <description>Include a multiselect input.</description>
     <row>
         <panel>
             <!-- New in Splunk 6.1 use the multiselect input -->

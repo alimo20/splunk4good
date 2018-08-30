@@ -1,6 +1,6 @@
 <form>
-    <label>Set tokens on page load</label>
-    <description>Set or unset tokens when initializing the page</description>
+    <label>Set Tokens on Page Load</label>
+    <description>Set or unset tokens when initializing the page.</description>
     <!-- set the initial state of tokens-->
     <init>
         <set token="type">sourcetype</set>

@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 # Copyright (C) 2015-2017 Splunk Inc. All Rights Reserved.
 import errno
-import pandas as pd
 import gc
 
+import pandas as pd
+
 import cexc
-import conf
-import models
+import models.base
+
 from BaseProcessor import BaseProcessor
+from util import search_util
+from util.param_util import is_truthy
+from util.searchinfo_util import is_parsetmp
 
 logger = cexc.get_logger(__name__)
 messages = cexc.get_messages_logger()
@@ -16,45 +20,66 @@ messages = cexc.get_messages_logger()
 class ApplyProcessor(BaseProcessor):
     """The apply processor receives and returns pandas DataFrames."""
 
-    def __init__(self, process_options):
+    def __init__(self, process_options, searchinfo):
         """Initialize options for the processor.
 
         Args:
-            dict: process options
+            process_options (dict): process options
+            searchinfo (dict): information required for search
         """
-        self.algo_name, self.algo, self.process_options = self.setup_model(process_options)
-        self.resource_limits = self.load_resource_limits(self.algo_name)
+        self.searchinfo = searchinfo
+        self.algo_name, self.algo, self.process_options, self.namespace = self.setup_model(process_options, self.searchinfo)
+        self.resource_limits = self.load_resource_limits(self.algo_name, self.process_options)
 
     def get_relevant_fields(self):
-        """Return the needed explanatory variables/variables.
-        If explanatory variables are present, that's all we need,
-        otherwise we need variables
+        """Return the needed feature variables.
 
         Returns:
-            list: relevant fields
+            relevant_fields (list): relevant fields
         """
-        if 'explanatory_variables' in self.process_options:
-            return self.process_options['explanatory_variables']
-        else:
-            return self.process_options['variables']
+        relevant_fields = self.process_options['feature_variables']
 
-    @staticmethod
-    def setup_model(process_options):
+        # TODO MLA-1589: require explicit _* usage
+        if '*' in relevant_fields:
+            relevant_fields.append('_*')
+
+        return relevant_fields
+
+    @classmethod
+    def setup_model(cls, process_options, searchinfo):
         """Load temp model, try to load real model, update options.
 
+        Remove the tmp_dir in the process.
+
         Args:
-            dict: process_options
+            process_options (dict): process_options
+            searchinfo (dict): information required for search
         Returns:
-            tuple: the returned tuple contains four members:
-                str: algo_name
-                algo: algorithm object
-                dict: updated process options
+            algo_name (str): algorithm name
+            algo (object): algorithm object
+            process_options (dict): updated process options
+            namespace (str): namespace of the model
         """
-        # Try loading tmp model from dispatch directory.
+        tmp_dir = process_options.pop('tmp_dir')
+
+        searchinfo = search_util.add_distributed_search_info(process_options, searchinfo)
+
+        namespace = process_options.pop('namespace', None)
+
+        mlspl_conf = process_options.pop('mlspl_conf')
+
+        # For MLA-1989 we cannot properly load a model in parsetmp search
+        if is_parsetmp(searchinfo):
+            process_options['mlspl_limits'] = {}
+            process_options['feature_variables'] = ['*']
+            return None, None, process_options, None
+
         try:
-            algo_name, _, model_options = models.load_model(
+            algo_name, _, model_options = models.base.load_model(
                 process_options['model_name'],
-                model_dir=process_options['tmp_dir'],
+                searchinfo,
+                namespace=namespace,
+                model_dir=tmp_dir,
                 skip_model_obj=True,
                 tmp=True
             )
@@ -63,7 +88,10 @@ class ApplyProcessor(BaseProcessor):
         except:
             # Try to load real model.
             try:
-                algo_name, algo, model_options = models.load_model(process_options['model_name'])
+                algo_name, algo, model_options = models.base.load_model(
+                    process_options['model_name'],
+                    searchinfo,
+                    namespace=namespace)
             except (OSError, IOError) as e:
                 if e.errno == errno.ENOENT:
                     raise RuntimeError('model "%s" does not exist.' % process_options['model_name'])
@@ -76,20 +104,24 @@ class ApplyProcessor(BaseProcessor):
 
         model_options.update(process_options)  # process options override loaded model options
         process_options = model_options
-        return algo_name, algo, process_options
+        process_options['mlspl_limits'] = mlspl_conf.get_stanza(algo_name)
+        return algo_name, algo, process_options, namespace
 
     @staticmethod
-    def load_resource_limits(algo_name):
+    def load_resource_limits(algo_name, process_options):
         """Load algorithm-specific limits.
 
         Args:
-            str: algo name
+            algo_name (str): algorithm name
+            process_options (dict): the mlspl limits from the conf files
+
         Returns:
-            dict: dictionary of resource limits
+            resource_limits (dict): dictionary of resource limits
         """
         resource_limits = {}
-        resource_limits['max_memory_usage_mb'] = int(
-            conf.get_mlspl_prop('max_memory_usage_mb', algo_name, -1))
+        limits = process_options['mlspl_limits']
+        resource_limits['max_memory_usage_mb'] = int(limits.get('max_memory_usage_mb', -1))
+        resource_limits['streaming_apply'] = is_truthy(limits.get('streaming_apply', False))
         return resource_limits
 
     @staticmethod
@@ -97,16 +129,15 @@ class ApplyProcessor(BaseProcessor):
         """Perform the literal predict from the estimator.
 
         Args:
-            dataframe: input data
-            algo: initialized algo
-            dict: process options
+            df (dataframe): input data
+            algo (object): initialized algo object
+            process_options (dict): process options
+
         Returns:
-            dataframe: output data
+            prediction_df (dataframe): output dataframe
         """
         try:
-            output_name = process_options.get('output_name', None)
-            prediction_df = algo.predict(df.copy(), options=process_options,
-                                         output_name=output_name)
+            prediction_df = algo.apply(df, process_options)
             gc.collect()
 
         except Exception as e:
@@ -114,18 +145,14 @@ class ApplyProcessor(BaseProcessor):
             cexc.messages.warn('Error while applying model "%s": %s' % (process_options['model_name'], str(e)))
             raise RuntimeError(e)
 
-        # TODO: ARIMA should not get to be special and affect any of the processor logic here:
-        if type(prediction_df) is dict and prediction_df['append'] is False:
-            df = prediction_df['output'].copy()
-        else:
-            df.drop(prediction_df.columns, axis=1, errors='ignore', inplace=True)
-            df = pd.concat([df, prediction_df], axis=1, join_axes=[df.index])
-
-        return df
+        return prediction_df
 
     def process(self):
         """If algo isn't loaded, load the model. Create the output dataframe."""
         if self.algo is None:
-            self.algo_name, self.algo, _ = models.load_model(self.process_options['model_name'])
+            self.algo_name, self.algo, _ = models.base.load_model(self.process_options['model_name'], self.searchinfo, namespace=self.namespace)
         if len(self.df) > 0:
             self.df = self.apply(self.df, self.algo, self.process_options)
+        if self.df is None:
+            messages.warn('Apply method did not return any results.')
+            self.df = pd.DataFrame()

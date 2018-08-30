@@ -1,19 +1,23 @@
 #!/usr/bin/env python
 
-from sklearn.linear_model import ElasticNet  as _ElasticNet
+import pandas as pd
+from sklearn.linear_model import ElasticNet as _ElasticNet
+
+from base import RegressorMixin, BaseAlgo
 from codec import codecs_manager
-from base import *
 from util.param_util import convert_params
 
 
-class ElasticNet(EstimatorMixin):
+class ElasticNet(RegressorMixin, BaseAlgo):
+
     def __init__(self, options):
         self.handle_options(options)
 
         out_params = convert_params(
             options.get('params', {}),
             bools=['fit_intercept', 'normalize'],
-            floats=['alpha', 'l1_ratio'])
+            floats=['alpha', 'l1_ratio'],
+        )
 
         if 'l1_ratio' in out_params:
             if out_params['l1_ratio'] < 0 or out_params['l1_ratio'] > 1:
@@ -21,7 +25,10 @@ class ElasticNet(EstimatorMixin):
 
         self.estimator = _ElasticNet(**out_params)
 
-    def summary(self):
+    def summary(self, options):
+        if len(options) != 2:  # only model name and mlspl_limits
+            raise RuntimeError('"%s" models do not take options for summarization' % self.__class__.__name__)
+
         df = pd.DataFrame({'feature': self.columns,
                            'coefficient': self.estimator.coef_.ravel()})
         idf = pd.DataFrame({'feature': ['_intercept'],

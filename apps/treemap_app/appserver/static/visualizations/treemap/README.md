@@ -1,7 +1,7 @@
 # Treemap
 
 Documentation:
-http://docs.splunk.com/Documentation/CustomViz/1.0.0/TreeMap/TreeMapIntro
+http://docs.splunk.com/Documentation/Treemap/1.2.0/TreemapViz/TreeMapReleaseIntro
 
 ## Sample searches
 

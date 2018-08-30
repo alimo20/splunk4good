@@ -1,28 +1,28 @@
 #!/usr/bin/env python
 
+import pandas as pd
 from sklearn.kernel_ridge import KernelRidge as _KernelRidge
-from base import EstimatorMixin
+
+from base import BaseAlgo, RegressorMixin
 from util.param_util import convert_params
 from codec import codecs_manager
+from util import df_util
 
 
-class KernelRidge(EstimatorMixin):
+class KernelRidge(RegressorMixin, BaseAlgo):
+
     def __init__(self, options):
         self.handle_options(options)
 
-        out_params = convert_params(
-            options.get('params', {}),
-            floats=['gamma']
-        )
-
+        out_params = convert_params(options.get('params', {}), floats=['gamma'])
         out_params['kernel'] = 'rbf'
 
         self.estimator = _KernelRidge(**out_params)
 
-    def predict(self, X, options=None, output_name=None):
+    def apply(self, df, options=None):
         if options is not None:
-            func = super(self.__class__, self).predict
-            return self.apply_in_chunks(X, func, 1000, options, output_name)
+            func = super(self.__class__, self).apply
+            return df_util.apply_in_chunks(df, func, 1000, options)
 
     @staticmethod
     def register_codecs():

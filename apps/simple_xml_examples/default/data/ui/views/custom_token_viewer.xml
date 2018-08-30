@@ -1,6 +1,6 @@
 <form script="showtokens.js">
-    <label>Token Viewer</label>
-    <description>A form input element's selected value is used to populate another form input element's options.</description>
+    <label>Token Viewer (Basic)</label>
+    <description>Basic token viewer, showing avaialble page-level tokens.</description>
     <fieldset autoRun="true" submitbutton="true">
         <input type="dropdown" token="username">
             <default>*</default>

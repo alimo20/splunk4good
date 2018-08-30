@@ -1,6 +1,6 @@
 <dashboard>
   <label>Inline Search</label>
-  <description>Table, Chart and Event panels powered by inline searches.</description>
+  <description>Use a search query to power dashboard elements.</description>
   <row>
     <table>
       <title>Inline Search Table</title>

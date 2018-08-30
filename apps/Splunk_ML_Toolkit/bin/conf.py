@@ -9,11 +9,12 @@ APP_NAME = (
                 os.path.abspath(__file__)))))
 CONF_NAME = 'mlspl'
 
-from splunklite import paths, conf
+from splunklite import conf
+from exec_anaconda import get_apps_path
 
 
 def get_app_path():
-    return os.path.join(paths.get_apps_path(), APP_NAME)
+    return os.path.join(get_apps_path(), APP_NAME)
 
 
 def get_mlspl_prop(name, stanza='default', default=None):
@@ -22,8 +23,7 @@ def get_mlspl_prop(name, stanza='default', default=None):
 
 def get_mlspl_conf(stanza=None, merge_default=True):
     app_path = get_app_path()
-    props = conf.getAppConf(CONF_NAME, APP_NAME, use_btool=False,
-                            app_path=app_path)
+    props = conf.getAppConf(CONF_NAME, app_path=app_path)
 
     if stanza == None:
         return props

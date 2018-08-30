@@ -10,7 +10,7 @@ sourcetype field to get an idea of what kind of data we have.
 Charts can include a *title* parameter, displayed at the top of the
 panel.
 
-Both examples use the *earliestTime* timerange parameter to specify data
+Both examples use the *earliest* timerange parameter to specify data
 from the last 24 hours.
 
 The **Categorical chart** shows a simple chart visualization. The

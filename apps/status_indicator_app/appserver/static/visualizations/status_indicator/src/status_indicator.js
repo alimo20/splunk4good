@@ -142,7 +142,7 @@ define([
 
     // Extend from SplunkVisualizationBase
     return SplunkVisualizationBase.extend({
-  
+
         initialize: function() {
             SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
 
@@ -160,7 +160,7 @@ define([
 
             var color = '#555';
             var showOption = +this._getEscapedProperty('showOption', config) || 3;
-            var showValue = showOption === 1 || showOption === 3; 
+            var showValue = showOption === 1 || showOption === 3;
             var useIcons = showOption < 3;
             var useFixIcon = (this._getEscapedProperty('icon', config) || 'fix_icon') === 'fix_icon';
             var fixIcon = this._getEscapedProperty('fixIcon', config) || 'warning';
@@ -181,7 +181,7 @@ define([
             this.$el.empty()
                 .css('background', 'none')
                 .css('color', 'auto');
-              
+
             var valueIndex = 0;
             var iconIndex =  0;
             var colorIndex = 1;
@@ -191,6 +191,9 @@ define([
             }
 
             if (useIcons) {
+                if (!showValue) {
+                    iconIndex = 1;
+                }
                 colorIndex = 2;
             }
 
@@ -237,13 +240,13 @@ define([
                 value = numeral(+value).format(format);
             }
             var fontSize = Math.min(
-                (scale * 33), 
+                (scale * 33),
                 (this.$el.width() / value.length) * (showValue ? 1 : 100)
             );
 
             this.$el.css('font-size', fontSize + 'px');
             this.$el.css('line-height', ((this.$el.height()/fontSize)*100) + '%');
-            
+
             value = (showValue) ? value : '';
             this.$el.html(value);
 
@@ -260,9 +263,8 @@ define([
                     icon = vizUtils.escapeHtml(data.rows[0][iconIndex]);
                 }
                 if (faIcons.indexOf(icon) === -1) {
-                    throw new SplunkVisualizationBase.VisualizationError(
-                        'The specified icon does not exist. Check the font awesome website to find a valid icon. Examples: arrow-circle-left, bullseye, mobile'
-                    );
+                    // If the icon doesn't exist, we don't set one
+                   return;
                 }
                 this.$el.prepend($('<i />').addClass('fa fa-' + icon));
             }
@@ -279,7 +281,7 @@ define([
 
         // Override to respond to re-sizing events
         reflow: function() {
-            this.invalidateUpdateView(); 
+            this.invalidateUpdateView();
         },
 
         _getEscapedProperty: function(name, config) {

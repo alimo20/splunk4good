@@ -1,6 +1,6 @@
 <dashboard>
     <label>Table Element</label>
-    <description/>
+    <description>Create a simple table using the dashboard editor.</description>
     <row>
         <table>
             <title>Top Sourcetypes (Last 24 hours)</title>

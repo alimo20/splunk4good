@@ -1,6 +1,7 @@
 <dashboard script="table_icons_rangemap.js" stylesheet="table_decorations.css">
 
     <label>Table Icon Set (Rangemap)</label>
+    <description>Use Javascript and CSS in tables to convert rangemap results into icons.</description>
 
     <row>
         <table id="table1">

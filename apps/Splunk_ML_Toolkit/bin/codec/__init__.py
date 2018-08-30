@@ -6,7 +6,7 @@ import codecs_manager
 
 
 class MLSPLEncoder(json.JSONEncoder):
-    def default(self, obj):
+    def default(self, obj): # pylint: disable=E0202 ; pylint doesn't like overriding default for some reason
         codec = codecs_manager.get_codec_table().get((type(obj).__module__, type(obj).__name__), None)
         if codec is not None:
             return codec.encode(obj)
@@ -19,9 +19,9 @@ class MLSPLEncoder(json.JSONEncoder):
 
 class MLSPLDecoder(json.JSONDecoder):
     def __init__(self, *args, **kwargs):
-        super(self.__class__, self).__init__(*args, object_hook=self.object_hook, **kwargs)
+        super(MLSPLDecoder, self).__init__(*args, object_hook=self._object_hook, **kwargs)
 
-    def object_hook(self, obj):
+    def _object_hook(self, obj):
         if isinstance(obj, dict) and '__mlspl_type' in obj:
             module_name, name = obj['__mlspl_type']
             codec = codecs_manager.get_codec_table().get((module_name, name), None)

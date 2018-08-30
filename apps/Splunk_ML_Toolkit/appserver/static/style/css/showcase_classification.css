@@ -29,8 +29,3 @@
 #trainingSetFractionSliderValue {
     font-weight: bold;
 }
-
-/* Firefox doesn't handle the width correctly if we set only the "width" property on the MultiDropdownView */
-#dataAndPredictionsTableModalValueControl {
-    width: 300px;
-}

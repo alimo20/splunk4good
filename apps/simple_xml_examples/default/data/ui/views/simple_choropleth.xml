@@ -1,6 +1,6 @@
 <dashboard>
-    <label>Dashboard Element - Choropleth Maps</label>
-    <description>Geospatial visualization on integrated maps.</description>
+    <label>Choropleth Maps</label>
+    <description>Visualize a metric that varies across a (custom) geographic region.</description>
 
     <!--
         In Splunk 6.3 we introduce an additional powerful geospatial mapping visualization: Choropleth Maps!
@@ -87,6 +87,22 @@
                 <option name="mapping.tileLayer.tileOpacity">1</option>
                 <option name="mapping.type">choropleth</option>
                 <option name="drilldown">all</option>
+            </map>
+        </panel>
+        <panel>
+            <map>
+                <title>Default Display of Geo Lookup</title>
+                <search>
+                    <query>| inputlookup geo_us_states</query>
+                    <earliest>0</earliest>
+                    <latest></latest>
+                </search>
+                <option name="drilldown">none</option>
+                <option name="mapping.choroplethLayer.maximumColor">0x006299</option>
+                <option name="mapping.legend.placement">none</option>
+                <option name="mapping.map.center">(39.1,-93.16)</option>
+                <option name="mapping.map.zoom">3</option>
+                <option name="mapping.type">choropleth</option>
             </map>
         </panel>
     </row>

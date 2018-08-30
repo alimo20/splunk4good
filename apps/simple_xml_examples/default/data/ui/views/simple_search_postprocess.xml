@@ -1,6 +1,6 @@
 <form>
   <label>Post Process Search</label>
-  <description>Each panel post processes the base search through a separate search pipeline.</description>
+  <description>Use a post process query to further filter a global search.</description>
   <search id="internal_data">
       <query>index=_internal | head 1000</query>
   </search>

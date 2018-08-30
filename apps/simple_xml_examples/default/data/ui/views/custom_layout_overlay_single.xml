@@ -1,6 +1,6 @@
 <form stylesheet="custom_layout_overlay_single.css">
   <label>Image Overlay with Single Values</label>
-  <description/>
+  <description>Display workflow status visually using an image, and grouped single value elements.</description>
   <fieldset autoRun="true" submitButton="false">
     <input type="time" searchWhenChanged="true">
       <default>

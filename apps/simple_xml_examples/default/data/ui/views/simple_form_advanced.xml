@@ -1,6 +1,6 @@
 <form>
     <label>Form Input - Advanced Controls</label>
-    <description>Examples of advanced controls that can be added to form inputs to customize form behavior.</description>
+    <description>Demonstrate various form input operations.</description>
     <fieldset autoRun="True" submitButton="False">
         <input type="dropdown" token="username" searchWhenChanged="True">
             <default>*</default>

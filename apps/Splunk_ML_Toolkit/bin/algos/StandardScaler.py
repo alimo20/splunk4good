@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 
-from sklearn.preprocessing import StandardScaler as _StandardScaler
-from base import *
-from codec import codecs_manager
 import pandas as pd
-from util.base_util import match_field_globs
+from sklearn.preprocessing import StandardScaler as _StandardScaler
+
+from base import BaseAlgo, TransformerMixin
+from codec import codecs_manager
 from util.param_util import convert_params
+from util import df_util
 
 
-class StandardScaler(BaseMixin):
+class StandardScaler(TransformerMixin, BaseAlgo):
+
     def __init__(self, options):
         self.handle_options(options)
 
@@ -19,65 +21,36 @@ class StandardScaler(BaseMixin):
         self.estimator = _StandardScaler(**out_params)
         self.columns = None
 
-    def preprocess_fit(self, X):
-        self.variables = match_field_globs(X.columns, self.variables)
-        self.drop_unused_fields(X, self.variables)
-        self.drop_na_columns(X)
-        self.drop_na_rows(X)
-        self.warn_on_missing_fields(X, self.variables)
-        self.filter_non_numeric(X)
-        X = pd.get_dummies(X, prefix_sep='=', sparse=True)
-        self.assert_any_fields(X)
-        self.assert_any_rows(X)
-        columns = self.sort_fields(X)
-        return (X, columns)
+    def rename_output(self, default_names, new_names=None):
+        if new_names is None:
+            new_names = 'SS'
+        output_names = [new_names + '_' + feature for feature in self.columns]
+        return output_names
 
-    def fit(self, X):
-        X, self.columns = self.preprocess_fit(X)
-        self.estimator.fit(X)
+    def partial_fit(self, df, options):
+        # Make a copy of data, to not alter original dataframe
+        X = df.copy()
 
-    def partial_fit(self, X, handle_new_cat):
-        X, columns = self.preprocess_fit(X)
+        X, _, columns = df_util.prepare_features(
+            X=X,
+            variables=self.feature_variables,
+            mlspl_limits=options.get('mlspl_limits'),
+        )
         if self.columns is not None:
-            self.handle_categorical(X, None, handle_new_cat, self.columns)
+            df_util.handle_new_categorical_values(X, None, options, self.columns)
             if X.empty:
                 return
         else:
             self.columns = columns
         self.estimator.partial_fit(X)
 
-    def predict(self, X, options=None, output_name=None):
-        if options is not None:
-            self.drop_unused_fields(X, self.variables)
-            self.drop_na_columns(X)
-            self.warn_on_missing_fields(X, self.variables)
-            self.filter_non_numeric(X)
-            X = pd.get_dummies(X, prefix_sep='=', sparse=True)
-            self.drop_unused_fields(X, self.columns)
-            self.assert_any_fields(X)
-            self.fill_missing_fields(X, self.columns)
-            self.sort_fields(X)
-            assert set(X.columns) == set(self.columns), 'Internal error: column mismatch'
-
-            length = len(X)
-            nans = self.drop_na_rows(X)
-
-            y_hat = self.estimator.transform(X.values)
-
-            # Allocate output DataFrame
-            width = y_hat.shape[1]
-            columns = ['SS_%s' % col for col in self.columns]
-
-            output = pd.DataFrame(np.empty((length, width)), columns=columns)
-            output.ix[:, columns] = np.nan
-            output.ix[~nans, columns] = y_hat
-
-            return output
-
-    def summary(self):
+    def summary(self, options):
+        if len(options) != 2:  # only model name and mlspl_limits
+            raise RuntimeError('"%s" models do not take options for summarization' % self.__class__.__name__)
         return pd.DataFrame({'fields': self.columns,
                              'mean': self.estimator.mean_,
-                             'std': self.estimator.std_})
+                             'var': self.estimator.var_,
+                             'scale': self.estimator.scale_})
 
     @staticmethod
     def register_codecs():

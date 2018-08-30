@@ -1,5 +1,7 @@
 .splunk-bullet-graph .bullet {
     font: 10px sans-serif;
+}
+.splunk-bullet-graph .bullet-drilldown {
     cursor: pointer;
 }
 .splunk-bullet-graph .bullet .marker {

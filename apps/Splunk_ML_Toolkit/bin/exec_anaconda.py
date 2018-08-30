@@ -17,14 +17,34 @@ def get_splunkhome_path():
     return os.path.normpath(os.environ["SPLUNK_HOME"])
 
 
+def make_splunkhome_path(p):
+    return os.path.join(get_splunkhome_path(), *p)
+
+
 def get_etc_path():
     return os.environ.get(
         'SPLUNK_ETC',
         os.path.join(get_splunkhome_path(), 'etc'))
 
 
-def get_apps_path():
-    return os.path.normpath(os.path.join(get_etc_path(), 'apps'))
+def get_apps_path(bundle_path=None):
+    """
+    Get the full path to the 'apps' directory.
+
+    Args:
+        bundle_path: path of the search bundle that contains the 'apps' directory
+
+    Returns:
+        path to the apps directory
+
+    """
+    full_path_to_apps_dir = bundle_path if bundle_path else get_etc_path()
+    return os.path.normpath(os.path.join(full_path_to_apps_dir, 'apps'))
+
+
+def get_staging_area_path():
+    staging_path = os.sep.join(['var','run','splunk','lookup_tmp'])
+    return os.path.normpath(os.path.join(get_splunkhome_path(), staging_path))
 
 
 def exec_anaconda():
@@ -105,7 +125,7 @@ def exec_anaconda():
             os.environ['VECLIB_MAXIMUM_THREADS'] = '1'
             os.environ['OPENBLAS_NUM_THREADS'] = '1'
             os.execl(python_path, python_path, *sys.argv)
-    except Exception as e:
+    except Exception:
         traceback.print_exc(None, sys.stderr)
         sys.stderr.flush()
         time.sleep(.1)
@@ -122,5 +142,19 @@ def fix_sys_path():
         try:
             sys.path.remove(spp)
             sys.path.append(spp)
-        except:
+        except Exception:
             pass
+
+    # MLA-2136: update environment variable such that subprocesses
+    # (from watchdog) will also have Anaconda's builtins available before
+    # Splunk's builtins.
+    if platform.system() == 'Windows':
+        os.environ['PYTHONPATH'] = os.pathsep.join(sys.path)
+
+def exec_anaconda_or_die():
+    try:
+        exec_anaconda()
+    except Exception as e:
+        import cexc
+        cexc.abort(e)
+        sys.exit(1)

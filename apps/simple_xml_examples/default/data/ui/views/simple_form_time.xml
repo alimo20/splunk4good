@@ -1,6 +1,6 @@
 <form>
-    <label>Time Picker Form Input Element</label>
-    <description>Top Sourcetypes by Time Period using Time Picker</description>
+    <label>Time Picker Input </label>
+    <description>Add a timerange picker to modify a search time span.</description>
     <fieldset autoRun="true" submitButton="false">
         <input type="time" searchWhenChanged="true">
             <label>Select a time:</label>

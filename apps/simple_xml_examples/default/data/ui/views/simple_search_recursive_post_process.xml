@@ -1,6 +1,6 @@
 <form>
     <label>Recursive Search Post-process</label>
-    <description>Ability to chain multiple search post-process searches to optimize dashboard performance</description>
+    <description>Chain multiple search post-process searches to further optimize dashboard performance.</description>
     <!-- Global search to populate everything in the panel -->
     <search id="baseSearch">
         <query>index=_internal component=* | fields _time sourcetype component log_level</query>

@@ -1,7 +1,7 @@
 # Punchcard
 
 Documentation:
-http://docs.splunk.com/Documentation/CustomViz/1.0.0/Punchcard/PunchcardIntro
+http://docs.splunk.com/Documentation/Punchcard/1.2.0/PunchcardViz/PunchcardIntro
 
 ## Sample Searches
 

@@ -1,5 +1,6 @@
 <dashboard script="table_row_highlighting.js" stylesheet="table_decorations.css">
     <label>Table Row Highlighting</label>
+    <description>Color table rows based on conditions having multiple field values.</description>
 
     <row>
         <table id="highlight">

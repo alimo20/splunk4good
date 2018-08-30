@@ -1,6 +1,6 @@
 # Timeline Visualization
 
-http://docs.splunk.com/Documentation/CustomViz/1.0.0/Timeline/TimelineIntro
+hhttp://docs.splunk.com/Documentation/Timeline/1.2.0/TimelineViz/TimelineIntro
 
 ## Sample Searches
 ```

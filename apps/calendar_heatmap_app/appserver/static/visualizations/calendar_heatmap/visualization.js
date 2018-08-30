@@ -77,9 +77,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        year: 2
 	    }
 
-	    // Max allowed results is enough for the number of 
-	    // minutes in 8 days. 
-	    var MAX_RESULTS = 11520;  
+	    // Max allowed results is enough for the number of
+	    // minutes in 8 days.
+	    var MAX_RESULTS = 11520;
 
 	    var f = {
 	        integer: d3.format(',.0f')
@@ -98,10 +98,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            this.heatmaps = [];
 
 	            this.tooltipContainer = $('<div class="splunk-calendar-heatmap-tooltip"></div>').appendTo('body');
-	            
+
 	            this.margin = {top: 15, right: 15, bottom: 15, left: 15};
 	        },
-	        
+
 	        _getEscapedProperty: function(name, config) {
 	            var propertyValue = config[this.getPropertyNamespaceInfo().propertyNamespace + name];
 	            return vizUtils.escapeHtml(propertyValue);
@@ -113,28 +113,29 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	            this.cellStyle = this._getEscapedProperty('cellStyle', config) || 'square';
 	            this.legendType = this._getEscapedProperty('legendType', config) || 'independent';
-	         
+
 	            this.showLegend = vizUtils.normalizeBoolean(this._getEscapedProperty('showLegend', config), { default: true });
-	            
+
 	            this.minColor = this._getEscapedProperty('minColor', config) || '#dae667';
 	            this.maxColor = this._getEscapedProperty('maxColor', config) || '#269489';
-	            
+
 	            this.numOfBins = this._getEscapedProperty('numOfBins', config) || 6;
 	            this.splitMonths = vizUtils.normalizeBoolean(this._getEscapedProperty('splitMonths', config), { default: true });
 
 	            // SimpleXML only property
 	            this.range = +this._getEscapedProperty('range', config) || null;
-	            
+
+	            this.useDrilldown = this._isEnabledDrilldown(config);
 	        },
 
 	        _getDomain: function(span) {
-	            
+
 	            var scale = d3.scale.threshold()
 	                .domain([3600, 86400, 604800])
 	                .range(['hour', 'day', 'month', 'year'])
 
-	            domain = scale(span);                
-	           
+	            domain = scale(span);
+
 	            // If the months are not split, we show a year
 	            if(domain === 'month' && this.splitMonths === false) {
 	                domain = 'year';
@@ -182,7 +183,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            this.earliestMoment = moment.min(dataMoments).clone();
 	            this.latestMoment = moment.max(dataMoments).clone();
 
-	            // Figure out the domain 
+	            // Figure out the domain
 	            // We assume timespans are all similar
 	            this.domain = this._getDomain(data.rows[0][spanIndex]);
 
@@ -219,7 +220,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            //     }
 	            // }
 	            var formattedData = {};
-	            _.each(data.fields, function(field, i) { 
+	            _.each(data.fields, function(field, i) {
 	                if(field.name[0] !== '_' ) {
 
 	                    // Using this splitby
@@ -273,7 +274,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            });
 
 	            this.$el.append(this.compiledTemplate({
-	                height: this._getAvailableHeight(), 
+	                height: this._getAvailableHeight(),
 	                width: this._getAvailableWidth()
 	            }));
 
@@ -318,19 +319,19 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            }
 
 	            //Add a Calendar Heatmap for each series
-	            _.each(data, function(series, seriesName){  
+	            _.each(data, function(series, seriesName){
 
 	                //Configure Calendar Heatmap
 	                var calHeatMap = {
-	                    animationDuration: 0, 
+	                    animationDuration: 0,
 	                    cellSize: this.cellSize,
 	                    cellRadius: (this.cellStyle === 'square' ? 0 : parseInt(this.cellSize - this.cellSize/3)),
 	                    cellPadding: this.cellPadding,
 	                    data: series.times,
 	                    displayLegend: (
 	                            // In uniform mode, only show the legend on the first series
-	                            this.showLegend && this.legendType === 'uniform' && _.indexOf(_.keys(data), seriesName) > 0 
-	                                ? false 
+	                            this.showLegend && this.legendType === 'uniform' && _.indexOf(_.keys(data), seriesName) > 0
+	                                ? false
 	                                : this.showLegend
 	                        ),
 	                    itemName: [seriesName, seriesName],
@@ -348,12 +349,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        upper: 'more than {max} ' + (this.legendType === 'independent' ? '' : '')
 	                    },
 	                    onClick: _.bind(function(date, value) {
-	                            this._onCellclick(date, value, seriesName) 
+	                            this._onCellclick(date, value, seriesName)
 	                        }, this),
 	                    start: this.earliestMoment.toDate(),
 	                    tooltip: true
 	                };
-	            
+
 	                calHeatMap.domain = this.domain;
 	                calHeatMap.range = this.range;
 
@@ -374,7 +375,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            // and pull the text out of the library tooltip.
 	            var tooltipContainer = this.tooltipContainer;
 	            this.$el.on('mouseover', '.cal-heatmap-container .graph g', function(e) {
-	                
+
 	                var title = $(e.target).closest('title');
 	                $(e.target).tooltip({
 	                    animation: false,
@@ -402,6 +403,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                $(e.target).tooltip('destroy');
 	            });
 
+	            if (this.useDrilldown) {
+	                this.$el.addClass('cal-heatmap-drilldown');
+	            } else {
+	                this.$el.removeClass('cal-heatmap-drilldown');
+	            }
+
 	            this._applyRangeWarning();
 	        },
 
@@ -427,7 +434,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    .text('')
 	            }
 	        },
-	        
+
 	        _onCellclick: function(date, value, seriesName) {
 
 	            var payload = {
@@ -479,6 +486,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	            this.$el.find('.heatmap-list').css('height', this._getAvailableHeight() + 'px');
 	            this.$el.find('.heatmap-list').css('width', this._getAvailableWidth() + 'px');
+	        },
+
+	         _isEnabledDrilldown: function(config) {
+	            if (config['display.visualizations.custom.drilldown'] && config['display.visualizations.custom.drilldown'] === 'all') {
+	                return true;
+	            }
+	            return false;
 	        },
 
 	        _template: '\

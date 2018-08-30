@@ -1,6 +1,6 @@
 <dashboard>
-  <label>Report</label>
-  <description>Table, Chart and Event panels powered by reports.</description>
+  <label>Report Search</label>
+  <description>Use a saved report to power dashboard elements.</description>
   <row>
     <table>
       <title>Report Table</title>

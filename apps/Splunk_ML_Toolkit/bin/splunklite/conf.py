@@ -7,14 +7,11 @@ import collections
 import re
 
 
-def getAppConf(confName, app, use_btool=True, app_path=None):
-    assert not use_btool
+def getAppConf(confName, app_path=None):
     # using btool is more "correct" if things change in the future etc, but it's
     # super duper slow.
-    if use_btool:
-        stdout = getAppConfRaw(confName, app)
-        return readConfLines(stdout.splitlines())
-    elif app_path:
+    # see the history of this file for a skeleton implementation of btool
+    if app_path:
         default_path = os.path.join(app_path, "default", confName + ".conf")
         local_path = os.path.join(app_path, "local", confName + ".conf")
         combined_settings = {}
@@ -24,7 +21,7 @@ def getAppConf(confName, app, use_btool=True, app_path=None):
                 _multi_update(combined_settings, stanzas)
         return combined_settings
     else:
-        raise NotImplemented
+        raise NotImplementedError
 
 
 def _multi_update(target, source):

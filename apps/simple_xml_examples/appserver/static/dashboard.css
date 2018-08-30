@@ -35,8 +35,7 @@
 .showsource-container .nav li.nav-title {
     border: 1px solid #ccc;
     border-left: none;
-    height: 14px;
-    margin-right: -5px;
+    height: 24px;
     z-index: 5;
     color: #000;
     background-color: #f4f4f4;
@@ -47,7 +46,7 @@
     background-image: linear-gradient(to bottom, #f8f8f8, #eeeeee);
     background-repeat: repeat-x;
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#fff8f8f8', endColorstr='#ffeeeeee', GradientType=0);
-    padding: 5px 17px 5px 24px;
+    padding: 8px 20px 5px 24px;
     font-weight: bold;
 }
 
@@ -71,7 +70,7 @@
 }
 
 .showsource-container .nav-tabs {
-    /*padding-left: 55px;*/
+    padding-left: 0px;
 }
 
 .showsource-container .nav-tabs > li.active > a {

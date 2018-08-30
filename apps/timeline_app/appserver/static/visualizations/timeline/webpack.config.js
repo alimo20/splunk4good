@@ -17,7 +17,8 @@ module.exports = {
             {
                 test: /d3-timeline\.js$/,
                 loader: 'imports-loader?d3=d3'
-            }
+            },
+            { test: /tooltip/, loader: 'imports?jQuery=jquery' }
         ]
     },
     externals: [

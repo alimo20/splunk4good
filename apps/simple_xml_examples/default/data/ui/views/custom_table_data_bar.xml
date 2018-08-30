@@ -1,6 +1,6 @@
 <dashboard script="table_data_bar.js" stylesheet="table_data_bar.css">
 
-    <label>Table Data Bar</label>
+    <label>Table with Data Bars</label>
     <description>Custom table cell renderer that replaces a field value with a data bar.</description>
 
     <row>

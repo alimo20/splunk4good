@@ -1,5 +1,6 @@
 <dashboard>
     <label>Bubble Chart</label>
+    <description>Bubble charts can help visualize data in three dimensions.</description>
     <row>
         <panel>
             <chart>

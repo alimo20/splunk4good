@@ -1,5 +1,6 @@
 <form>
     <label>Pan and Zoom Chart Controls</label>
+    <description>Charts allow you to select a range to zoom in.  Alternatively you can use that data to drilldown further into your data.</description>
     <row>
         <panel>
             <chart>

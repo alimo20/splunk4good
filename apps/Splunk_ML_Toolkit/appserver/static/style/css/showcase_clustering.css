@@ -1,76 +1,20 @@
-#preprocessCheckboxControl input[type="checkbox"] {
-    margin-top: 10px;
-}
-
-#DRAlgorithmControl, #DRNumberControl {
-    padding: 0 5px 0 5px;
-}
-
-/*overwrite default min-width*/
-div#DRAlgorithmControl.splunk-dropdown .select2-container,
-div#DRNumberControl.splunk-dropdown .select2-container,
-#clusterSelectionControl .select2-container
-{
-    width: 100px!important;
-    min-width: 100px;
-}
-
-#valueRangeDropdownControl .select2-container {
-    width: 150px!important;
-    min-width: 150px;
-}
-.splunk-dropdown.error a.select2-choice {
-    border-color: #d6563c;
-}
-
-.mlts-preprocessing-field>div {
-    display: inline-block;
-}
-
-.mlts-preprocessing-methods > label {
-    padding-top: 0;
-    padding-bottom: 0;
-    margin-bottom: 5px;
-}
-
-.mlts-preprocessing-methods > label > * {
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.mlts-preprocessing-methods input[type="checkbox"] {
-    margin-bottom: 5px;
-}
-
-.mlts-visualize-picker > * {
-    display: inline-block;
-}
-
-#preprocessedVariableControl ul.select2-choices {
-    min-height: 50px;
-}
-
-.select2-container-disabled {
-    opacity: 0.6;
-}
-
 #scatterPlotMatrixLegend > p {
     margin: 0 0 5px 25px;
     font-weight: bold;
 }
 
-#visualizeVariableControl > .select2-container {
-    display: inline-block !important;
+.mlts-visualize-picker > * {
+    display: inline-block;
+    vertical-align: top;
 }
-
 #visualizeSubmitControl > button {
-    margin-bottom: 10px;
+    margin-left: 5px;
 }
 
 #clusteringViz > div {
-    height: 100%!important;
+    height: 100% !important;
 }
 
-#clusteringPanel >  .mlts-panel-footer {
+#clusteringPanel > .mlts-panel-footer {
     margin-top: 15px;
 }

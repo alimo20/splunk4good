@@ -1,6 +1,6 @@
 <form>
     <label>Radio Form Input Element</label>
-    <description>Events Filtered by User and Sourcetype using Radio Form Inputs</description>
+    <description>Set search terms by populating a form with one or more sets of radio buttons.</description>
     <fieldset autoRun="true" submitButton="false">
         <input type="radio" token="username" searchWhenChanged="true">
             <label>Select a User:</label>

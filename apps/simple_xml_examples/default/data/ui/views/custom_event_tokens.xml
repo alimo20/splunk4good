@@ -1,6 +1,6 @@
 <form script="event_token_browser.js">
-    <label>Dynamic tokens from drilldown and change</label>
-    <description>See live what tokens are available when you click on a chart, legend, or change an input.</description>
+    <label>Dynamic Token Viewer based on User Events</label>
+    <description>See live what tokens are available based on drilldown events, input change events, and more.</description>
     <fieldset>
         <input type="dropdown" token="input_token" id="the_only_dropdown">
             <choice value="host">host</choice>

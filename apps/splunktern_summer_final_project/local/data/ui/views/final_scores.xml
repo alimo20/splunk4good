@@ -1,0 +1,269 @@
+<form>
+  <label>Final Scores</label>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="dropdown" token="year" searchWhenChanged="true">
+      <label>Year</label>
+      <choice value="2018">2018</choice>
+      <choice value="2017">2017</choice>
+      <default>2018</default>
+      <change>
+        <condition value="*">
+          <unset token="form.team_id"></unset>
+        </condition>
+      </change>
+    </input>
+    <input type="dropdown" searchWhenChanged="true" token="team_id">
+      <label>Team</label>
+      <fieldForLabel>s4g_team</fieldForLabel>
+      <fieldForValue>id</fieldForValue>
+      <search>
+        <query>| inputlookup interns_$year$_s4g_teams.csv where dropped=0</query>
+      </search>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Final score</title>
+      <table>
+        <title>Click on a team for more details</title>
+        <search>
+          <query>| inputlookup interns_$year$_s4g_judge_scores.csv 
+| eventstats dc(judge_id) as judges max(score_*) as max_score_* 
+| eval categories=0 
+| foreach score_* 
+    [ eval categories=categories+1] 
+| stats sum(score_*) first(categories) first(judges) first(max_score_*) by team_id 
+| rename first(*) as * 
+| eval subscore_judge=0 
+| foreach sum* 
+    [ eval subscore_judge=subscore_judge+'&lt;&lt;FIELD&gt;&gt;'] 
+| eval max_score=0 
+| foreach max_score* 
+    [ eval max_score=max(max_score, &lt;&lt;FIELD&gt;&gt;)] 
+| eval total_possible=categories*judges*max_score 
+| eval score_judge=round(subscore_judge/total_possible*100, 2) 
+| table team_id score_judge 
+| join team_id 
+    [| inputlookup append=t interns_$year$_s4g_technical_scores.csv 
+    | eval score_technicality=score_technicality*10] 
+| join team_id 
+    [| inputlookup interns_$year$_s4g_intern_scores.csv 
+    | fieldsummary 
+    | search field=rank* 
+    | rex field=field "_(?&lt;rank&gt;\d+)$$" 
+    | rex field=values max_match=0 "value\":\"(?&lt;team_id&gt;\d+)\",\"count\":(?&lt;count&gt;\d+)" 
+    | eval rank_info=mvzip(team_id, count) 
+    | mvexpand rank_info 
+    | rex field=rank_info "(?&lt;team_id&gt;\d+),(?&lt;count&gt;\d+)" 
+    | table rank team_id count 
+    | eventstats max(rank) as max 
+    | eventstats sum(count) as total_votes by team_id 
+    | eval point=max-rank+1 
+    | eval score=point*count 
+    | stats sum(score) as score first(total_votes) as total_votes by team_id 
+    | eventstats dc(team_id) as team_count 
+    | eval total_possible=team_count*total_votes 
+    | eval score_intern=round(score/total_possible*100, 2) 
+    | table team_id score_intern] 
+| eval TOTAL=round(score_judge*0.5+score_technicality*0.3+score_intern*0.2, 2) 
+| join team_id 
+    [| inputlookup interns_$year$_s4g_teams.csv 
+    | rename id as team_id] 
+| sort -TOTAL 
+| streamstats count as rank 
+| table rank s4g_team team_id topic TOTAL score_*</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="TOTAL">
+          <colorPalette type="minMidMax" maxColor="#31A35F" midColor="#F7BC38" minColor="#D93F3C"></colorPalette>
+          <scale type="minMidMax" maxValue="100" midValue="30" minValue="0"></scale>
+        </format>
+        <format type="color" field="score_intern">
+          <colorPalette type="minMidMax" maxColor="#31A35F" midColor="#F7BC38" minColor="#D93F3C"></colorPalette>
+          <scale type="minMidMax" maxValue="100" midValue="30" minValue="0"></scale>
+        </format>
+        <format type="color" field="score_judge">
+          <colorPalette type="minMidMax" maxColor="#31A35F" midColor="#F7BC38" minColor="#D93F3C"></colorPalette>
+          <scale type="minMidMax" maxValue="100" midValue="30" minValue="0"></scale>
+        </format>
+        <format type="color" field="score_technicality">
+          <colorPalette type="minMidMax" maxColor="#31A35F" midColor="#F7BC38" minColor="#D93F3C"></colorPalette>
+          <scale type="minMidMax" maxValue="100" midValue="30" minValue="0"></scale>
+        </format>
+        <format type="color" field="rank">
+          <colorPalette type="map">{"1":#FFD700,"2":#C0C0C0,"3":#CD7F32}</colorPalette>
+        </format>
+        <drilldown>
+          <set token="form.team_id">$row.team_id$</set>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row depends="$team_id$">
+    <panel>
+      <title>Selected team</title>
+      <single>
+        <search>
+          <query>| inputlookup interns_$year$_s4g_teams.csv where id=$team_id$ | table s4g_team</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="unitPosition">before</option>
+        <option name="useColors">0</option>
+      </single>
+    </panel>
+  </row>
+  <row depends="$team_id$">
+    <panel>
+      <title>Team members</title>
+      <table>
+        <search>
+          <query>| inputlookup interns_$year$_hashed.csv where s4g_team_id=$team_id$ 
+| table name_hash Title Major "School Name"</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row depends="$team_id$">
+    <panel>
+      <title>Judge scores</title>
+      <table>
+        <title>Max score is 5 per category</title>
+        <search>
+          <query>| inputlookup interns_$year$_s4g_judge_scores.csv where team_id=$team_id$ 
+| join judge_id 
+    [| inputlookup interns_$year$_s4g_judges.csv 
+    | rename id as judge_id] 
+| table name judge_id title score_*</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="score_ideas_creativity">
+          <colorPalette type="minMidMax" maxColor="#31A35F" midColor="#F7BC38" minColor="#D93F3C"></colorPalette>
+          <scale type="minMidMax" maxValue="5" midValue="3" minValue="1"></scale>
+        </format>
+        <format type="color" field="score_presentation_soft_skills">
+          <colorPalette type="minMidMax" maxColor="#31A35F" midColor="#F7BC38" minColor="#D93F3C"></colorPalette>
+          <scale type="minMidMax" maxValue="5" midValue="3" minValue="1"></scale>
+        </format>
+        <format type="color" field="score_social_impact">
+          <colorPalette type="minMidMax" maxColor="#31A35F" midColor="#F7BC38" minColor="#D93F3C"></colorPalette>
+          <scale type="minMidMax" maxValue="5" midValue="3" minValue="1"></scale>
+        </format>
+        <format type="color" field="score_ideas_topics">
+          <colorPalette type="minMidMax" maxColor="#31A35F" midColor="#F7BC38" minColor="#D93F3C"></colorPalette>
+          <scale type="minMidMax" maxValue="5" midValue="3" minValue="1"></scale>
+        </format>
+        <format type="color" field="score_potential_for_the_greater_good">
+          <colorPalette type="minMidMax" maxColor="#31A35F" midColor="#F7BC38" minColor="#D93F3C"></colorPalette>
+          <scale type="minMidMax" maxValue="5" midValue="3" minValue="1"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row depends="$team_id$">
+    <panel>
+      <title>Viewer scores distribution</title>
+      <chart>
+        <search>
+          <query>| inputlookup interns_$year$_s4g_intern_scores.csv
+| fieldsummary
+| search field=rank_*
+| eval count=0
+| rex field=values "value\":\"$team_id$\",\"count\":(?&lt;count&gt;\d+)"
+| rename field as rank
+| eval team_id=$team_id$
+| table team_id rank count
+| lookup interns_$year$_s4g_teams.csv id as team_id output s4g_team
+| chart sum(count) over rank by s4g_team</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsY.majorUnit">1</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.visibility">collapsed</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.chart">bar</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row depends="$team_id$">
+    <panel>
+      <title>Viewer scores</title>
+      <table>
+        <search>
+          <query>| inputlookup interns_$year$_s4g_intern_scores.csv 
+| join type=left intern_id 
+    [| inputlookup interns_$year$_hashed.csv 
+    | rename id as intern_id 
+    | table intern_id name_hash]
+| eval is_intern=if(isnull(intern_id), 0, 1) 
+| eval scorer=coalesce(name_hash, name) 
+| table scorer is_intern rank_*
+| foreach rank_* [lookup interns_$year$_s4g_teams.csv id as &lt;&lt;FIELD&gt;&gt; output s4g_team as &lt;&lt;FIELD&gt;&gt;]</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">50</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="rank_1">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="rank_2">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="rank_3">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="rank_4">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="rank_5">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+</form>

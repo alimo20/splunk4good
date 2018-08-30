@@ -6,28 +6,21 @@ from cStringIO import StringIO
 import re
 import csv
 import traceback
+from util.file_util import  fix_line_ending
 
-# Windows will mangle our line-endings unless we do this.
-if sys.platform == "win32":
-    import os
-    import msvcrt
-
-    msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
-    msvcrt.setmode(sys.stderr.fileno(), os.O_BINARY)
-    msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
-
+fix_line_ending()
 getinfo = {}
 
 
 def read_chunk(f):
-    '''Attempts to read a single "chunk" from the given file.
+    """Attempts to read a single "chunk" from the given file.
 
     On error (e.g. exception during read, parsing failure), returns None
 
     Otherwise, returns [metadata, body], where
-       metadata is a dict with the parsed contents of the chunk JSON metadata
-       body is a string with the body contents
-    '''
+        metadata is a dict with the parsed contents of the chunk JSON metadata
+        body is a string with the body contents
+    """
 
     try:
         header = f.readline()
@@ -66,7 +59,7 @@ def read_chunk(f):
 
 
 def write_chunk(f, metadata, body):
-    '''Attempts to write a single "chunk" to the given file.
+    """Attempts to write a single "chunk" to the given file.
 
     metadata should be a Python dict with the contents of the metadata
     payload. It will be encoded as JSON.
@@ -74,7 +67,7 @@ def write_chunk(f, metadata, body):
     body should be a string of the body payload.
 
     no return, may throw an IOException
-    '''
+    """
     metadata_buf = None
     if metadata:
         metadata_buf = json.dumps(metadata)

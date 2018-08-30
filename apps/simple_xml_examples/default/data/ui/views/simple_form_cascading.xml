@@ -1,6 +1,6 @@
 <form>
-    <label>Cascading Form Input Element</label>
-    <description>A form input element's selected value is used to populate another form input element's options.</description>
+    <label>Cascading Form Input</label>
+    <description>Power a form input from other input values to narrow search results.</description>
     <fieldset autoRun="true">
         <input type="dropdown" token="username">
             <default>*</default>

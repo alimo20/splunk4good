@@ -1,6 +1,6 @@
 <form>
     <label>Bar Chart</label>
-    <description>Example using a basic bar chart</description>
+    <description>Plot proportional data using a horizontal bar chart.</description>
 
     <fieldset submitButton="false">
         <input type="time" token="time_token" searchWhenChanged="true">

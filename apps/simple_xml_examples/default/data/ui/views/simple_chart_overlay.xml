@@ -1,6 +1,6 @@
 <form>
     <label>Chart Overlay</label>
-    <description>Chart overlays help give your data context</description>
+    <description>Show limits and other data on one chart.</description>
     <fieldset autoRun="true" submitButton="false">
         <input type="time" token="time" searchWhenChanged="true">
             <label/>

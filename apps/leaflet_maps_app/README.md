@@ -38,7 +38,7 @@ This app is compatible with **Splunk 6.4+** as it relies on the [Custom Visualiz
 # Usage
 ### Fields must be named exactly as labled here. The app is keyed off of field names and not field order.
 ```
-base_search | table latitude, longitude [ description | tooltip | title | icon | markerColor |markerPriority | markerSize | markerAnchor | markerVisibility | iconColor | shadowAnchor | shadowSize | prefix | extraClasses | layerDescription | pathWeight | pathOpacity | layerGroup]
+base_search | table latitude, longitude [ description | tooltip | title | icon | markerColor |markerPriority | markerSize | markerAnchor | markerVisibility | iconColor | shadowAnchor | shadowSize | prefix | extraClasses | layerDescription | pathWeight | pathOpacity | pathColor | layerGroup]
 ```
 
 # Required Fields
@@ -380,6 +380,8 @@ Initial Height Of Map (Default: 600)
 Dynamically set map view that contains all markers with the maximum zoom level possible when search finishes. (Default: Enabled)
 ###### Auto Fit & Zoom Delay (ms)
 Delay in milliseconds before triggering Auto Fit & Zoom. Increase if you get inconsistent behavior (Default: 500)
+###### Dashboard Refresh Interval
+Delay in seconds before refreshing the dasbhoard. WARNING - Refresh forces a full browser refresh on the entire dashboard. This workaround addresses a usability issue in the Custom Viz API around reliably honoring panel or global SimpleXML refresh. (default: 0 - disabled)
 ###### Map Zoom
 Initial Zoom for map (Default: 6)
 ###### Center Lat

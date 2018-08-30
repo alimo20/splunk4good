@@ -1,6 +1,6 @@
 <dashboard>
   <label>Multi-Search Management</label>
-  <description>Manage multiple background searches to drive various elements on the dashboard</description>
+  <description>Manage multiple background searches to drive various elements on the dashboard.</description>
   <search id="components_search">
     <query>index=_internal sourcetype=splunkd component!="Metrics" | chart count over component by log_level | addtotals</query>
     <earliest>-7d@h</earliest>

@@ -1,6 +1,6 @@
 <dashboard stylesheet="dark.css">
-    <label>Custom Layout Example: Dark</label>
-    <description>This example shows a custom stylesheet that is applied to this particular dashboard.</description>
+    <label>Custom Layout: Dark</label>
+    <description>Apply page-level, custom stylesheets.</description>
 
     <row>
         <single>

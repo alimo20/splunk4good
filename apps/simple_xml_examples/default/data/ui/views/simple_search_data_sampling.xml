@@ -1,6 +1,6 @@
 <form>
     <label>Dashboard Data Sampling</label>
-    <description>Determine the characteristics of a large data set without processing every event.</description>
+    <description>Probabilistic method of returning a limited sample of search results.</description>
     <fieldset submitButton="false"></fieldset>
     <row>
         <panel>

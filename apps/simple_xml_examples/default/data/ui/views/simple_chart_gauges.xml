@@ -1,5 +1,6 @@
 <dashboard>
     <label>Splunk Gauges</label>
+    <description>Visualize a single numeric value.</description>
     <row>
         <panel>
             <chart>

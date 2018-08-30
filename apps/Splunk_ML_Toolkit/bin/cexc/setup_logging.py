@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
+import os
 import logging
 import logging.handlers
 
-import splunk
-
-from splunklite.paths import make_splunkhome_path
+from exec_anaconda import make_splunkhome_path
 
 BASE_LOGGER_NAME = 'mlspl'
 DEFAULT_LEVEL = logging.DEBUG
@@ -49,9 +48,17 @@ def get_logger(name=BASE_LOGGER_NAME, level=DEFAULT_LEVEL):
         logger.setLevel(level)
         logger.propagate = False
 
-        path = make_splunkhome_path(['var', 'log', 'splunk', name + '.log'])
-        file_handler = logging.handlers.RotatingFileHandler(path, maxBytes=1000000, backupCount=5)
-        formatter = logging.Formatter('%(created)f %(asctime)s %(levelname)s [%(name)s] [%(funcName)s] %(message)s')
+        has_splunk_home = os.environ.get('SPLUNK_HOME')
+        if has_splunk_home:
+            path = make_splunkhome_path(['var', 'log', 'splunk', name + '.log'])
+            backup_count = 5
+        else:
+            # No backups if logging to current directory
+            path = os.path.normpath(os.path.join(os.getcwd(), name + '.log'))
+            backup_count = 0
+
+        file_handler = logging.handlers.RotatingFileHandler(path, maxBytes=1000000, backupCount=backup_count)
+        formatter = logging.Formatter('%(created)f PID %(process)d %(asctime)s %(levelname)s [%(name)s] [%(funcName)s] %(message)s')
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 
@@ -59,17 +66,30 @@ def get_logger(name=BASE_LOGGER_NAME, level=DEFAULT_LEVEL):
         stream_handler.setFormatter(logging.Formatter('%(levelname)s %(message)s'))
         logger.addHandler(stream_handler)
 
-        # Read logging level information from log.cfg so it will overwrite log
-        # Note if logger level is specified on that file then it will overwrite log level
-        LOGGING_DEFAULT_CONFIG_FILE = make_splunkhome_path(['etc', 'log.cfg'])
-        LOGGING_LOCAL_CONFIG_FILE = make_splunkhome_path(['etc', 'log-local.cfg'])
-        LOGGING_STANZA_NAME = 'python'
-        splunk.setupSplunkLogger(
-            logger,
-            LOGGING_DEFAULT_CONFIG_FILE,
-            LOGGING_LOCAL_CONFIG_FILE,
-            LOGGING_STANZA_NAME,
-            verbose=False
-        )
+        if has_splunk_home:
+            try:
+                import splunk
+                # Read logging level information from log.cfg so it will overwrite log
+                # Note if logger level is specified on that file then it will overwrite log level
+                LOGGING_DEFAULT_CONFIG_FILE = make_splunkhome_path(['etc', 'log.cfg'])
+                LOGGING_LOCAL_CONFIG_FILE = make_splunkhome_path(['etc', 'log-local.cfg'])
+                LOGGING_STANZA_NAME = 'python'
+                splunk.setupSplunkLogger(
+                    logger,
+                    LOGGING_DEFAULT_CONFIG_FILE,
+                    LOGGING_LOCAL_CONFIG_FILE,
+                    LOGGING_STANZA_NAME,
+                    verbose=False
+                )
+            except ImportError:
+                warning_msg = (
+                    'Unable to import splunk python module: cannot setup splunk logging. '
+                    'If you are using the Splunk Machine Learning Toolkit\'s code directly, '
+                    'without a custom search command, you may see this warning.'
+                )
+                logger.warn(warning_msg)
+        else:
+            logger.warn('No SPLUNK_HOME set. Logging to %s', path)
+
 
     return logger

@@ -1,7 +1,7 @@
 # Calendar Heat Map
 
 Documentation:
-http://docs.splunk.com/Documentation/CustomViz/1.0.0/CalendarHeatMap/CalendarHeatMapIntro
+http://docs.splunk.com/Documentation/CalendarHeatMap/1.2.0/CalendarHeatMapViz/CalendarHeatMapIntro
 
 ## Sample Queries
 

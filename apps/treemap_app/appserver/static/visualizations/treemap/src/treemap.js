@@ -183,10 +183,9 @@ function(
 
         _setupTooltips: function(children) {
             var that = this;
+
             children
                 .on('mousemove', function(d) {
-
-                    var pos = d3.mouse(this);
 
                     // Add tooltip content
                     that.tooltip
@@ -220,43 +219,40 @@ function(
                             .html(function(m) { return m.value; });
 
                     // Position tooltip
+                    getRect = function($el) {
+                        return {
+                            offset_l: $el.offset().left,
+                            offset_t: $el.offset().top,
+                            pos_l: $el.position().left,
+                            pos_t: $el.position().top,
+                            scroll_l: $el.scrollLeft(),
+                            scroll_t: $el.scrollTop(),
+                            w: $el.width(),
+                            h: $el.height()
+                        };
+                    };
+
+                    var pos = d3.mouse(this);
+                    var facetsContainer = getRect(that.$el.closest('.facets-container'));
+                    var container = getRect(that.$el);
                     var tooltipWidth = $(that.tooltip[0]).width();
 
-                    that.tooltip.style('left', pos[0] < that.width / 2
-                            ? (pos[0] + 22) + 'px'
-                            : (pos[0] - tooltipWidth - 15) + 'px');
+                    that.tooltip
+                        .style('left', pos[0] < that.width / 2
+                            ? (container.pos_l + pos[0] + 22) + 'px'
+                            : (container.pos_l + pos[0] - tooltipWidth - 15) + 'px');
 
-                    if(pos[1] < that.height / 2) {
-                        that.tooltip
-                            .style('top', pos[1] + 'px')
-                            .style('bottom', null);
-                    }
-                    else {
-                        that.tooltip
-                            .style('top', null)
-                            .style('bottom', that.height - pos[1] + 2 + (that.maxCategoriesExceeded ? MSG_AREA_HEIGHT : 0) + 'px');
-                    }
+                    that.tooltip.style('top', container.offset_t + pos[1] + facetsContainer.scroll_t - facetsContainer.offset_t + 'px');
 
                     that.tooltip.classed('tooltip-top-left', false);
                     that.tooltip.classed('tooltip-bottom-left', false);
                     that.tooltip.classed('tooltip-top-right', false);
                     that.tooltip.classed('tooltip-bottom-right', false);
-
                     if(pos[0] < that.width / 2) {
-                        if(pos[1] < that.height / 2) {
-                            that.tooltip.classed('tooltip-top-left', true);
-                        }
-                        else {
-                            that.tooltip.classed('tooltip-bottom-left', true);
-                        }
+                        that.tooltip.classed('tooltip-top-left', true);
                     }
                     else {
-                        if(pos[1] < that.height / 2) {
-                            that.tooltip.classed('tooltip-top-right', true);
-                        }
-                        else {
-                            that.tooltip.classed('tooltip-bottom-right', true);
-                        }
+                        that.tooltip.classed('tooltip-top-right', true);
                     }
                 })
                 .on('mouseout', function(d) {
@@ -299,7 +295,7 @@ function(
                     return (h < 0 ? 0 : h);
                 })
                 .attr('style', function(d) {
-                    
+
                     function getRectFill(){
                         //don't fill parents
                         if(that.colorMode === 'categorical') {
@@ -317,9 +313,9 @@ function(
                             else {
                                 return d.children ? null : that.colors(that.categories(d.value));
                             }
-                        }    
+                        }
                     }
-                    
+
                     var rectFill = getRectFill();
                     return rectFill ? 'fill: ' + rectFill + ';' : '';
                 });
@@ -347,7 +343,7 @@ function(
             this.showLabels = vizUtils.normalizeBoolean(this._getEscapedProperty('showLabels', config), { default: true });
             this.showLegend = vizUtils.normalizeBoolean(this._getEscapedProperty('showLegend', config), { default: true });
             this.showTooltip = vizUtils.normalizeBoolean(this._getEscapedProperty('showTooltip', config), { default: true });
-            
+
             this.maxCategories = stringToInt(this._getEscapedProperty('maxCategories', config), 10);
 
             this.useColors = vizUtils.normalizeBoolean(this._getEscapedProperty('useColors', config), { default: true });
@@ -356,6 +352,13 @@ function(
             this.minColor = this._getEscapedProperty('minColor', config) || '#d93f3c';
             this.maxColor = this._getEscapedProperty('maxColor', config) || '#3fc77a';
             this.numOfBins = this._getEscapedProperty('numOfBins', config) || 6;
+        },
+
+        _isEnabledDrilldown: function(config) {
+            if (config['display.visualizations.custom.drilldown'] && config['display.visualizations.custom.drilldown'] === 'all') {
+                return true;
+            }
+            return false;
         },
 
         // Optionally implement to format data returned from search.
@@ -573,7 +576,7 @@ function(
             height = (height <= 0 ? DEFAULT_HEIGHT - MARGIN.top - MARGIN.bottom - (this.maxCategoriesExceeded ? MSG_AREA_HEIGHT : 0) : height);
 
             this.width = width;
-            this.height = height; 
+            this.height = height;
 
             this.xscale = d3.scale.linear()
                 .domain([0, width])
@@ -584,6 +587,8 @@ function(
                 .range([0, height]);
 
             this._getColors(data); //Setup the Color scale
+
+            this.useDrilldown = this._isEnabledDrilldown(config);
 
             //Add the components
             var treemap = d3.layout.treemap()
@@ -720,6 +725,11 @@ function(
                 .attr('class', 'child')
                 .call(that._resizeRects.bind(that));
 
+            //Only show cursor:pointer when drilldown is active
+            if(that.useDrilldown) {
+                children.classed('drillable', true);
+            }
+
             //Only show tooltip when option is active
             if(this.showTooltip) {
                 this._setupTooltips(children);
@@ -729,6 +739,11 @@ function(
             if(d.depth === 0) {
                 if(that.useZoom) {
                     children.classed('zoomable', true);
+                }
+
+                //Hide the cursor:pointer when cursor:zoom-in is active
+                if(that.useDrilldown) {
+                    children.classed('drillable', false);
                 }
 
                 g.append('rect')
@@ -796,7 +811,7 @@ function(
 
                 t1.selectAll('.node-label').style('display', 'none');
                 t1.selectAll('.foreignobj').call(that._resizeObject.bind(that));
-                
+
                 t2.selectAll('.foreignobj').call(that._resizeObject.bind(that));
 
                 // Resize text containers, render text if there is space

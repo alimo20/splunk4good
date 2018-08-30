@@ -1,7 +1,7 @@
 # Status Indicator
 
 Documentation:
-http://docs.splunk.com/Documentation/CustomViz/1.0/StatusIndicator/StatusIndicatorIntro
+http://docs.splunk.com/Documentation/StatusIndicator/1.2.0/StatusIndicatorViz/StatusIndicatorIntro
 
 ## Sample Searches
 

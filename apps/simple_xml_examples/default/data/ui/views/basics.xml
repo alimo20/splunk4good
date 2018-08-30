@@ -1,4 +1,4 @@
-<dashboard showsource="false" script="prettify.js">
+<dashboard script="prettify.js">
     <label>Javascript Basics</label>
     <row>
         <html src="docs/basics.html" />

@@ -48,7 +48,6 @@ def abort(msg):
     """
     AbortHandler.abort(msg)
 
-
 class BaseChunkHandler(object):
     """Base class for custom search commands using the "chunked" protocol.
 
@@ -114,13 +113,13 @@ class BaseChunkHandler(object):
         # descriptors should *not* implement a fileno method:
 
         if sys.platform == "win32":
-            import os, msvcrt
+            import os, msvcrt # pylint: disable=import-error
             for file_like_object in [self.in_file, self.out_file, self.err_file]:
                 fileno = getattr(file_like_object, 'fileno', None)
                 if fileno is not None:
                     if callable(fileno):
                         try:
-                            msvcrt.setmode(file_like_object.fileno(), os.O_BINARY)
+                            msvcrt.setmode(file_like_object.fileno(), os.O_BINARY) # pylint: disable=E1103 ; the Windows version of os has O_BINARY
                         except ValueError:
                             # This can be safely skipped, as it is raised
                             # from pytest which incorreclty implements a fileno
@@ -136,6 +135,11 @@ class BaseChunkHandler(object):
         self._read_time = 0.0
         self._handle_time = 0.0
         self._write_time = 0.0
+
+        self.controller_options = None
+        self.controller = None
+        self.watchdog = None
+        self.partial_fit = None
 
     def run(self):
         """Handle chunks in a loop until EOF is read.
@@ -154,9 +158,10 @@ class BaseChunkHandler(object):
                     type(e).__name__, e
                 )
             self.die(error_message)
-            laskdjflakj  # ;-)
+            # sadly pylint does not get the joke
+            # laskdjflakj  # ;-)
 
-    def handler(self, metadata=None, records=None):
+    def handler(self, metadata, body):
         """Default chunk handler, returns empty metadata and data payloads."""
         return ({}, [])
 
@@ -339,7 +344,7 @@ class BaseChunkHandler(object):
 class AbortHandler(BaseChunkHandler):
     def __init__(self, msg):
         self.msg = msg
-        super(self.__class__, self).__init__()
+        super(AbortHandler, self).__init__()
 
     def handler(self, metadata, body):
         raise RuntimeError(self.msg)

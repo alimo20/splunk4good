@@ -1,6 +1,6 @@
 <dashboard script="table_cell_highlighting.js" stylesheet="table_cell_highlighting.css">
     <label>Table Cell Highlighting</label>
-    <description/>
+    <description>Color table cells based on conditions having multiple field values.</description>
     <row>
         <table id="highlight">
             <title>Cell Highlighting</title>

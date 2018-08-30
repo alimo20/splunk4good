@@ -1,5 +1,6 @@
 <dashboard>
   <label>Single Value Element</label>
+  <description>Create a single value viz with trend indicator, sparkline, and more.</description>
   <row>
     <panel>
       <single>

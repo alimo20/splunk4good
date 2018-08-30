@@ -1,6 +1,6 @@
 <form>
     <label>Dropdown Form Input Element</label>
-    <description>Events Filtered by User and Sourcetype using Dropdown Form Inputs</description>
+    <description>Set search terms by populating a form with one or more dropdown options.</description>
     <fieldset autoRun="true" submitButton="false">
         <input type="dropdown" token="username" searchWhenChanged="true">
             <label>Select a User:</label>

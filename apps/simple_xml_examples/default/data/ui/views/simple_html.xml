@@ -1,5 +1,6 @@
 <dashboard>
-    <label>HTML</label>
+    <label>HTML Element</label>
+    <description>Include static HTML content.  Useful for descriptions, links, and context.</description>
     <row>
         <html>
             <h1>

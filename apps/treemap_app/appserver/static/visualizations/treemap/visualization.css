@@ -17,7 +17,7 @@ div.splunk-treemap div {
 .splunk-treemap rect {
   fill: none;
   fill-opacity: 0.85;
-  stroke: #ebedef;  
+  stroke: #ebedef;
   stroke-width: 1px;
 }
 
@@ -29,6 +29,10 @@ div.splunk-treemap div {
 .splunk-treemap rect.child {
   cursor: default;
   pointer-events: all;
+}
+
+.splunk-treemap rect.child.drillable {
+  cursor: pointer;
 }
 
 .splunk-treemap g.children:hover .child{
@@ -47,6 +51,7 @@ div.splunk-treemap div {
   padding: 5px;
   color: #555;
   pointer-events: none;
+  word-break: break-all;
 }
 
 .splunk-treemap .parent-label {
@@ -87,7 +92,7 @@ div.splunk-treemap div {
   padding: 10px;
 
   pointer-events: none;
-  background: #000000; 
+  background: #000000;
   color: #ffffff;
 }
 
@@ -182,6 +187,7 @@ div.splunk-treemap div {
   padding-left: 5px;
   opacity: 0.85;
   margin-bottom:6px;
+  word-break: break-all;
 }
 
 .splunk-treemap li.key span {
@@ -193,4 +199,8 @@ div.splunk-treemap div {
 .splunk-treemap .legend ul text {
   font-weight: bold;
   font-size: 11px;
+}
+
+.splunk-treemap foreignObject {
+  pointer-events: none;
 }

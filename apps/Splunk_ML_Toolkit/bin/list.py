@@ -1,35 +1,31 @@
 #!/usr/bin/env python
-# Copyright (C) 2015-2017 Splunk Inc. All Rights Reserved.
-import sys
+# Copyright (C) 2015-2018 Splunk Inc. All Rights Reserved.
+from exec_anaconda import exec_anaconda_or_die
+exec_anaconda_or_die()
 
 import cexc
-import exec_anaconda
-
-try:
-    exec_anaconda.exec_anaconda()
-except Exception as e:
-    cexc.abort(e)
-    sys.exit(1)
+from cexc import BaseChunkHandler
 
 from util import command_util
-from chunked_controller import ChunkedController
-from cexc import BaseChunkHandler
+from util.command_util import GeneratingCommand
 
 logger = cexc.get_logger('list')
 messages = cexc.get_messages_logger()
 
 
-class ListModelsCommand(BaseChunkHandler):
-    """ListModelsCommand uses the ChunkedController & ListModelsProcessor to list saved models."""
+class ListModelsCommand(GeneratingCommand):
+    """ListModelsCommand uses the ChunkedController & ListModelsProcessor to
+    list saved models."""
 
     @staticmethod
     def handle_arguments(getinfo):
         """Check for invalid arguments and get controller_options.
 
         Args:
-            dict: getinfo metadata
+            getinfo (dict): getinfo metadata
+
         Returns:
-            dict: controller options
+            controller_options (dict): controller options
         """
         if len(getinfo['searchinfo']['args']) > 0:
             raise RuntimeError('Invalid arguments')  # TODO: more descriptive error message
@@ -38,18 +34,21 @@ class ListModelsCommand(BaseChunkHandler):
         controller_options['processor'] = 'ListModelsProcessor'
         return controller_options
 
-    def setup(self):
-        """Get options, start controller, return command type.
+    def handler(self, metadata, body):
+        """Default handler we override from BaseChunkHandler.
+
+        Args:
+            metadata (dict): metadata information
+            body (str): data payload from CEXC
 
         Returns:
-            dict: get info response (command type)
+            (dict): metadata to be sent back to CEXC
+            body (str): data payload to be sent back to CEXC
         """
-        self.controller_options = self.handle_arguments(self.getinfo)
-        self.controller = ChunkedController(self.getinfo, self.controller_options)
-        return {'type': 'reporting', 'generating': True}
+        if command_util.is_invalid_chunk(metadata):
+            logger.debug('Not running without session key.')
+            return {'finished': True}
 
-    def handler(self, metadata, body):
-        """Default handler we override from BaseChunkHandler."""
         if command_util.is_getinfo_chunk(metadata):
             return self.setup()
 

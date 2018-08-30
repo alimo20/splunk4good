@@ -1,13 +1,13 @@
 <dashboard>
     <label>Table Element with Sparklines</label>
-    <description/>
+    <description>Configure basic and advanced sparkline formatting options.</description>
     <row>
 
         <table>
             <title>Default Sparkline</title>
             <search>
                 <query>index=_internal | chart count sparkline by sourcetype | sort -count</query>
-                <earliesr>-24h@h</earliesr>
+                <earliest>-24h@h</earliest>
                 <latest>now</latest>
             </search>
             <option name="wrap">true</option>

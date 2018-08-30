@@ -1,6 +1,6 @@
 <dashboard>
     <label>Search Refresh and Refresh Display</label>
-    <description>Control search refresh and refresh display behavior</description>
+    <description>Control search refresh and refresh display behavior.</description>
     <row>
         <panel>
             <title>No progress bar or loading message</title>

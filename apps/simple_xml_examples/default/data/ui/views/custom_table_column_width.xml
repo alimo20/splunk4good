@@ -1,6 +1,6 @@
 <dashboard stylesheet="table_column_width.css">
     <label>Table With Custom Column Width</label>
-    <description>Modify table width by custom stylesheet</description>
+    <description>Modify table column width by custom stylesheet</description>
     <row>
         <table id="customWidth">
             <title>Custom Column Width</title>

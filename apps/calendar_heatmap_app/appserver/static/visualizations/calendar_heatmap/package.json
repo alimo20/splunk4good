@@ -1,6 +1,6 @@
 {
   "name": "calendar_heatmap",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Splunk Visualization",
   "main": "visualization.js",
   "scripts": {

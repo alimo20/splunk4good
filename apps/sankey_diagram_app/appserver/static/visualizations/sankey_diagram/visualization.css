@@ -60,6 +60,10 @@ div.splunk-sankey div {
   pointer-events: none;
 }
 
+.splunk-sankey .link.link-drilldown {
+    cursor: pointer;
+}
+
 
 /* === Tooltip === */
 

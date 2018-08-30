@@ -1,7 +1,7 @@
 # Sankey Diagram
 
 Documentation:
-http://docs.splunk.com/Documentation/CustomViz/1.0/Sankey/SankeyIntro
+http://docs.splunk.com/Documentation/SankeyDiagram/1.2.0/SankeyDiagramViz/SankeyIntro
 
 ## Sample Searches
 ```

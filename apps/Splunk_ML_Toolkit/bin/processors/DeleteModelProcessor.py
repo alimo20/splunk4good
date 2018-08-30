@@ -2,7 +2,7 @@
 # Copyright (C) 2015-2017 Splunk Inc. All Rights Reserved.
 import errno
 import cexc
-import models
+from models import deletemodels
 from BaseProcessor import BaseProcessor
 
 logger = cexc.get_logger(__name__)
@@ -13,14 +13,16 @@ class DeleteModelProcessor(BaseProcessor):
     """The delete processor deletes a saved ML-SPL model."""
 
     @staticmethod
-    def delete_model(process_options):
+    def delete_model(process_options, searchinfo, namespace):
         """Actually delete the model.
 
         Args:
-            dict: process options
+            process_options (dict): process options
+            searchinfo (dict): information required for search
+            namespace (string): namespace, 'user' or 'app'
         """
         try:
-            models.delete_model(process_options['model_name'])
+            deletemodels.delete_model(process_options['model_name'], searchinfo, namespace=namespace)
         except (OSError, IOError) as e:
             if e.errno == errno.ENOENT:
                 raise RuntimeError('model "%s" does not exist.' % process_options['model_name'])
@@ -34,4 +36,5 @@ class DeleteModelProcessor(BaseProcessor):
         messages.info('Deleted model "%s"' % process_options['model_name'])
 
     def process(self):
-        self.delete_model(self.process_options)
+        """Delete the model."""
+        self.delete_model(self.process_options, self.searchinfo, namespace=self.namespace)

@@ -3,8 +3,8 @@
 import os
 import sys
 import time
-import psutil
 from multiprocessing import Process
+import psutil
 
 import cexc
 
@@ -23,6 +23,8 @@ class Watchdog(object):
         self.memory_limit = memory_limit
         self.finalize_file = finalize_file
         self.started = False
+        self._process = None
+        self.start_time = None
 
     def start(self):
         self._process = Process(target=self.main, name="ML-SPL Watchdog")
@@ -56,7 +58,7 @@ class Watchdog(object):
                 logger.info('Terminate %s: exceeded time limit (%d > %d)',
                             self.victim, delta, self.time_limit)
                 # Note: this chunk output may race with our parent...
-                cexc.BaseChunkHandler._internal_write_chunk(
+                cexc.BaseChunkHandler._internal_write_chunk( # pylint: disable=W0212
                     sys.stdout,
                     {'error': 'Time limit exceeded (> %d seconds)' % self.time_limit}
                 )
@@ -64,12 +66,12 @@ class Watchdog(object):
                 return 1
 
             # Check memory limit
-            rss, _ = self.victim.memory_info()
+            rss = self.victim.memory_info().rss
             if self.memory_limit >= 0 and rss > self.memory_limit:
                 logger.info('Terminating %s: exceeded memory limit (%d > %d)',
                             self.victim, rss, self.memory_limit)
                 # Note: this chunk output may race with our parent...
-                cexc.BaseChunkHandler._internal_write_chunk(
+                cexc.BaseChunkHandler._internal_write_chunk( # pylint: disable=W0212
                     sys.stdout,
                     {'error': 'Memory limit exceeded (> %d bytes)' % self.memory_limit}
                 )
@@ -78,10 +80,9 @@ class Watchdog(object):
 
             # Check if finalize file exists
             if self.finalize_file and os.path.exists(self.finalize_file):
-                logger.info('Terminating %s: finalize file detected',
-                            self.victim, rss, self.memory_limit)
+                logger.info('Terminating %s: finalize file detected', self.victim)
                 # Note: this chunk output may race with our parent...
-                cexc.BaseChunkHandler._internal_write_chunk(
+                cexc.BaseChunkHandler._internal_write_chunk( # pylint: disable=W0212
                     sys.stdout,
                     {'error': 'Aborting because job finalization was requested.'}
                 )

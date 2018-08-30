@@ -75,7 +75,7 @@
   pointer-events: none;
 }
 
-.splunk-calendar-heatmap .cal-heatmap-container .hover_cursor:hover {
+.splunk-calendar-heatmap.cal-heatmap-drilldown {
   cursor: pointer;
 }
 
