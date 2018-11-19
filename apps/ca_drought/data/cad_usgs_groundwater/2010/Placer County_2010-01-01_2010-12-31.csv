@@ -1,0 +1,4 @@
+County,FIPS_Code,featureId,agency_cd,site_no,site_tp_cd,lev_dt,lev_tm,lev_tz_cd,lev_va,sl_lev_va,sl_datum_cd,lev_status_cd,lev_agency_cd,lev_dt_acy_cd,lev_acy_cd,lev_src_cd,lev_meth_cd,lev_age_cd,Latitude,Longitude
+Placer County,61,Placer,USGS,384949121233501,GW,2010-06-10,14:05,PDT,85.64,NULL,NULL,NULL,USGS,m,2,S,S,A,38.83017706,-121.3941209
+Placer County,61,Placer,USGS,385432121213001,GW,2010-06-10,13:05,PDT,36.99,NULL,NULL,NULL,USGS,m,2,S,S,A,38.9087864,-121.3593989
+Placer County,61,Placer,USGS,385914121215801,GW,2010-06-10,11:40,PDT,48.88,NULL,NULL,NULL,USGS,m,2,S,S,A,38.9871178,-121.367178

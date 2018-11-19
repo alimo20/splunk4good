@@ -1,0 +1,564 @@
+<form>
+  <label>Reservoir Levels</label>
+  <row>
+    <panel>
+      <html>
+        <h1><img src="http://i.imgur.com/IdkiC7I.png"/>Reservoir levels</h1>
+        <p>The California Department of Water Resources uses sensors to monitor reservoir levels throughout the State of California. This page illustrates the very real needs throughout the state – what reservoirs have the lowest levels? What reservoirs have the highest levels? What locations do we need to worry about, and where are they located? How is the state’s overall water supply? Explore the trends over time for various locations and which reservoirs have reached critically low levels.</p>
+      </html>
+    </panel>
+  </row>
+  <fieldset submitButton="false" autoRun="true">
+    <!--
+            Create an input to store the drilldown value. It will be hidden using custom javascript when the dashboard is loaded.
+        
+    -->
+    <input type="dropdown" token="year" searchWhenChanged="true">
+      <label>Year</label>
+      <choice value="2015">2015</choice>
+      <choice value="2014">2014</choice>
+      <choice value="2013">2013</choice>
+      <choice value="2012">2012</choice>
+      <choice value="2011">2011</choice>
+      <choice value="2010">2010</choice>
+      <default>2015</default>
+    </input>
+    <input type="dropdown" token="month" searchWhenChanged="true">
+      <label>Month</label>
+      <choice value="01">January</choice>
+      <choice value="02">February</choice>
+      <choice value="03">March</choice>
+      <choice value="04">April</choice>
+      <choice value="05">May</choice>
+      <choice value="06">June</choice>
+      <choice value="07">July</choice>
+      <choice value="08">August</choice>
+      <choice value="09">September</choice>
+      <choice value="10">October</choice>
+      <choice value="11">November</choice>
+      <choice value="12">December</choice>
+      <default>12</default>
+      <initialValue>12</initialValue>
+    </input>
+    <input type="dropdown" token="county" searchWhenChanged="true">
+      <label>County</label>
+      <choice value="*">All</choice>
+      <search>
+        <query>index="ca_drought" sourcetype="cad_reservoir_levels" | dedup County | table County | sort  County</query>
+      </search>
+      <fieldForLabel>County</fieldForLabel>
+      <fieldForValue>County</fieldForValue>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+  </fieldset>
+  <label>Reservoir data</label>
+  <row>
+    <panel>
+      <single>
+        <title>What reservoir has the lowest levels?</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_reservoir_levels" County=$county$|eval C=(Reservoir_Storage_AF/Total_Capacity_AF)*100 |eval date1=strptime("$year$-$month$-01","%Y-%m-%d")|eval epoch_ts=strptime(Date,"%Y%m%d")|where epoch_ts&lt;=date1 |timechart span=1mon min(C)</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="afterLabel">%</option>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0xd93f3c","0xf58f39","0xf7bc38","0x65a637"]</option>
+        <option name="rangeValues">[25,50,75]</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="trendInterval">auto</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+        <option name="display.visualizations.singlevalueHeight">115</option>
+        <option name="linkView">search</option>
+        <option name="height">100px</option>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>Percent of Total Statewide Capacity</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_reservoir_levels" |eval date1=strptime("$year$-$month$-01","%Y-%m-%d")|eval epoch_ts=strptime(Date,"%Y%m%d")|where epoch_ts&lt;=date1 |timechart span=1mon sum(Reservoir_Storage_AF) as A sum(Total_Capacity_AF) as B | eval C=A/B*100 | fields - A,B</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0xd93f3c","0xf58f39","0xf7bc38","0x65a637"]</option>
+        <option name="rangeValues">[25,50,75]</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="trendInterval">auto</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+        <option name="display.visualizations.singlevalueHeight">100</option>
+        <option name="linkView">search</option>
+        <option name="drilldown">none</option>
+        <option name="afterLabel">%</option>
+        <option name="height">100px</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>What reservoir has the highest level?</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_reservoir_levels" County=$county$|eval C=(Reservoir_Storage_AF/Total_Capacity_AF)*100| where C&lt;=100 |eval date1=strptime("$year$-$month$-01","%Y-%m-%d")|eval epoch_ts=strptime(Date,"%Y%m%d")|where epoch_ts&lt;=date1 |timechart span=1mon max(C)</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="afterLabel">%</option>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0xd93f3c","0xf58f39","0xf7bc38","0x65a637"]</option>
+        <option name="rangeValues">[25,50,75]</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="trendInterval">auto</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+        <option name="display.visualizations.singlevalueHeight">115</option>
+        <option name="linkView">search</option>
+        <option name="drilldown">none</option>
+        <option name="height">100px</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <single>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_reservoir_levels" Date=$year$$month$01 County=$county$ |eval C= round(((Reservoir_Storage_AF/Total_Capacity_AF)*100),2) | table Dam,C | sort C| head 1 | rangemap field=C severe=-25-25 high=25-50 elevated=50-75 low=75-102</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="colorBy">trend</option>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0xd93f3c","0x65a637"]</option>
+        <option name="rangeValues">[25]</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="trendInterval">auto</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+        <option name="display.visualizations.singlevalueHeight">115</option>
+        <option name="linkView">search</option>
+        <option name="drilldown">none</option>
+        <option name="height">50px</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_uws_reports" | eval x = "Statewide Average" | fields x</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="myBrush">solidFill</option>
+        <option name="myBrush.color">0xFF0000</option>
+        <option name="height">20px</option>
+        <option name="backgroundColor">#475565</option>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+        <option name="linkView">search</option>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0xf7bc38","0xf7bc38"]</option>
+        <option name="rangeValues">[1]</option>
+        <option name="trendInterval">auto</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_reservoir_levels" Date=$year$$month$01 County=$county$ |eval C= round(((Reservoir_Storage_AF/Total_Capacity_AF)*100),2)|where C&lt;=100 | table Dam,C | sort -C| head 1 | rangemap field=C severe=-25-25 high=25-50 elevated=50-75 low=75-102</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="height">50px</option>
+        <option name="colorBy">trend</option>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">inverse</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0xd93f3c","0xf58f39","0xf7bc38","0x6db7c6","0x65a637"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="trendInterval">auto</option>
+        <option name="linkView">search</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <input type="dropdown" token="map" searchWhenChanged="true">
+        <label>Reservoir Map options</label>
+        <choice value="all">All</choice>
+        <choice value="low">Less than 1/3 of Capacity</choice>
+        <choice value="med">Between 1/3 and 2/3 of Capacity</choice>
+        <choice value="high">More than 2/3 of Capacity</choice>
+        <default>all</default>
+        <initialValue>all</initialValue>
+        <!--Changed-->
+        <change>
+          <condition value="all">
+            <set token="first">true</set>
+            <unset token="second"></unset>
+            <unset token="third"></unset>
+            <unset token="fourth"></unset>
+          </condition>
+          <condition value="low">
+            <set token="second">true</set>
+            <unset token="first"></unset>
+            <unset token="third"></unset>
+            <unset token="fourth"></unset>
+          </condition>
+          <condition value="med">
+            <set token="third">true</set>
+            <unset token="first"></unset>
+            <unset token="second"></unset>
+            <unset token="fourth"></unset>
+          </condition>
+          <condition value="high">
+            <set token="fourth">true</set>
+            <unset token="first"></unset>
+            <unset token="second"></unset>
+            <unset token="third"></unset>
+          </condition>
+        </change>
+        <!--Changed-->
+      </input>
+      <map depends="$first$">
+        <title>Reservoir storage levels for $month$-$year$</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_reservoir_levels" County="$county$" Date=$year$$month$01 | geostats latfield=Latitude longfield=Longitude binspanlat=0.1 binspanlong=0.1 globallimit=0 values(Reservoir_Storage_AF) AS ReservoirStorageAcreFeet by Dam</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="mapping.choroplethLayer.colorBins">5</option>
+        <option name="mapping.choroplethLayer.colorMode">auto</option>
+        <option name="mapping.choroplethLayer.maximumColor">0xDB5800</option>
+        <option name="mapping.choroplethLayer.minimumColor">0x2F25BA</option>
+        <option name="mapping.choroplethLayer.neutralPoint">0</option>
+        <option name="mapping.choroplethLayer.shapeOpacity">0.75</option>
+        <option name="mapping.choroplethLayer.showBorder">1</option>
+        <option name="mapping.data.maxClusters">6500000</option>
+        <option name="mapping.drilldown">none</option>
+        <option name="mapping.map.center">(37.53,-118.44)</option>
+        <option name="mapping.map.panning">true</option>
+        <option name="mapping.map.scrollZoom">false</option>
+        <option name="mapping.map.zoom">6</option>
+        <option name="mapping.markerLayer.markerMaxSize">50</option>
+        <option name="mapping.markerLayer.markerMinSize">10</option>
+        <option name="mapping.markerLayer.markerOpacity">0.8</option>
+        <option name="mapping.showTiles">1</option>
+        <option name="mapping.tileLayer.maxZoom">7</option>
+        <option name="mapping.tileLayer.minZoom">0</option>
+        <option name="mapping.tileLayer.tileOpacity">1</option>
+        <option name="mapping.type">marker</option>
+        <option name="height">630px</option>
+        <option name="drilldown">none</option>
+        <option name="mapping.seriesColors">[0x006299]</option>
+        <drilldown>
+          <!-- Use set to specify the new token to be created. 
+                     Use any token from the page or from the click event to produce the value needed. -->
+          <set token="chart_dam">$click.name$</set>
+          <!-- If we also set the form.sourcetype the input will get updated too -->
+          <set token="form.chart_dam">$click.name$</set>
+        </drilldown>
+      </map>
+      <map depends="$second$">
+        <title>Less than 1/3 of Capacity</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_reservoir_levels" County="$county$"  Total_Capacity_AF=* Date=$year$$month$01 |eval "X"=round((((Reservoir_Storage_AF)/Total_Capacity_AF)*100),2) | where X &lt;= 33.3 | geostats latfield=Latitude longfield=Longitude binspanlat=0.1 binspanlong=0.1 globallimit=0 values(Reservoir_Storage_AF) by Dam</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="height">630px</option>
+        <option name="mapping.choroplethLayer.colorBins">5</option>
+        <option name="mapping.choroplethLayer.colorMode">auto</option>
+        <option name="mapping.choroplethLayer.maximumColor">0xDB5800</option>
+        <option name="mapping.choroplethLayer.minimumColor">0x2F25BA</option>
+        <option name="mapping.choroplethLayer.neutralPoint">0</option>
+        <option name="mapping.choroplethLayer.shapeOpacity">0.75</option>
+        <option name="mapping.choroplethLayer.showBorder">true</option>
+        <option name="mapping.data.maxClusters">6500000</option>
+        <option name="mapping.map.center">(37.31,-120.4)</option>
+        <option name="mapping.map.panning">true</option>
+        <option name="mapping.map.scrollZoom">false</option>
+        <option name="mapping.map.zoom">6</option>
+        <option name="mapping.markerLayer.markerMaxSize">50</option>
+        <option name="mapping.markerLayer.markerMinSize">10</option>
+        <option name="mapping.markerLayer.markerOpacity">0.8</option>
+        <option name="mapping.showTiles">true</option>
+        <option name="mapping.tileLayer.maxZoom">7</option>
+        <option name="mapping.tileLayer.minZoom">0</option>
+        <option name="mapping.tileLayer.tileOpacity">1</option>
+        <option name="mapping.type">marker</option>
+        <option name="mapping.seriesColors">[0xe60026]</option>
+        <option name="drilldown">none</option>
+      </map>
+      <map depends="$third$">
+        <title>Between 1/3 and 2/3 of Capacity</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_reservoir_levels" County="$county$"  Total_Capacity_AF=* Date=$year$$month$01  | eval "X"=round((((Reservoir_Storage_AF)/Total_Capacity_AF)*100),2)  | where 33.3&lt;X and X &lt;= 66.66|  geostats latfield=Latitude longfield=Longitude binspanlat=0.1 binspanlong=0.1 globallimit=0 values(Reservoir_Storage_AF) by Dam</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="height">630px</option>
+        <option name="mapping.choroplethLayer.colorBins">5</option>
+        <option name="mapping.choroplethLayer.colorMode">auto</option>
+        <option name="mapping.choroplethLayer.maximumColor">0xDB5800</option>
+        <option name="mapping.choroplethLayer.minimumColor">0x2F25BA</option>
+        <option name="mapping.choroplethLayer.neutralPoint">0</option>
+        <option name="mapping.choroplethLayer.shapeOpacity">0.75</option>
+        <option name="mapping.choroplethLayer.showBorder">true</option>
+        <option name="mapping.data.maxClusters">6500000</option>
+        <option name="mapping.map.center">(37.32,-120.82)</option>
+        <option name="mapping.map.panning">true</option>
+        <option name="mapping.map.scrollZoom">false</option>
+        <option name="mapping.map.zoom">6</option>
+        <option name="mapping.markerLayer.markerMaxSize">50</option>
+        <option name="mapping.markerLayer.markerMinSize">10</option>
+        <option name="mapping.markerLayer.markerOpacity">0.8</option>
+        <option name="mapping.showTiles">true</option>
+        <option name="mapping.tileLayer.maxZoom">7</option>
+        <option name="mapping.tileLayer.minZoom">0</option>
+        <option name="mapping.tileLayer.tileOpacity">1</option>
+        <option name="mapping.type">marker</option>
+        <option name="mapping.seriesColors">[0xffd700]</option>
+        <option name="drilldown">none</option>
+      </map>
+      <map depends="$fourth$">
+        <title>More than 2/3 of Capacity</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_reservoir_levels" County="$county$"  Total_Capacity_AF=* Date=$year$$month$01|eval "X"=round((((Reservoir_Storage_AF)/Total_Capacity_AF)*100),2) | where X &gt; 66.66 | geostats latfield=Latitude longfield=Longitude binspanlat=0.1 binspanlong=0.1 globallimit=0 values(Reservoir_Storage_AF) by Dam</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="height">630px</option>
+        <option name="mapping.choroplethLayer.colorBins">5</option>
+        <option name="mapping.choroplethLayer.colorMode">auto</option>
+        <option name="mapping.choroplethLayer.maximumColor">0xDB5800</option>
+        <option name="mapping.choroplethLayer.minimumColor">0x2F25BA</option>
+        <option name="mapping.choroplethLayer.neutralPoint">0</option>
+        <option name="mapping.choroplethLayer.shapeOpacity">0.75</option>
+        <option name="mapping.choroplethLayer.showBorder">true</option>
+        <option name="mapping.data.maxClusters">6500000</option>
+        <option name="mapping.map.center">(37.23,-120.62)</option>
+        <option name="mapping.map.panning">true</option>
+        <option name="mapping.map.scrollZoom">false</option>
+        <option name="mapping.map.zoom">6</option>
+        <option name="mapping.markerLayer.markerMaxSize">50</option>
+        <option name="mapping.markerLayer.markerMinSize">10</option>
+        <option name="mapping.markerLayer.markerOpacity">0.8</option>
+        <option name="mapping.showTiles">true</option>
+        <option name="mapping.tileLayer.maxZoom">7</option>
+        <option name="mapping.tileLayer.minZoom">0</option>
+        <option name="mapping.tileLayer.tileOpacity">1</option>
+        <option name="mapping.type">marker</option>
+        <option name="mapping.seriesColors">[0x6dc066]</option>
+        <option name="drilldown">none</option>
+      </map>
+    </panel>
+    <panel>
+      <title>Reservoir storage levels</title>
+      <table>
+        <title>Reservoir storage levels for $month$-$year$</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_reservoir_levels" County="$county$"| stats sparkline(avg(Reservoir_Storage_AF),1mon) as "Reservoir levels 2010-2015" by ID,Dam| join ID [search index="ca_drought" sourcetype="cad_reservoir_levels" County="$county$" Total_Capacity_AF=* Date=$year$$month$01 | eval "Percent of Total Capacity"=round((((Reservoir_Storage_AF)/Total_Capacity_AF)*100),2) | rename Total_Capacity_AF as "Total Capacity (Acre Feet)"|rename Reservoir_Storage_AF as "Reservoir Storage (Acre Feet)"|eval Hydrologic_Region = upper(substr(Hydrologic_Region,1,1)).lower(substr(Hydrologic_Region,2)) | rename Hydrologic_Region as "Hydrologic Region" | rename River_basin as "River basin" |table ID,Dam,"Percent of Total Capacity","Total Capacity (Acre Feet)","Reservoir Storage (Acre Feet)",Lake,"Hydrologic Region","River basin",]|sort + "Percent of Total Capacity"</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <format type="sparkline" field="Reservoir levels">
+          <option name="type">bar</option>
+          <option name="height">40px</option>
+          <option name="barColor">#5379AF</option>
+          <option name="barWidth">5px</option>
+        </format>
+        <drilldown>
+          <!-- Use set to specify the new token to be created.
+                     Use any token from the page or from the click event to produce the value needed. -->
+          <set token="Dam">$row.Dam$</set>
+          <set token="form.Dam">$row.Dam$</set>
+        </drilldown>
+        <option name="count">20</option>
+        <format field="Reservoir levels" type="sparkline">
+          <option name="height">40px</option>
+          <option name="barColor">#5379AF</option>
+          <option name="barWidth">5px</option>
+          <option name="type">bar</option>
+        </format>
+        <format field="Reservoir levels" type="sparkline">
+          <option name="height">40px</option>
+          <option name="barColor">#5379AF</option>
+          <option name="barWidth">5px</option>
+          <option name="type">bar</option>
+        </format>
+        <format field="Reservoir levels" type="sparkline">
+          <option name="height">40px</option>
+          <option name="barColor">#5379AF</option>
+          <option name="barWidth">5px</option>
+          <option name="type">bar</option>
+        </format>
+        <format field="Reservoir levels" type="sparkline">
+          <option name="height">40px</option>
+          <option name="barColor">#5379AF</option>
+          <option name="barWidth">5px</option>
+          <option name="type">bar</option>
+        </format>
+        <format field="Reservoir levels" type="sparkline">
+          <option name="height">40px</option>
+          <option name="barColor">#5379AF</option>
+          <option name="barWidth">5px</option>
+          <option name="type">bar</option>
+        </format>
+        <format field="Reservoir levels" type="sparkline">
+          <option name="height">40px</option>
+          <option name="barColor">#5379AF</option>
+          <option name="barWidth">5px</option>
+          <option name="type">bar</option>
+        </format>
+        <format field="Reservoir levels" type="sparkline">
+          <option name="height">40px</option>
+          <option name="barColor">#5379AF</option>
+          <option name="barWidth">5px</option>
+          <option name="type">bar</option>
+        </format>
+        <format field="Reservoir levels" type="sparkline">
+          <option name="barColor">#5379AF</option>
+          <option name="type">bar</option>
+          <option name="barWidth">5px</option>
+          <option name="height">40px</option>
+        </format>
+        <format field="Reservoir levels" type="sparkline">
+          <option name="barColor">#5379AF</option>
+          <option name="type">bar</option>
+          <option name="barWidth">5px</option>
+          <option name="height">40px</option>
+        </format>
+        <format field="Reservoir levels" type="sparkline">
+          <option name="barColor">#5379AF</option>
+          <option name="type">bar</option>
+          <option name="barWidth">5px</option>
+          <option name="height">40px</option>
+        </format>
+        <format field="Reservoir levels" type="sparkline">
+          <option name="barColor">#5379AF</option>
+          <option name="type">bar</option>
+          <option name="barWidth">5px</option>
+          <option name="height">40px</option>
+        </format>
+        <format field="Reservoir levels" type="sparkline">
+          <option name="barColor">#5379AF</option>
+          <option name="type">bar</option>
+          <option name="barWidth">5px</option>
+          <option name="height">40px</option>
+        </format>
+        <format field="Reservoir levels" type="sparkline">
+          <option name="barColor">#5379AF</option>
+          <option name="type">bar</option>
+          <option name="barWidth">5px</option>
+          <option name="height">40px</option>
+        </format>
+        <format field="Reservoir levels" type="sparkline">
+          <option name="barColor">#5379AF</option>
+          <option name="type">bar</option>
+          <option name="barWidth">5px</option>
+          <option name="height">40px</option>
+        </format>
+        <format field="Reservoir levels" type="sparkline">
+          <option name="barColor">#5379AF</option>
+          <option name="type">bar</option>
+          <option name="barWidth">5px</option>
+          <option name="height">40px</option>
+        </format>
+        <format field="Reservoir levels" type="sparkline">
+          <option name="type">bar</option>
+          <option name="barWidth">5px</option>
+          <option name="height">40px</option>
+          <option name="barColor">#5379AF</option>
+        </format>
+        <format field="Reservoir levels" type="sparkline">
+          <option name="type">bar</option>
+          <option name="barWidth">5px</option>
+          <option name="height">40px</option>
+          <option name="barColor">#5379AF</option>
+        </format>
+        <format field="Reservoir levels" type="sparkline">
+          <option name="type">bar</option>
+          <option name="barWidth">5px</option>
+          <option name="height">40px</option>
+          <option name="barColor">#5379AF</option>
+        </format>
+        <format field="Reservoir levels" type="sparkline">
+          <option name="barColor">#5379AF</option>
+          <option name="height">40px</option>
+          <option name="type">bar</option>
+          <option name="barWidth">5px</option>
+        </format>
+      </table>
+      <chart id="detail" depends="$Dam$">
+        <title>$Dam$ reservoir level history  and State average levels</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_reservoir_levels" Dam="$Dam$" | timechart values(Reservoir_Storage_AF) as "Reservoir levels (AF)" | join _time [search index="ca_drought" sourcetype="cad_reservoir_levels" | timechart avg(Reservoir_Storage_AF) as "State average Reservoir levels (AF)" | eval "State average Reservoir levels (AF)" = round('State average Reservoir levels (AF)',2)]</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="height">350</option>
+        <option name="width">50%</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">"State average Reservoir levels (AF)"</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="charting.axisTitleY2.text">State Avg. Reservoir levels (Acre Feet)</option>
+        <option name="charting.axisTitleY.text">Reservoir levels (Acre Feet)</option>
+      </chart>
+    </panel>
+  </row>
+</form>

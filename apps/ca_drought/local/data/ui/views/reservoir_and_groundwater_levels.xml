@@ -1,0 +1,248 @@
+<form>
+  <label>Reservoir and Groundwater Levels</label>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="radio" token="gw_res_levels" searchWhenChanged="true">
+      <label>Map display options</label>
+      <choice value="arl">Average Reservoir levels</choice>
+      <choice value="agl">Average Groundwater levels</choice>
+      <initialValue>agl</initialValue>
+      <change>
+        <condition value="arl">
+          <set token="first">true</set>
+          <unset token="second"></unset>
+        </condition>
+        <condition value="agl">
+          <set token="second">true</set>
+          <unset token="first"></unset>
+        </condition>
+      </change>
+      <default>agl</default>
+    </input>
+    <input type="dropdown" token="year" searchWhenChanged="true">
+      <label>Year</label>
+      <search>
+        <query>index="ca_drought" sourcetype="cad_usgs_groundwater" | table date_year | dedup date_year | sort -date_year</query>
+      </search>
+      <fieldForLabel>date_year</fieldForLabel>
+      <fieldForValue>date_year</fieldForValue>
+      <default>2015</default>
+      <initialValue>2015</initialValue>
+    </input>
+    <input type="dropdown" token="month" searchWhenChanged="true">
+      <label>Month</label>
+      <choice value="january">January</choice>
+      <choice value="february">February</choice>
+      <choice value="march">March</choice>
+      <choice value="april">April</choice>
+      <choice value="may">May</choice>
+      <choice value="june">June</choice>
+      <choice value="july">July</choice>
+      <choice value="august">August</choice>
+      <choice value="september">September</choice>
+      <choice value="october">October</choice>
+      <choice value="november">November</choice>
+      <choice value="december">December</choice>
+      <default>june</default>
+      <initialValue>june</initialValue>
+    </input>
+    <input type="dropdown" searchWhenChanged="true" token="county_name">
+      <label>County</label>
+      <search>
+        <query>index="ca_drought" sourcetype="cad_demographic" Year=2013 | table featureId | dedup featureId |sort +featureId</query>
+      </search>
+      <fieldForLabel>featureId</fieldForLabel>
+      <fieldForValue>featureId</fieldForValue>
+      <default>*</default>
+      <initialValue>*</initialValue>
+      <choice value="*">All</choice>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <html>
+        <h1>
+          <img src="http://i.imgur.com/CLOT1H8.png?1"/>Groundwater levels</h1>
+        <p>Groundwater in California is monitored both by the United States Geologic Service and the California Department of Water Resources (DWR). DWR also uses sensors throughout the state to monitor reservoir levels throughout the state. This page shows trends in both groundwater and reservoir levels over time and across the state.</p>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <map depends="$first$">
+        <title>Average reservoir storage in Acre feet</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_reservoir_levels" County!="State of *"date_year=$year$ date_month=$month$ | stats avg(Reservoir_Storage_AF) as "Average Resevoir levels" by County|eval "Average Resevoir levels"=round('Average Resevoir levels',2) | eval County = upper(substr(County,1,1)).lower(substr(County,2)) | geom CA_counties featureIdField="County"</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="mapping.choroplethLayer.colorBins">9</option>
+        <option name="mapping.choroplethLayer.colorMode">auto</option>
+        <option name="mapping.choroplethLayer.maximumColor">0x006299</option>
+        <option name="mapping.choroplethLayer.minimumColor">0x2F25BA</option>
+        <option name="mapping.choroplethLayer.neutralPoint">0</option>
+        <option name="mapping.choroplethLayer.shapeOpacity">0.85</option>
+        <option name="mapping.choroplethLayer.showBorder">1</option>
+        <option name="mapping.data.maxClusters">100</option>
+        <option name="mapping.drilldown">all</option>
+        <option name="mapping.map.center">(37.36,-118.89)</option>
+        <option name="mapping.map.panning">true</option>
+        <option name="mapping.map.scrollZoom">false</option>
+        <option name="mapping.map.zoom">6</option>
+        <option name="mapping.markerLayer.markerMaxSize">50</option>
+        <option name="mapping.markerLayer.markerMinSize">10</option>
+        <option name="mapping.markerLayer.markerOpacity">0.8</option>
+        <option name="mapping.showTiles">1</option>
+        <option name="mapping.tileLayer.maxZoom">7</option>
+        <option name="mapping.tileLayer.minZoom">0</option>
+        <option name="mapping.tileLayer.tileOpacity">1</option>
+        <option name="mapping.type">choropleth</option>
+        <option name="drilldown">none</option>
+        <option name="height">550px</option>
+        <drilldown>
+          <!-- Use set to specify the new token to be created.
+                     Use any token from the page or from the click event to produce the value needed. -->
+          <set token="county_name">$row.County$</set>
+          <!-- If we also set the form.sourcetype the input will get updated too -->
+          <set token="form.county_name">$row.County$</set>
+        </drilldown>
+      </map>
+      <map depends="$second$">
+        <title>Average Groundwater levels below the surface</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_dwr_groundwater" date_year=$year$ date_month=$month$ | eval x=(WS_READING - RP_READING) |eval y=(RP_ELEVATION-GS_ELEVATION) |eval lev_va= -1*(x-y)|rename COUNTY_NAME as County| table County,lev_va | stats avg(lev_va) as "Average Depth below Surface" by County | eval "Average Depth below Surface"=round('Average Depth below Surface',2)  | geom CA_Counties_2 featureIdField="County"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="mapping.choroplethLayer.colorBins">9</option>
+        <option name="mapping.choroplethLayer.colorMode">auto</option>
+        <option name="mapping.choroplethLayer.maximumColor">0xAF1D12</option>
+        <option name="mapping.choroplethLayer.minimumColor">0x2F25BA</option>
+        <option name="mapping.choroplethLayer.neutralPoint">0</option>
+        <option name="mapping.choroplethLayer.shapeOpacity">0.85</option>
+        <option name="mapping.choroplethLayer.showBorder">1</option>
+        <option name="mapping.data.maxClusters">100</option>
+        <option name="mapping.drilldown">all</option>
+        <option name="mapping.map.center">(37.36,-118.89)</option>
+        <option name="mapping.map.panning">true</option>
+        <option name="mapping.map.scrollZoom">false</option>
+        <option name="mapping.map.zoom">6</option>
+        <option name="mapping.markerLayer.markerMaxSize">50</option>
+        <option name="mapping.markerLayer.markerMinSize">10</option>
+        <option name="mapping.markerLayer.markerOpacity">0.8</option>
+        <option name="mapping.showTiles">1</option>
+        <option name="mapping.tileLayer.maxZoom">7</option>
+        <option name="mapping.tileLayer.minZoom">0</option>
+        <option name="mapping.tileLayer.tileOpacity">1</option>
+        <option name="mapping.type">choropleth</option>
+        <option name="drilldown">all</option>
+        <!-- configure custom tile layer -->
+        <option name="height">720px</option>
+        <set token="county_name">$row.County$</set>
+        <!-- If we also set the form.sourcetype the input will get updated too -->
+        <set token="form.county_name">$row.County$</set>
+      </map>
+    </panel>
+    <panel depends="$second$">
+      <title>Change in Groundwater levels</title>
+      <chart>
+        <title>$county_name$ County average monthly change in levels</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_usgs_groundwater" | timechart avg(lev_va) as "State Average" | delta "State Average" as "State levels" p=1 | eval "State levels"=round(('State levels'*-1),2)  |rename _time AS Time | eval Time=strftime(Time,"%Y-%m-%d") | join type=outer Time [search index="ca_drought" sourcetype="cad_usgs_groundwater" County="$county_name$ County" | timechart cont=FALSE avg(lev_va) as County_Avg | delta County_Avg as "County levels" | eval "County levels"=round(('County levels'*-1),2)| rename _time AS Time  |eval Time=strftime(Time,"%Y-%m-%d")] | fields - "County_Avg", - "State Average" | appendcols [search index="ca_drought" sourcetype="cad_dwr_groundwater" | eval x=(WS_READING - RP_READING) |eval y=(RP_ELEVATION-GS_ELEVATION) |eval lev_va= -1*(x-y) |timechart cont=FALSE avg(lev_va) as "State Average" |delta "State Average" as "State levels1"| eval "State levels1"=round((-1*'State levels1'),2) | fields - "State Average"| rename _time AS Time | eval Time=strftime(Time,"%Y-%m-%d") | join type=outer [search index="ca_drought" sourcetype="cad_dwr_groundwater" COUNTY_NAME="$county_name$" | eval x=(WS_READING - RP_READING) |eval y=(RP_ELEVATION-GS_ELEVATION) |eval lev_va= -1*(x-y)|timechart cont=FALSE avg(lev_va) as County_Avg| delta County_Avg as "County levels1"|eval "County levels1"=round((-1*'County levels1'),2) | fields - County_Avg | rename _time AS Time | eval Time=strftime(Time,"%Y-%m-%d")]] | addtotals fieldname=" County levels combined" "County levels*" | addtotals fieldname="State levels combined" "State levels*" | fields - "County levels","County levels1","State levels","State levels1"| eval "County levels combined"='County levels combined'/2 | eval "State levels combined"='State levels combined'/2</query>
+          <earliest>1262304000</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Change in Elevation (Feet)</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">1</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">450px</option>
+      </chart>
+      <chart>
+        <title>$county_name$ County average Groundwater levels</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_usgs_groundwater" County="$county_name$" | timechart span=1mon avg(lev_va) as Depth_usgs | fillnull | appendcols [search index="ca_drought" sourcetype="cad_dwr_groundwater"  COUNTY_NAME="$county_name$" |eval Depth = ((WS_READING - RP_READING)-(RP_ELEVATION-GS_ELEVATION))*-1  | timechart span=1mon avg(Depth) as Depth |eval Depth=round(Depth,2)] | addtotals fieldname=sum Depth_usgs,Depth | eval "Average Groundwater level" = sum/2 |fields - sum,Depth_usgs,Depth</query>
+          <earliest>1262304000</earliest>
+          <latest>1435690588</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">minimal</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="charting.axisTitleX.text">Time</option>
+      </chart>
+    </panel>
+    <panel depends="$first$">
+      <chart>
+        <title>$county_name$ average monthly reservoir levels</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_reservoir_levels" County!="State of *" | eval County = upper(substr(County,1,1)).lower(substr(County,2))|search County="$county_name$" | timechart avg(Reservoir_Storage_AF) as "Average Resevoir levels"|</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleY.text">Reservoir levels (Acre Feet)</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">minimal</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="height">550px</option>
+      </chart>
+    </panel>
+  </row>
+</form>

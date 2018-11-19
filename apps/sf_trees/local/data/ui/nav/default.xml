@@ -1,0 +1,7 @@
+<nav search_view="search" color="#65A637">
+  <collection label="Dashboards">
+    <view name="sf_trees_pruning" default="true"/>
+    <view match="sf_trees_" source="unclassified"/>
+  </collection>
+  <view name="search"/>
+</nav>

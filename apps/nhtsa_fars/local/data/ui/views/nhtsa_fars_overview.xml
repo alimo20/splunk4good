@@ -1,0 +1,355 @@
+<form script="multiselect_force_default.js">
+  <label>NHTSA-FARS Overview (2015)</label>
+  <description>NHTSA - Fatality Analysis Reporting System</description>
+  <!-- 
+  <search id="nhtsa_fars_2015">
+    <query>`nhtsa_fars_index` sourcetype=nhtsa_fars_accident
+| lookup us_states fips_state_id AS STATE OUTPUT state_name, state_census_region, state_census_division, state_latitude, state_longitude</query>
+    <earliest>1420070400</earliest>
+    <latest>1451631600</latest>
+  </search>
+  
+  -->
+  <fieldset submitButton="false" autoRun="true">
+    <input type="multiselect" token="bexp_selected_states">
+      <label>States</label>
+      <choice value="*">All</choice>
+      <fieldForLabel>state_name</fieldForLabel>
+      <fieldForValue>fips_state_id</fieldForValue>
+      <search>
+        <query>| inputlookup us_states | table fips_state_id, state_name | dedup fips_state_id, state_name | sort state_name</query>
+        <earliest>-15m</earliest>
+        <latest>now</latest>
+      </search>
+      <default>*</default>
+      <prefix>(</prefix>
+      <initialValue>*</initialValue>
+      <valuePrefix>STATE=</valuePrefix>
+      <delimiter> OR </delimiter>
+      <suffix>)</suffix>
+    </input>
+    <input type="radio" token="bexp_similar_states" searchWhenChanged="true">
+      <label>Include States with Similar Population (15%)</label>
+      <choice value="*">No</choice>
+      <fieldForLabel>field_name</fieldForLabel>
+      <fieldForValue>field_value</fieldForValue>
+      <search>
+        <query>| inputlookup usa_census_population_estimates |  appendcols [`calculate_similar_sized_states("$bexp_selected_states$")` ] | filldown lower_bound_population, upper_bound_population | table FARS_STATE, geography, estimate_20150701, lower_bound_population, upper_bound_population | where estimate_20150701&gt;lower_bound_population AND estimate_20150701&lt;upper_bound_population | rename FARS_STATE AS STATE | table STATE | format | eval field_name="Yes" | rename search AS field_value | table field_name, field_value | eval field_value=" OR ".field_value</query>
+        <earliest>-15m</earliest>
+        <latest>now</latest>
+      </search>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+    <input type="radio" token="bexp_drunk_dr" searchWhenChanged="true">
+      <label>Drunk Driver Involved</label>
+      <choice value="DRUNK_DR=*">All Accidents</choice>
+      <choice value="DRUNK_DR&gt;0">Yes</choice>
+      <choice value="DRUNK_DR=0">No</choice>
+      <default>DRUNK_DR=*</default>
+      <initialValue>DRUNK_DR=*</initialValue>
+    </input>
+    <input type="radio" token="bexp_sch_bus" searchWhenChanged="true">
+      <label>School Bus Involved</label>
+      <choice value="SCH_BUS=*">All Accidents</choice>
+      <choice value="SCH_BUS=1">Yes</choice>
+      <choice value="SCH_BUS!=1">No</choice>
+      <default>SCH_BUS=*</default>
+      <initialValue>SCH_BUS=*</initialValue>
+    </input>
+    <input type="dropdown" token="spl_split_by" searchWhenChanged="true">
+      <label>Split...</label>
+      <choice value="cont=true">No Split</choice>
+      <choice value="by DRUNK_DR_description  limit=10">By Drunk Driver Involvement</choice>
+      <choice value="by LGT_COND_description  limit=10">By Light Condition</choice>
+      <choice value="by WEATHER_description limit=15">By Weather Condition</choice>
+      <choice value="by state_name limit=15">By State</choice>
+      <default>cont=true</default>
+      <initialValue>cont=true</initialValue>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <html>
+      Based upon National Highway Traffic Safety Administration <a href="https://www.nhtsa.gov/research-data/fatality-analysis-reporting-system-fars"> Fatality Analysis Reporting System</a> datasets.
+    </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Motor Vehicle Fatalities Weekly Trend</title>
+      <chart>
+        <search>
+          <query>`nhtsa_fars_index` sourcetype=nhtsa_fars_accident
+| lookup us_states fips_state_id AS STATE OUTPUT state_name
+| lookup fars_light_condition LGT_COND
+| lookup fars_school_bus SCH_BUS
+| lookup fars_weather WEATHER
+| eval DRUNK_DR_description=if(DRUNK_DR&gt;0,"Drunk Driver(s) Involved", "No Drunk Driver")
+| search  $bexp_drunk_dr$ $bexp_sch_bus$ $bexp_selected_states$ $bexp_similar_states$
+| timechart span=1w sum(FATALS) as Fatalities $spl_split_by$</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Accident Fatalities</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">minmax</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">bottom</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Accident Fatalities by State</title>
+      <map>
+        <search>
+          <query>`nhtsa_fars_index` sourcetype=nhtsa_fars_accident
+| lookup us_states fips_state_id AS STATE OUTPUT state_name, state_latitude, state_longitude 
+| search $bexp_drunk_dr$ $bexp_sch_bus$ $bexp_selected_states$
+$bexp_similar_states$
+| eval LATITUDE=if(LATITUDE&lt;-90 OR LATITUDE&gt;90, state_latitude, LATITUDE)
+| eval LONGITUD=if(LONGITUD&lt;-180 OR LONGITUD&gt;180, state_longitude, LONGITUD) 
+| stats sum(FATALS) as "Accident Fatalities" by state_name 
+| rename state_name AS State
+| geom geo_us_states featureIdField=State</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">367</option>
+        <option name="mapping.choroplethLayer.colorBins">9</option>
+        <option name="mapping.choroplethLayer.colorMode">auto</option>
+        <option name="mapping.choroplethLayer.maximumColor">0xAF1D12</option>
+        <option name="mapping.choroplethLayer.minimumColor">0x2F25BA</option>
+        <option name="mapping.choroplethLayer.neutralPoint">0</option>
+        <option name="mapping.choroplethLayer.shapeOpacity">0.8</option>
+        <option name="mapping.choroplethLayer.showBorder">1</option>
+        <option name="mapping.data.maxClusters">100</option>
+        <option name="mapping.map.center">(39.5,-96)</option>
+        <option name="mapping.map.panning">1</option>
+        <option name="mapping.map.scrollZoom">0</option>
+        <option name="mapping.map.zoom">4</option>
+        <option name="mapping.markerLayer.markerMaxSize">50</option>
+        <option name="mapping.markerLayer.markerMinSize">10</option>
+        <option name="mapping.markerLayer.markerOpacity">0.8</option>
+        <option name="mapping.showTiles">1</option>
+        <option name="mapping.tileLayer.maxZoom">7</option>
+        <option name="mapping.tileLayer.minZoom">0</option>
+        <option name="mapping.tileLayer.tileOpacity">1</option>
+        <option name="mapping.type">choropleth</option>
+      </map>
+      <table>
+        <search>
+          <query>`nhtsa_fars_index` sourcetype=nhtsa_fars_accident
+| lookup us_states fips_state_id AS STATE OUTPUT state_name
+| search  $bexp_drunk_dr$ $bexp_sch_bus$ $bexp_selected_states$
+$bexp_similar_states$
+| stats sum(FATALS) as "Accident Fatalities" by state_name, STATE
+| lookup usa_census_population_estimates FARS_STATE AS STATE OUTPUT estimate_20150701
+| sort -"Accident Fatalities"
+| eval fatalities_per_million_people = round( 'Accident Fatalities'/ (estimate_20150701 / 1000000), 3)
+| table state_name, "Accident Fatalities", estimate_20150701, fatalities_per_million_people 
+| rename state_name AS State, estimate_20150701 AS "Population Est. (2015)", fatalities_per_million_people AS "Fatalities per million people" 
+| fieldformat "Population Est. (2015)"=tostring('Population Est. (2015)',"commas")
+| fieldformat "Accident Fatalities"=tostring('Accident Fatalities',"commas")</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">15</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Fatalities per million people">
+          <colorPalette type="minMidMax" maxColor="#D6563C" minColor="#FFFFFF"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+        <drilldown>
+          <!-- Use set to specify the new token to be created.
+                     Use any token from the page or from the click event to produce the value needed. -->
+          <set token="tkn_selected_state_name">$row.State$</set>
+          <!-- If we also set the form.tkn_part_of_day the input will get updated too -->
+          <set token="form.tkn_selected_state_name">$row.State$</set>
+        </drilldown>
+      </table>
+      <html>
+        *Select a State to view more detail
+      </html>
+    </panel>
+    <panel>
+      <title>Part of Day Fatality Distribution</title>
+      <chart>
+        <search>
+          <query>`nhtsa_fars_index` sourcetype=nhtsa_fars_accident
+| search  $bexp_drunk_dr$ $bexp_sch_bus$ $bexp_selected_states$ $bexp_similar_states$
+ | stats sum(FATALS) as total_hourly_fatalities by date_hour | lookup parts_of_day date_hour | eventstats sum(total_hourly_fatalities) as part_of_day_fatalities  by part_of_day | table part_of_day, part_of_day_fatalities | dedup part_of_day</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="height">377</option>
+        <drilldown>
+          <!-- Use set to specify the new token to be created.
+                     Use any token from the page or from the click event to produce the value needed. -->
+          <set token="tkn_part_of_day">$click.value$</set>
+          <!-- If we also set the form.tkn_part_of_day the input will get updated too -->
+          <set token="form.tkn_part_of_day">$click.value$</set>
+        </drilldown>
+      </chart>
+      <html>
+        *Select a time period to view hourly detail
+      </html>
+      <table depends="$tkn_part_of_day$">
+        <title>Hourly fatalities for $tkn_part_of_day$</title>
+        <search>
+          <query>`nhtsa_fars_index` sourcetype=nhtsa_fars_accident | search  $bexp_drunk_dr$ $bexp_sch_bus$ $bexp_selected_states$
+$bexp_similar_states$  | lookup us_states fips_state_id AS STATE OUTPUT state_name | stats sum(FATALS) as total_hourly_fatalities by date_hour, state_name | lookup parts_of_day date_hour date_hour OUTPUT part_of_day, friendly_hour | search part_of_day="$tkn_part_of_day$" | chart sum(total_hourly_fatalities) over friendly_hour by state_name limit=15 | rename friendly_hour AS "Hour of Day"</query>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row depends="$tkn_selected_state_name$">
+    <panel>
+      <title>$tkn_selected_state_name$ - Accident Fatality Trend by Part of Day</title>
+      <chart>
+        <search>
+          <query>`nhtsa_fars_index` sourcetype=nhtsa_fars_accident
+| lookup us_states fips_state_id AS STATE OUTPUT state_name
+| search  state_name="$tkn_selected_state_name$"
+| lookup parts_of_day date_hour 
+| timechart span=1month sum(FATALS) by part_of_day 
+| table _time, Night, Midnight, Evening, Afternoon, Morning, *</query>
+          <earliest>0</earliest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Accident Fatalities</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked100</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">bottom</option>
+      </chart>
+    </panel>
+  </row>
+  <row depends="$tkn_selected_state_name$">
+    <panel>
+      <title>$tkn_selected_state_name$ - Monthly Fatalities Compared to National Average</title>
+      <chart>
+        <search>
+          <query>`nhtsa_fars_index` sourcetype=nhtsa_fars_accident
+| lookup us_states fips_state_id AS STATE OUTPUT state_name
+| eventstats sum(FATALS) as sum_fatals by state_name, date_month
+| eventstats avg(sum_fatals) as avg_state_monthly_fatalities by date_month
+| search state_name="$tkn_selected_state_name$"
+| stats sum(FATALS) as state_fatalities, first(avg_state_monthly_fatalities) as avg_state_monthly_fatalities by date_month
+| eval avg_state_monthly_fatalities=round(avg_state_monthly_fatalities,2)
+| lookup month_numeric.csv date_month
+| sort ordinal 
+| fields - ordinal
+| rename date_month, AS Month, state_fatalities AS "$tkn_selected_state_name$ Fatalities", avg_state_monthly_fatalities AS "Nat'l Avg Monthly Fatalaties"</query>
+          <earliest>0</earliest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">Month</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.text">Accident Fatalities</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">minmax</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">bottom</option>
+      </chart>
+    </panel>
+  </row>
+</form>

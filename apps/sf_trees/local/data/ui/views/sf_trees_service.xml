@@ -1,0 +1,369 @@
+<form script="multiselect_force_default.js">
+  <label>Tree Service Orders</label>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="multiselect" token="SO_Class" searchWhenChanged="true">
+      <label>SO_Class</label>
+      <choice value="*">All</choice>
+      <default>*</default>
+      <valuePrefix>SO_Class="</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter> OR </delimiter>
+      <fieldForLabel>SO_Class</fieldForLabel>
+      <fieldForValue>SO_Class</fieldForValue>
+      <search>
+        <query>index=sf_trees sourcetype=tree_service | stats count by SO_Class</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>SO_Class Breakdown</title>
+      <input type="dropdown" token="pie_group_by">
+        <label>SO_Class Group By</label>
+        <choice value="Asset_Dept">Asset_Dept</choice>
+        <choice value="BOS_District">BOS_District</choice>
+        <choice value="Call_Back_Request_IND">Call_Back_Request_IND</choice>
+        <choice value="Completion_Reason">Completion_Reason</choice>
+        <choice value="Crew">Crew</choice>
+        <choice value="FISO_IND">FISO_IND</choice>
+        <choice value="Funding_Allocate_IND">Funding_Allocate_IND</choice>
+        <choice value="Priority_Desc">Priority_Desc</choice>
+        <choice value="Problem_Desc">Problem_Desc</choice>
+        <choice value="Requester_Dept">Requester_Dept</choice>
+        <choice value="Safety_IND">Safety_IND</choice>
+        <choice value="Shop_CD">Shop_CD</choice>
+        <choice value="SO_Lead">SO_Lead</choice>
+        <choice value="SO_Status_CD">SO_Status_CD</choice>
+        <choice value="SO_Template">SO_Template</choice>
+        <choice value="SO_Type_CD">SO_Type_CD</choice>
+        <choice value="SO_Type_Desc">SO_Type_Desc</choice>
+        <choice value="Source_System">Source_System</choice>
+        <default>Problem_Desc</default>
+      </input>
+      <chart>
+        <search>
+          <query>index=sf_trees sourcetype="tree_service" $SO_Class$ | stats count by SO_Class $pie_group_by$</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.visibility">collapsed</option>
+        <option name="charting.axisTitleY2.visibility">collapsed</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="trellis.enabled">1</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">small</option>
+        <option name="trellis.splitBy">SO_Class</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Calendar Overview</title>
+      <viz type="calendar_heatmap_app.calendar_heatmap">
+        <search>
+          <query>index="sf_trees" sourcetype=tree_service $SO_Class$ | timechart span=1d count</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="calendar_heatmap_app.calendar_heatmap.cellPadding">5</option>
+        <option name="calendar_heatmap_app.calendar_heatmap.cellSize">20</option>
+        <option name="calendar_heatmap_app.calendar_heatmap.cellStyle">square</option>
+        <option name="calendar_heatmap_app.calendar_heatmap.legendType">independent</option>
+        <option name="calendar_heatmap_app.calendar_heatmap.maxColor">#d93f3c</option>
+        <option name="calendar_heatmap_app.calendar_heatmap.minColor">#6db7c6</option>
+        <option name="calendar_heatmap_app.calendar_heatmap.numOfBins">9</option>
+        <option name="calendar_heatmap_app.calendar_heatmap.showLegend">true</option>
+        <option name="calendar_heatmap_app.calendar_heatmap.splitMonths">true</option>
+        <option name="drilldown">none</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Services</title>
+      <single>
+        <title>Including all</title>
+        <search>
+          <query>index=sf_trees sourcetype=tree_service $SO_Class$ | timechart span=1mon count</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorBy">trend</option>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x65a637","0x6db7c6","0xf7bc38","0xf58f39","0xd93f3c"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">inverse</option>
+        <option name="trendDisplayMode">percent</option>
+        <option name="underLabel">Services per month</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Total Services</title>
+      <single>
+        <title>Including all</title>
+        <search>
+          <query>index=sf_trees sourcetype=tree_service $SO_Class$ | timechart span=1mon count | accum count</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x65a637","0x6db7c6","0xf7bc38","0xf58f39","0xd93f3c"]</option>
+        <option name="rangeValues">[5000,10000,15000,20000]</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">inverse</option>
+        <option name="trendDisplayMode">percent</option>
+        <option name="underLabel">Total Services</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Incomplete Services</title>
+      <single>
+        <title>Excluding not accepted and cancelled</title>
+        <search>
+          <query>index=sf_trees sourcetype=tree_service $SO_Class$ SO_Status_Desc!="Work Completed" SO_Status_Desc!="Not Accepted" SO_Status_Desc!="Cancelled" | timechart span=1mon count</query>
+          <earliest>0</earliest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorBy">trend</option>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="trendColorInterpretation">inverse</option>
+        <option name="trendDisplayMode">percent</option>
+        <option name="underLabel">Services per month</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Total Incomplete Services</title>
+      <single>
+        <title>Excluding not accepted and cancelled</title>
+        <search>
+          <query>index=sf_trees sourcetype=tree_service $SO_Class$ SO_Status_Desc!="Work Completed" SO_Status_Desc!="Not Accepted" SO_Status_Desc!="Cancelled" | timechart span=1mon count | accum count</query>
+          <earliest>0</earliest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x65a637","0x6db7c6","0xf7bc38","0xf58f39","0xd93f3c"]</option>
+        <option name="rangeValues">[5000,10000,15000,20000]</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">percent</option>
+        <option name="underLabel">Total services</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <input type="time" searchWhenChanged="true">
+        <label></label>
+        <default>
+          <earliest>0</earliest>
+          <latest></latest>
+        </default>
+      </input>
+      <html/>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Services Breakdown</title>
+      <input type="dropdown" token="timechart_group_by" searchWhenChanged="true">
+        <label>Group by</label>
+        <choice value="">None</choice>
+        <choice value="by Asset_Dept">Asset_Dept</choice>
+        <choice value="by BOS_District">BOS_District</choice>
+        <choice value="by Call_Back_Request_IND">Call_Back_Request_IND</choice>
+        <choice value="by Completion_Reason">Completion_Reason</choice>
+        <choice value="by Crew">Crew</choice>
+        <choice value="by FISO_IND">FISO_IND</choice>
+        <choice value="by Funding_Allocate_IND">Funding_Allocate_IND</choice>
+        <choice value="by Priority_Desc">Priority_Desc</choice>
+        <choice value="by Problem_Desc">Problem_Desc</choice>
+        <choice value="by Requester_Dept">Requester_Dept</choice>
+        <choice value="by Safety_IND">Safety_IND</choice>
+        <choice value="by Shop_CD">Shop_CD</choice>
+        <choice value="by SO_Lead">SO_Lead</choice>
+        <choice value="by SO_Status_Desc">SO_Status_Desc</choice>
+        <choice value="by SO_Template">SO_Template</choice>
+        <choice value="by SO_Type_CD">SO_Type_CD</choice>
+        <choice value="by SO_Type_Desc">SO_Type_Desc</choice>
+        <choice value="by Source_System">Source_System</choice>
+        <default>by Priority_Desc</default>
+      </input>
+      <chart>
+        <title>Drag to create a time selection</title>
+        <search>
+          <query>index=sf_trees sourcetype=tree_service $SO_Class$ | timechart count $timechart_group_by$</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <selection>
+          <set token="selection.earliest">$start$</set>
+          <set token="selection.latest">$end$</set>
+        </selection>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Filter</title>
+      <input type="text" token="SO" searchWhenChanged="true">
+        <label>SO</label>
+        <default>*</default>
+      </input>
+      <input type="text" token="Asset_Num" searchWhenChanged="true">
+        <label>Asset_Num</label>
+        <default>*</default>
+      </input>
+      <input type="dropdown" token="Priority_Desc" searchWhenChanged="true">
+        <label>Priority_Desc</label>
+        <choice value="*">All</choice>
+        <default>*</default>
+        <fieldForLabel>Priority_Desc</fieldForLabel>
+        <fieldForValue>Priority_Desc</fieldForValue>
+        <search>
+          <query>index=sf_trees sourcetype=tree_service $SO_Class$ SO_Status_Desc=$SO_Status_Desc$ | stats count by Priority_Desc</query>
+          <earliest>$selection.earliest$</earliest>
+          <latest>$selection.latest$</latest>
+        </search>
+      </input>
+      <input type="dropdown" token="SO_Status_Desc" searchWhenChanged="true">
+        <label>SO_Status_Desc</label>
+        <choice value="*">All</choice>
+        <default>*</default>
+        <fieldForLabel>SO_Status_Desc</fieldForLabel>
+        <fieldForValue>SO_Status_Desc</fieldForValue>
+        <search>
+          <query>index=sf_trees sourcetype=tree_service $SO_Class$ Priority_Desc=$Priority_Desc$ | stats count by SO_Status_Desc</query>
+          <earliest>$selection.earliest$</earliest>
+          <latest>$selection.latest$</latest>
+        </search>
+      </input>
+      <html/>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>SO Viewer</title>
+      <table>
+        <search>
+          <query>index=sf_trees sourcetype=tree_service $SO_Class$ SO=$SO$ Asset_Num=$Asset_Num$ Priority_Desc=$Priority_Desc|s$ SO_Status_Desc=$SO_Status_Desc$ | table _time SO Asset_Num SO_Status_Desc Priority_Desc Assigned_By Created_By Problem_Desc</query>
+          <earliest>$selection.earliest$</earliest>
+          <latest>$selection.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Priority_Desc">
+          <colorPalette type="map">{"4 - Non Urgent":#65A637,"3 - Urgent":#ED8440,"2 - Emergency":#F7BC38,"1 - Official Priority":#D93F3C}</colorPalette>
+        </format>
+        <format type="color" field="SO_Status_Desc">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel>
+      <title>SO Map</title>
+      <viz type="geo_heatmap_app.geo_heatmap">
+        <search>
+          <query>index=sf_trees sourcetype=tree_service $SO_Class$ SO=$SO$ Asset_Num=$Asset_Num$ Priority_Desc=$Priority_Desc|s$ SO_Status_Desc=$SO_Status_Desc$ | stats count by Latitude Longitude</query>
+          <earliest>$selection.earliest$</earliest>
+          <latest>$selection.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="geo_heatmap_app.geo_heatmap.lat">37.76</option>
+        <option name="geo_heatmap_app.geo_heatmap.lng">-122.43</option>
+        <option name="geo_heatmap_app.geo_heatmap.maxOpacity">70</option>
+        <option name="geo_heatmap_app.geo_heatmap.minOpacity">0</option>
+        <option name="geo_heatmap_app.geo_heatmap.radius">20</option>
+        <option name="geo_heatmap_app.geo_heatmap.scaleRadius">0</option>
+        <option name="geo_heatmap_app.geo_heatmap.showCurrentTime">1</option>
+        <option name="geo_heatmap_app.geo_heatmap.tiles">dark_tiles</option>
+        <option name="geo_heatmap_app.geo_heatmap.useGlobalExtremas">0</option>
+        <option name="geo_heatmap_app.geo_heatmap.useLocalExtrema">0</option>
+        <option name="geo_heatmap_app.geo_heatmap.useTimeSlider">0</option>
+        <option name="geo_heatmap_app.geo_heatmap.zoom">13</option>
+        <option name="height">657</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </viz>
+    </panel>
+  </row>
+</form>

@@ -1,0 +1,2 @@
+County,FIPS_Code,featureId,agency_cd,site_no,site_tp_cd,lev_dt,lev_tm,lev_tz_cd,lev_va,sl_lev_va,sl_datum_cd,lev_status_cd,lev_agency_cd,lev_dt_acy_cd,lev_acy_cd,lev_src_cd,lev_meth_cd,lev_age_cd,Latitude,Longitude
+Napa County,55,Napa,USGS,381440122191101,GW,2014-11-05,15:38,PST,87.7,NULL,NULL,R,USGS,m,1,S,V,A,38.24452778,-122.3198056

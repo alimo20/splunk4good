@@ -1,0 +1,7 @@
+County,FIPS_Code,featureId,agency_cd,site_no,site_tp_cd,lev_dt,lev_tm,lev_tz_cd,lev_va,sl_lev_va,sl_datum_cd,lev_status_cd,lev_agency_cd,lev_dt_acy_cd,lev_acy_cd,lev_src_cd,lev_meth_cd,lev_age_cd,Latitude,Longitude
+Humboldt County,23,Humboldt,USGS,403233124040801,GW,2012-05-23,14:00,PDT,13.91,NULL,NULL,NULL,USGS,m,2,S,V,A,40.54291667,-124.06975
+Humboldt County,23,Humboldt,USGS,403416124084901,GW,2012-05-23,15:10,PDT,23.12,NULL,NULL,NULL,USGS,m,2,S,V,A,40.57125,-124.147111
+Humboldt County,23,Humboldt,USGS,403614124104201,GW,2012-05-23,12:25,PDT,30.86,NULL,NULL,NULL,USGS,m,2,S,V,A,40.6041111,-124.1785
+Humboldt County,23,Humboldt,USGS,405150123582701,GW,2012-05-23,09:00,PDT,12.58,NULL,NULL,NULL,USGS,m,2,S,V,A,40.86388889,-123.97425
+Humboldt County,23,Humboldt,USGS,410203124062501,GW,2012-05-22,14:45,PDT,41.92,NULL,NULL,NULL,USGS,m,2,S,V,A,41.0343611,-124.1071667
+Humboldt County,23,Humboldt,USGS,410919124075701,GW,2012-05-22,13:30,PDT,72.23,NULL,NULL,NULL,USGS,m,2,S,V,A,41.1553333,-124.132611

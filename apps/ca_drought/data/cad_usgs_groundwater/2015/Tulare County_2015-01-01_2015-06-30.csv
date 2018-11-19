@@ -1,0 +1,2 @@
+County,FIPS_Code,featureId,agency_cd,site_no,site_tp_cd,lev_dt,lev_tm,lev_tz_cd,lev_va,sl_lev_va,sl_datum_cd,lev_status_cd,lev_agency_cd,lev_dt_acy_cd,lev_acy_cd,lev_src_cd,lev_meth_cd,lev_age_cd,Latitude,Longitude
+Tulare County,107,Tulare,USGS,355202119034701,GW,2015-04-08,14:18,PDT,168.0,NULL,NULL,P,USGS,m,9,S,P,A,35.8667222,-119.0634722

@@ -1,0 +1,53 @@
+<dashboard>
+  <label>Methodology</label>
+  <row>
+    <panel>
+      <html>
+<h2><a id="About_this_project_0"></a>About this project</h2>
+<p>The state of California has been suffering from drought for the past four years. This has led to mandatory rationing and other conservation measures to be adopted in the state.</p>
+<p>Agriculture in California has consistently consumed around 80 percent of California’s fresh water, even as it accounts for only 2 percent of the state’s gross domestic product.</p>
+<p>Yet majority of the conservation efforts focus only on reducing water consumption in urban areas instead of focusing arcane water rights laws.</p>
+<p>A shift to more efficient irrigation methods could reduce agricultural water use by 22 percent, an amount equivalent to all the surface water Central Valley farmers lacked because of drought last year, according to an analysis that Cooley of the Pacific Institute co-authored with Robert Wilkinson, a professor at the University of California Santa Barbara, and Kate Poole, a senior attorney at the Natural Resources Defense Council.</p>
+<p>Water is still priced more cheaply than it should be, which encourages over-consumption. One reason is that much of the state’s water is provided by federal and state agencies at prices that taxpayers subsidize. A second factor that encourages waste is the “use it or lose it” feature in California’s arcane system of water rights. Under current rules, if a property owner does not use all the water to which he is legally entitled, he relinquishes his future rights to the unused water, which may then get allocated to the next farmer in line.</p>
+<p>Arizona  and California are the only two states that count and regulate groundwater and surface water as separate source despite the overlap/ interconnection between surface water and groundwater being proven ages ago.  Drawing groundwater from near a stream can suck that stream dry. In turn, using all the water in streams and rivers lessens their ability to replenish the aquifers beneath them.</p>
+<p>California was the only state in the arid West that set no limits on how much groundwater a property owner could extract from a private well. This led to farmers digging deeper wells. California is the only state where Well completion records are not public.</p>
+<p>Last year a bill was passed that focused on regulating groundwater withdrawals.This bill contained a provision that explicitly prohibits California state regulators from addressing the interconnection between groundwater and surface water in local water plans until 2025 as doing so threatened to derail the legislation entirely, triggering fierce opposition from the Agricultural Council of California, the California Chamber of Commerce and other industry groups.</p>
+<h2><a id="Install_this_projecy_locally_18"></a>Install this projecy locally</h2>
+<p>This app has been built for Splunk 6.3+ (choropleth maps)</p>
+<ol>
+<li>
+<p><a href="http://www.splunk.com/en_us/download.html">Download and install Splunk</a></p>
+</li>
+<li>
+<p><a href="https://github.com/splunk/s4g-ca_drought">Install this package</a> into $SPLUNK_HOME&gt; etc &gt; apps</p>
+</li>
+<li>
+<p>All data within this app is self contained (found in <a href="/datafiles">/datafiles</a>). All you need to do is go to inputs.conf / Splunk GUI and enable the data sources for this app.</p>
+</li>
+</ol>
+<p>Notes: The app will create 2 indexes: “ca_drought” and “s4g-cad_test”. All bundled data is configured to the “cca_drought” and inputs are enabled by default.</p>
+<h2><a id="The_Data_30"></a>The Data</h2>
+<ul>
+<li><a href="http://www.oecd-ilibrary.org/sites/factbook-2014-en/tables/table-153.html?contentType=&amp;itemId=%2fcontent%2ftable%2ffactbook-2014-table153-en&amp;mimeType=text%2fhtml&amp;containerItemId=%2fcontent%2fserial%2f18147364&amp;accessItemIds=%2fcontent%2fchapter%2ffactbook-2014-68-en">OECD Worldwide Water Use</a> - Annual water consumption per capita in selected countries (in cubic meters).</li>
+<li><a href="http://www.waterboards.ca.gov/water_issues/programs/conservation_portal/conservation_reporting.shtml">State Water Resources Control Board</a> - This dataset is made available by State Water Resources Control Board. Water suppliers having more than 3000 connections are required to report on their conservation efforts starting June 2014. Water usage in the year 2013 is considered as the baseline and the Conservation Goal is to reduce usage by 25% as compared to 2013.</li>
+<li><a href="http://waterdata.usgs.gov/nwis/gw">USGS Groundwater Data California Department of Water Resources - Groundwater</a> - Groundwater levels in the state are monitored by jointly by USGS and CaDWR.</li>
+<li>DWR Groundwater Data</li>
+<li><a href="http://cdec.water.ca.gov/reservoir.html">California Departmeant of Water Resources - Reservoirs</a> - Department of Water Resources uses sensors to monitor reservoir levels in California.</li>
+<li><a href="http://waterdata.usgs.gov/nwis/wu">USGS Water use data</a> - USGS performs a survey every five years to aggregate water use for Residential,Industrial and Agricultural purposes.</li>
+<li><a href="http://www.census.gov/programs-surveys/acs/data.html">CA Census Demograhic data</a> - Data from the Californian Census.</li>
+</ul>
+<h2><a id="FAQ_40"></a>FAQ</h2>
+<p><strong>So what do ”water use” and “water consumption” mean?</strong></p>
+<ul>
+<li>
+<p>“Water use” describes the total amount of water withdrawn from its source to be used. Measures of water usage help evaluate the level of demand from industrial, agricultural, and domestic users. For example, a manufacturing plant might require 10,000 gallons of freshwater a day for cooling, running, or cleaning its equipment. Even if the plant returns 95 percent of that water to the watershed, the plant needs all 10,000 gallons to operate.</p>
+</li>
+<li>
+<p>“Water consumption” is the portion of water use that is not returned to the original water source after being withdrawn. Consumption occurs when water is lost into the atmosphere through evaporation or incorporated into a product or plant (such as a corn stalk) and is no longer available for reuse. Water consumption is particularly relevant when analyzing water scarcity and the impact of human activities on water availability. For example, irrigated agriculture accounts for 70 percent of water use worldwide and almost 50 percent of that is lost, either evaporated into the atmosphere or transpired through plant leaves.</p>
+</li>
+</ul>
+
+      </html>
+    </panel>
+  </row>
+</dashboard>

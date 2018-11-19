@@ -1,0 +1,316 @@
+<form>
+  <label>Precipitation</label>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="time" token="timeToken0" searchWhenChanged="true">
+      <label></label>
+      <default>
+        <earliest>0</earliest>
+        <latest></latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <html>
+        <h1>
+          <img src="http://i.imgur.com/Ro3HuyY.png?1"/>Precipitation</h1>
+        <p>Rain, snow and other forms of precipitation will help determine the status of the drought across California. As storms roll through and different parts of the state are impacted by severe weather events, track where and how precipitation is affecting California! Weather data is provided by <a href="http://www.noaa.gov/">NOAA</a>.</p>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <single>
+        <title>County with Lowest Precipitation</title>
+        <search>
+          <query>index="ca_drought" sourcetype=cad_noaa_precipitation PRCP&gt;=0 | eval mm=(PRCP/10) | eval inches=(mm/25.4) | lookup CA_Counties_2 latitude AS LATITUDE longitude AS LONGITUDE OUTPUT featureId | stats sum(inches) AS "Precipitation (inches)" BY featureId | sort "Precipitation (inches)" | head 1 | fields "Precipitation (inches)"</query>
+          <earliest>$timeToken0.earliest$</earliest>
+          <latest>$timeToken0.latest$</latest>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0xd93f3c","0xd93f3c"]</option>
+        <option name="rangeValues">[1]</option>
+        <option name="trendInterval">-1mon</option>
+        <option name="linkView">search</option>
+        <option name="underLabel">inches</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>Mean Precipitation</title>
+        <search>
+          <query>index="ca_drought" sourcetype=cad_noaa_precipitation PRCP&gt;=0 | eval mm=(PRCP/10) | eval inches=(mm/25.4) | lookup CA_Counties_2 latitude AS LATITUDE longitude AS LONGITUDE OUTPUT featureId | stats avg(inches) AS "Precipitation (inches)" | fields "Precipitation (inches)"</query>
+          <earliest>$timeToken0.earliest$</earliest>
+          <latest>$timeToken0.latest$</latest>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0.000</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">percent</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+        <option name="drilldown">none</option>
+        <option name="linkView">search</option>
+        <option name="rangeColors">["0xf7bc38","0xf7bc38"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="trendInterval">-1mon</option>
+        <option name="underLabel">inches</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>County with Lowest Precipitation</title>
+        <search>
+          <query>index="ca_drought" sourcetype=cad_noaa_precipitation PRCP&gt;=0 | eval mm=(PRCP/10) | eval inches=(mm/25.4) | lookup CA_Counties_2 latitude AS LATITUDE longitude AS LONGITUDE OUTPUT featureId | stats sum(inches) AS "Precipitation (inches)" BY featureId | sort -"Precipitation (inches)" | head 1 | fields "Precipitation (inches)"</query>
+          <earliest>$timeToken0.earliest$</earliest>
+          <latest>$timeToken0.latest$</latest>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0.000</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0x65a637","0xd93f3c"]</option>
+        <option name="rangeValues">[1000000]</option>
+        <option name="trendInterval">auto</option>
+        <option name="linkView">search</option>
+        <option name="underLabel">inches</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <single>
+        <search>
+          <query>index="ca_drought" sourcetype=cad_noaa_precipitation PRCP&gt;=0 | eval mm=(PRCP/10) | eval inches=(mm/25.4) | lookup CA_Counties_2 latitude AS LATITUDE longitude AS LONGITUDE OUTPUT featureId | stats sum(inches) AS "Precipitation (inches)" BY featureId | sort "Precipitation (inches)" | head 1 | fields featureId</query>
+          <earliest>$timeToken0.earliest$</earliest>
+          <latest>$timeToken0.latest$</latest>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0xd93f3c","0xd93f3c"]</option>
+        <option name="rangeValues">[1]</option>
+        <option name="trendInterval">auto</option>
+        <option name="linkView">search</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_uws_reports" | eval x = "Statewide Average" | fields x</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="myBrush">solidFill</option>
+        <option name="myBrush.color">0xFF0000</option>
+        <option name="height">20px</option>
+        <option name="backgroundColor">#475565</option>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+        <option name="linkView">search</option>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0xf7bc38","0xf7bc38"]</option>
+        <option name="rangeValues">[1]</option>
+        <option name="trendInterval">auto</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <search>
+          <query>index="ca_drought" sourcetype=cad_noaa_precipitation PRCP&gt;=0 | eval mm=(PRCP/10) | eval inches=(mm/25.4) | lookup CA_Counties_2 latitude AS LATITUDE longitude AS LONGITUDE OUTPUT featureId | stats sum(inches) AS "Precipitation (inches)" BY featureId | sort -"Precipitation (inches)" | head 1 | fields featureId</query>
+          <earliest>$timeToken0.earliest$</earliest>
+          <latest>$timeToken0.latest$</latest>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="numberPrecision">0</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0x65a637","0x6db7c6","0xf7bc38","0xf58f39","0xd93f3c"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="trendInterval">auto</option>
+        <option name="linkView">search</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <map>
+        <title>Rainfall / Counties</title>
+        <search>
+          <query>index="ca_drought" sourcetype=cad_noaa_precipitation PRCP&gt;=0 | eval mm=(PRCP/10) | eval inches=(mm/25.4) | lookup CA_Counties_2 latitude AS LATITUDE longitude AS LONGITUDE OUTPUT featureId | stats sum(inches) AS "Precipitation (inches)" BY featureId | geom CA_Counties_2</query>
+          <earliest>$timeToken0.earliest$</earliest>
+          <latest>$timeToken0.latest$</latest>
+        </search>
+        <option name="mapping.choroplethLayer.colorBins">5</option>
+        <option name="mapping.choroplethLayer.colorMode">auto</option>
+        <option name="mapping.choroplethLayer.maximumColor">0x009983</option>
+        <option name="mapping.choroplethLayer.minimumColor">0xb9e6e0</option>
+        <option name="mapping.choroplethLayer.neutralPoint">0</option>
+        <option name="mapping.choroplethLayer.shapeOpacity">0.75</option>
+        <option name="mapping.choroplethLayer.showBorder">1</option>
+        <option name="mapping.data.maxClusters">100</option>
+        <option name="mapping.drilldown">all</option>
+        <option name="mapping.map.center">(36.23,-118.25)</option>
+        <option name="mapping.map.panning">true</option>
+        <option name="mapping.map.scrollZoom">false</option>
+        <option name="mapping.map.zoom">6</option>
+        <option name="mapping.markerLayer.markerMaxSize">50</option>
+        <option name="mapping.markerLayer.markerMinSize">10</option>
+        <option name="mapping.markerLayer.markerOpacity">0.8</option>
+        <option name="mapping.showTiles">1</option>
+        <option name="mapping.tileLayer.maxZoom">7</option>
+        <option name="mapping.tileLayer.minZoom">0</option>
+        <option name="mapping.tileLayer.tileOpacity">1</option>
+        <option name="mapping.type">choropleth</option>
+        <option name="drilldown">all</option>
+      </map>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>Max, Min, and Mean Precipitation</title>
+        <search>
+          <query>index="ca_drought" sourcetype=cad_noaa_precipitation PRCP&gt;=0 | eval PRCP_mm=(PRCP/10) | eval PRCP_inches=(PRCP_mm/25.4) | timechart min(PRCP_inches) AS "Minimum Daily Precipitation (inches)", avg(PRCP_inches) AS "Mean Daily Precipitation (inches)", max(PRCP_inches) AS "Maximum Daily Precipitation (inches)"</query>
+          <earliest>$timeToken0.earliest$</earliest>
+          <latest>$timeToken0.latest$</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="charting.axisTitleY.text">precipitation (inches)</option>
+        <option name="charting.axisTitleX.text">Time</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>Historic Monthly Precipitation</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_noaa_ca_precipitation" | stats sum(Value_inches) AS "Monthly Precipitation (inches)" by Date</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="charting.axisTitleY.text">precipitation (inches)</option>
+        <option name="charting.axisTitleX.text">Time</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Precipitation Explorer</title>
+        <search>
+          <query>index="ca_drought" sourcetype=cad_noaa_precipitation PRCP&gt;=0 | eval PRCP_mm=(PRCP/10) | eval PRCP_inches=(PRCP_mm/25.4) | stats min(PRCP_inches) AS "Minimum Daily Precipitation (inches)", avg(PRCP_inches) AS mean_daily_precipitation, max(PRCP_inches) AS "Maximum Daily Precipitation (inches)" by STATION_NAME | eval "Mean Daily Precipitation (inches)"=round(mean_daily_precipitation,2) | sort -"Mean Daily Precipitation (inches)" | fields - mean_daily_precipitation</query>
+          <earliest>$timeToken0.earliest$</earliest>
+          <latest>$timeToken0.latest$</latest>
+        </search>
+        <option name="mapping.choroplethLayer.colorBins">5</option>
+        <option name="mapping.choroplethLayer.colorMode">auto</option>
+        <option name="mapping.choroplethLayer.maximumColor">0xDB5800</option>
+        <option name="mapping.choroplethLayer.minimumColor">0x2F25BA</option>
+        <option name="mapping.choroplethLayer.neutralPoint">0</option>
+        <option name="mapping.choroplethLayer.shapeOpacity">0.75</option>
+        <option name="mapping.choroplethLayer.showBorder">1</option>
+        <option name="mapping.data.maxClusters">100</option>
+        <option name="mapping.drilldown">all</option>
+        <option name="mapping.map.center">(0,0)</option>
+        <option name="mapping.map.panning">1</option>
+        <option name="mapping.map.scrollZoom">0</option>
+        <option name="mapping.map.zoom">2</option>
+        <option name="mapping.markerLayer.markerMaxSize">50</option>
+        <option name="mapping.markerLayer.markerMinSize">10</option>
+        <option name="mapping.markerLayer.markerOpacity">0.8</option>
+        <option name="mapping.showTiles">1</option>
+        <option name="mapping.tileLayer.maxZoom">7</option>
+        <option name="mapping.tileLayer.minZoom">0</option>
+        <option name="mapping.tileLayer.tileOpacity">1</option>
+        <option name="mapping.type">marker</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="count">10</option>
+      </table>
+    </panel>
+  </row>
+</form>

@@ -1,0 +1,5 @@
+County,FIPS_Code,featureId,agency_cd,site_no,site_tp_cd,lev_dt,lev_tm,lev_tz_cd,lev_va,sl_lev_va,sl_datum_cd,lev_status_cd,lev_agency_cd,lev_dt_acy_cd,lev_acy_cd,lev_src_cd,lev_meth_cd,lev_age_cd,Latitude,Longitude
+Mono County,51,Mono,USGS,381639119172001,GW,2010-09-15,09:25,PDT,24.21,NULL,NULL,NULL,USGS,m,2,S,T,A,38.27752778,-119.2889722
+Mono County,51,Mono,USGS,381639119172001,GW,2010-11-04,12:00,PST,22.59,NULL,NULL,NULL,USGS,D,2,S,T,A,38.27752778,-119.2889722
+Mono County,51,Mono,USGS,383051119282201,GW,2010-02-03,12:00,PST,58.28,NULL,NULL,NULL,USGS,D,2,S,T,A,38.51416667,-119.4727778
+Mono County,51,Mono,USGS,383051119282201,GW,2010-11-05,12:00,PST,61.95,NULL,NULL,NULL,USGS,D,2,S,T,A,38.51416667,-119.4727778

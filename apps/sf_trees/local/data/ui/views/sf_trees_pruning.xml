@@ -1,0 +1,282 @@
+<form>
+  <label>Tree Pruning</label>
+  <search id="trees">
+    <query>| inputlookup tree_prune.csv where cnn=$cnn|s$</query>
+    <earliest>0</earliest>
+    <latest></latest>
+  </search>
+  <search base="trees">
+    <query>
+      stats avg(lat) avg(lon) | rename avg(*) as avg_*
+    </query>
+    <progress>
+      <set token="form.cnn_lat">$result.avg_lat$</set>
+      <set token="form.cnn_lon">$result.avg_lon$</set>
+      <set token="form.cnn_zoom">18</set>
+    </progress>
+  </search>
+  <search id="cnn_cluster">
+    <query>| inputlookup tree_prune_cnn.csv where zone=$zone|s$
+| fit StandardScaler avg_* prune_score 
+| fit KMeans k=$k$ SS_*</query>
+    <earliest>0</earliest>
+    <latest></latest>
+  </search>
+  <search>
+    <query>| inputlookup tree_zones.csv where zone=$zone|s$</query>
+    <earliest>0</earliest>
+    <latest></latest>
+    <progress>
+      <set token="form.zone_lat">$result.lat$</set>
+      <set token="form.zone_lon">$result.lon$</set>
+      <set token="form.zone_zoom">$result.zoom$</set>
+    </progress>
+  </search>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="dropdown" token="zone" searchWhenChanged="true">
+      <label>Zone</label>
+      <default>A</default>
+      <fieldForLabel>zone</fieldForLabel>
+      <fieldForValue>zone</fieldForValue>
+      <search>
+        <query>| inputlookup tree_zones.csv | stats count by zone</query>
+      </search>
+    </input>
+    <input type="text" token="k" searchWhenChanged="true">
+      <label># of clusters (per zone)</label>
+      <default>100</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <html>
+        <ul>
+          <li>
+            Default pruning cycle = 3 years
+          </li>
+          <li>
+            Default service record = Jan 1, 2014
+          </li>
+          <li>
+            <b>Prune number</b> means in how many years does the tree needs to be serviced. A negative number means the tree is overdue by that amount in years.
+            <b>Prune score</b> is the first quartile (25 percentile) of all the prune numbers by CNN.
+          </li>
+        </ul>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Cluster distribution</title>
+      <chart>
+        <title>Click on a bar to drilldown by cluster</title>
+        <search base="cnn_cluster">
+          <query>eval label=cluster | chart limit=0 count over cluster by label</query>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="height">156</option>
+        <drilldown>
+          <set token="cluster">$click.value$</set>
+          <set token="form.cluster">$click.value$</set>
+        </drilldown>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Cluster map</title>
+      <input type="text" token="zone_lat" searchWhenChanged="true" depends="$hide$">
+        <label>zone_lat</label>
+      </input>
+      <input type="text" token="zone_lon" searchWhenChanged="true" depends="$hide$">
+        <label>zone_lon</label>
+      </input>
+      <input type="text" token="zone_zoom" searchWhenChanged="true" depends="$hide$">
+        <label>zone_zoom</label>
+      </input>
+      <map>
+        <title>Click on a region to drilldown by CNN</title>
+        <search base="cnn_cluster">
+          <query>eval featureId=cnn
+| stats first(cluster) as cluster by featureId
+| geom tree_cnn
+| sort 0 cluster</query>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="height">708</option>
+        <option name="mapping.choroplethLayer.colorMode">categorical</option>
+        <option name="mapping.choroplethLayer.shapeOpacity">1</option>
+        <option name="mapping.map.center">($zone_lat$,$zone_lon$)</option>
+        <option name="mapping.map.zoom">$zone_zoom$</option>
+        <option name="mapping.showTiles">1</option>
+        <option name="mapping.tileLayer.maxZoom">22</option>
+        <option name="mapping.tileLayer.url">http://mt1.google.com/vt/lyrs=m&amp;x={x}&amp;y={y}&amp;z={z}</option>
+        <option name="mapping.type">choropleth</option>
+        <drilldown>
+          <set token="form.cnn">$click.value$</set>
+        </drilldown>
+      </map>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Pruning Priority Schedule</title>
+      <input type="text" token="cluster" searchWhenChanged="true">
+        <label>Cluster (set to * to reset)</label>
+        <default>*</default>
+      </input>
+      <table>
+        <title>Click a row to drilldown by CNN</title>
+        <search base="cnn_cluster">
+          <query>search cluster=$cluster|s$
+| table cnn cluster count scheduled_date prune_score avg_prune min_prune has_* *
+| fields - SS_* zone
+| sort 0 cluster -count</query>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="number" field="prune_score"></format>
+        <format type="number" field="avg_prune"></format>
+        <format type="number" field="min_prune"></format>
+        <format type="number" field="has_completed_service_pct">
+          <option name="precision">0</option>
+          <option name="unit">%</option>
+        </format>
+        <format type="number" field="avg_lat">
+          <option name="precision">6</option>
+        </format>
+        <format type="number" field="avg_lon">
+          <option name="precision">6</option>
+        </format>
+        <format type="number" field="has_pruning_info_pct">
+          <option name="precision">0</option>
+          <option name="unit">%</option>
+        </format>
+        <format type="color" field="cluster">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <drilldown>
+          <set token="form.cnn">$click.value$</set>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Info for Specific CNN</title>
+      <input type="text" token="cnn" searchWhenChanged="true">
+        <label>CNN</label>
+      </input>
+      <input type="text" token="cnn_lat" searchWhenChanged="true" depends="$hide$">
+        <label>cnn_lat</label>
+      </input>
+      <input type="text" token="cnn_lon" searchWhenChanged="true" depends="$hide$">
+        <label>cnn_lon</label>
+      </input>
+      <input type="text" token="cnn_zoom" searchWhenChanged="true" depends="$hide$">
+        <label>cnn_zoom</label>
+      </input>
+      <single depends="$cnn$">
+        <title>Scheduled Date</title>
+        <search base="trees">
+          <query>stats p25(prune) as prune_score | eval scheduled_date=if(prune_score&gt;0, strftime(now()+prune_score*365*24*60*60, "%F"), "NOW") | table scheduled_date</query>
+        </search>
+        <option name="colorMode">none</option>
+        <option name="numberPrecision">0.0000</option>
+        <option name="rangeColors">["0xd93f3c","0x65a637"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="useColors">1</option>
+      </single>
+      <single depends="$cnn$">
+        <title>Prune Score</title>
+        <search base="trees">
+          <query>stats p25(prune)</query>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0xd93f3c","0xf58f39","0xf7bc38","0x6db7c6","0x65a637"]</option>
+        <option name="rangeValues">[0,1,2,3]</option>
+        <option name="unit">years</option>
+        <option name="useColors">1</option>
+      </single>
+      <single depends="$cnn$">
+        <title>Min Prune</title>
+        <search base="trees">
+          <query>stats min(prune)</query>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0xd93f3c","0xf58f39","0xf7bc38","0x6db7c6","0x65a637"]</option>
+        <option name="rangeValues">[0,1,2,3]</option>
+        <option name="unit">years</option>
+        <option name="useColors">1</option>
+      </single>
+      <single depends="$cnn$">
+        <title>Average Prune</title>
+        <search base="trees">
+          <query>stats avg(prune)</query>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0xd93f3c","0xf58f39","0xf7bc38","0x6db7c6","0x65a637"]</option>
+        <option name="rangeValues">[0,1,2,3]</option>
+        <option name="unit">years</option>
+        <option name="useColors">1</option>
+      </single>
+      <map depends="$cnn$">
+        <search base="trees">
+          <query>geostats maxzoomlevel=18 binspanlat=0.1 binspanlong=0.1 count by tree_num</query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">750</option>
+        <option name="mapping.map.center">($cnn_lat$,$cnn_lon$)</option>
+        <option name="mapping.map.zoom">$cnn_zoom$</option>
+        <option name="mapping.markerLayer.markerMaxSize">20</option>
+        <option name="mapping.showTiles">1</option>
+        <option name="mapping.tileLayer.maxZoom">22</option>
+        <option name="mapping.tileLayer.minZoom">0</option>
+        <option name="mapping.tileLayer.tileOpacity">1</option>
+        <option name="mapping.tileLayer.url">http://mt1.google.com/vt/lyrs=m&amp;x={x}&amp;y={y}&amp;z={z}</option>
+        <option name="mapping.type">marker</option>
+      </map>
+      <table depends="$cnn$">
+        <search base="trees">
+          <query>table tree_id tree_num street_address lat lon prune has_completed_service service_* *
+| fieldformat service_completed=strftime(service_completed, "%F %T")
+| sort 0 prune</query>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">false</option>
+        <format type="color" field="has_completed_service">
+          <colorPalette type="map">{"0":#F7BC38,"1":#A2CC3E}</colorPalette>
+        </format>
+        <format type="color" field="has_pruning_info">
+          <colorPalette type="map">{"0":#D93F3C,"1":#A2CC3E}</colorPalette>
+        </format>
+        <format type="number" field="service_years_ago"></format>
+        <format type="number" field="service_days_ago"></format>
+        <format type="number" field="prune"></format>
+        <format type="number" field="lon">
+          <option name="precision">6</option>
+        </format>
+        <format type="number" field="lat">
+          <option name="precision">6</option>
+        </format>
+      </table>
+    </panel>
+  </row>
+</form>

@@ -1,0 +1,5 @@
+County,FIPS_Code,featureId,agency_cd,site_no,site_tp_cd,lev_dt,lev_tm,lev_tz_cd,lev_va,sl_lev_va,sl_datum_cd,lev_status_cd,lev_agency_cd,lev_dt_acy_cd,lev_acy_cd,lev_src_cd,lev_meth_cd,lev_age_cd,Latitude,Longitude
+Colusa County,11,Colusa,USGS,390856122044301,GW,2013-08-07,09:39,PDT,1.66,NULL,NULL,NULL,USGS,m,2,S,V,A,39.1483472,-122.0792722
+Colusa County,11,Colusa,USGS,391059122043601,GW,2013-08-07,09:57,PDT,1.56,NULL,NULL,NULL,USGS,m,2,S,V,A,39.18316667,-122.0780833
+Colusa County,11,Colusa,USGS,391653122101401,GW,2013-08-07,10:27,PDT,1.46,NULL,NULL,NULL,USGS,m,2,S,V,A,39.28179444,-122.1718972
+Colusa County,11,Colusa,USGS,391947122094501,GW,2013-08-07,11:02,PDT,1.93,NULL,NULL,NULL,USGS,m,2,S,V,A,39.32953889,-122.163561

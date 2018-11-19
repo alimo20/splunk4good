@@ -1,0 +1,367 @@
+<form>
+  <label>Urban Water Supplier Reports</label>
+  <!--Single Value-->
+  <fieldset submitButton="false" autoRun="true">
+    <input type="dropdown" token="year1" searchWhenChanged="true">
+      <label>Year</label>
+      <choice value="15">2015</choice>
+      <choice value="14">2014</choice>
+      <default>15</default>
+      <initialValue>15</initialValue>
+    </input>
+    <input type="dropdown" token="month1" searchWhenChanged="true">
+      <label>Month</label>
+      <initialValue>Oct</initialValue>
+      <default>Oct</default>
+      <search>
+        <query>index="ca_drought" sourcetype="cad_uws_reports" year_short=$year1$ | fields month_short | dedup month_short</query>
+      </search>
+      <fieldForLabel>month_short</fieldForLabel>
+      <fieldForValue>month_short</fieldForValue>
+    </input>
+    <input type="dropdown" token="supplier_name" searchWhenChanged="true">
+      <label>Supplier Name</label>
+      <search>
+        <query>index="ca_drought" sourcetype="cad_uws_reports" Reporting_Month="15-Jan" | table Supplier_Name | dedup Supplier_Name | sort + Supplier_Name</query>
+      </search>
+      <fieldForLabel>Supplier Name</fieldForLabel>
+      <fieldForValue>Supplier_Name</fieldForValue>
+      <choice value="*">All</choice>
+      <initialValue>*</initialValue>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <html>
+        <h1>
+          <img src="http://i.imgur.com/SvQNY9e.png?1"/>Urban Water supplier reports</h1>
+        <p>What parts of the state are reaching their conservation goals? What cities aren’t? Water suppliers across the state with more than 3,000 connections have been required to report water usage and conservation efforts since only June 2014 . This data uses a baseline of 2013, with a statewide conservation goal of 25%.</p>
+        <p>Interested in learning more about patterns in water usage and conservation across California? <a href="/app/s4g-ca_drought/urban_water_supplier_explorer">Check out the UWS Explorer!</a>
+        </p>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <single>
+        <title>What supplier has the lowest usage?</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_uws_reports" | eval date1=strptime("20$year1$-$month1$-01","%Y-%b-%d") |eval epoch_ts=strptime(Timestamp,"%m/%d/%Y %H:%M") | where epoch_ts &lt;= date1 |timechart min(REPORTED_Residential_Gallons_per_Capita_Day) as "Minimum RGCPD"</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0x65a637","0xf7bc38","0xd93f3c"]</option>
+        <option name="rangeValues">[75,200]</option>
+        <option name="showSparkline">true</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="trendInterval">auto</option>
+        <option name="underLabel">Gallons/capita/day</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">true</option>
+        <option name="linkView">search</option>
+        <option name="drilldown">none</option>
+        <option name="height">100px</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>Statewide Average usage</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_uws_reports" | eval date1=strptime("20$year1$-$month1$-01","%Y-%b-%d") |eval epoch_ts=strptime(Timestamp,"%m/%d/%Y %H:%M") | where epoch_ts &lt;= date1 |timechart avg(REPORTED_Residential_Gallons_per_Capita_Day) as "Minimum RGCPD"</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0x65a637","0xf7bc38","0xd93f3c"]</option>
+        <option name="rangeValues">[75,200]</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="trendInterval">auto</option>
+        <option name="underLabel">Gallons/capita/day</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">true</option>
+        <option name="linkView">search</option>
+        <option name="drilldown">none</option>
+        <option name="height">100px</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>What supplier has the highest usage?</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_uws_reports" | eval date1=strptime("20$year1$-$month1$-01","%Y-%b-%d") |eval epoch_ts=strptime(Timestamp,"%m/%d/%Y %H:%M") | where epoch_ts &lt;= date1 |timechart max(REPORTED_Residential_Gallons_per_Capita_Day) as "Minimum RGCPD"</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0x65a637","0xf7bc38","0xd93f3c"]</option>
+        <option name="rangeValues">[75,200]</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="trendInterval">auto</option>
+        <option name="underLabel">Gallons/capita/day</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">true</option>
+        <option name="linkView">search</option>
+        <option name="drilldown">none</option>
+        <option name="height">100px</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <single>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_uws_reports" Reporting_Month="$year1$-$month1$"| stats min(REPORTED_Residential_Gallons_per_Capita_Day) as A by Supplier_Name | sort A | head 1 | rangemap field=A low=0-75 elevated=76-200 default=severe</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="showSparkline">false</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="trendInterval">auto</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">true</option>
+        <option name="display.visualizations.singlevalueHeight">50</option>
+        <option name="linkView">search</option>
+        <option name="drilldown">none</option>
+        <option name="height">20px</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_uws_reports" | eval x = "Statewide Average" | fields x</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="myBrush">solidFill</option>
+        <option name="myBrush.color">0xFF0000</option>
+        <option name="height">20px</option>
+        <option name="backgroundColor">#475565</option>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+        <option name="linkView">search</option>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0xf7bc38","0xf7bc38"]</option>
+        <option name="rangeValues">[1]</option>
+        <option name="trendInterval">auto</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_uws_reports" Reporting_Month="$year1$-$month1$"  | stats max(REPORTED_Residential_Gallons_per_Capita_Day) as A by Supplier_Name | sort - A | head 1 | rangemap field=A low=0-75 elevated=76-200 default=severe</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="height">20px</option>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="showSparkline">true</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="trendInterval">auto</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">true</option>
+        <option name="display.visualizations.singlevalueHeight">115</option>
+        <option name="linkView">search</option>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <map>
+        <title>Water usage in California (Gallons/capita/day) in $year1$-$month1$</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_uws_reports" Reporting_Month="$year1$-$month1$" featureId!="NOT MARKED" REPORTED_Residential_Gallons_per_Capita_Day&gt;0 REPORTED_Residential_Gallons_per_Capita_Day&lt;1600 featureId=*  |rename featureId TO "Urban Water Supplier"|rename "REPORTED_Residential_Gallons_per_Capita_Day" TO "Gallons per Capita Day"  |table "Urban Water Supplier","Gallons per Capita Day" |geom water-regions featureIdField="Urban Water Supplier"</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="mapping.choroplethLayer.colorBins">8</option>
+        <option name="mapping.choroplethLayer.colorMode">divergent</option>
+        <option name="mapping.choroplethLayer.maximumColor">0xAF1D12</option>
+        <option name="mapping.choroplethLayer.minimumColor">0x2F25BA</option>
+        <option name="mapping.choroplethLayer.neutralPoint">180</option>
+        <option name="mapping.choroplethLayer.shapeOpacity">0.85</option>
+        <option name="mapping.choroplethLayer.showBorder">true</option>
+        <option name="mapping.data.maxClusters">100</option>
+        <option name="mapping.drilldown">row</option>
+        <option name="mapping.map.center">(35.68,-119.53)</option>
+        <option name="mapping.map.panning">true</option>
+        <option name="mapping.map.scrollZoom">false</option>
+        <option name="mapping.map.zoom">7</option>
+        <option name="mapping.markerLayer.markerMaxSize">50</option>
+        <option name="mapping.markerLayer.markerMinSize">10</option>
+        <option name="mapping.markerLayer.markerOpacity">0.8</option>
+        <option name="mapping.showTiles">true</option>
+        <option name="mapping.tileLayer.maxZoom">7</option>
+        <option name="mapping.tileLayer.minZoom">0</option>
+        <option name="mapping.tileLayer.tileOpacity">1</option>
+        <option name="mapping.type">choropleth</option>
+        <option name="drilldown">all</option>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="numberPrecision">0</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+        <option name="linkView">search</option>
+        <option name="height">750px</option>
+        <drilldown>
+          <link>
+            <![CDATA[/app/s4g-ca_drought/urban_water_supplier_explorer]]>
+          </link>
+        </drilldown>
+      </map>
+    </panel>
+    <panel>
+      <chart depends="$supplier_name$">
+        <title>State average vs $supplier_name$ Supplier Average in $year1$-$month1$</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_uws_reports" | timechart avg(REPORTED_Residential_Gallons_per_Capita_Day) as "State Average (Gallons/Capita/Day)" | eval "State Average (Gallons/Capita/Day)"=round('State Average (Gallons/Capita/Day)',2) |join _time [search index="ca_drought" sourcetype="cad_uws_reports" (Supplier_Name="$supplier_name$" OR featureId="$supplier_name$") | timechart values(REPORTED_Residential_Gallons_per_Capita_Day) as "Supplier Average (Gallons/Capita/Day)"]</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleY.text">Gallons/Capita/Day</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.axisY2.scale">linear</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.rangeValues">[-30,30,70,100]</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">minimal</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.gaugeColors">["0x84E900","0xFFE800","0xBF3030"]</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">350px</option>
+        <option name="charting.chart.overlayFields">"Supplier Average (Gallons/Capita/Day)"</option>
+        <drilldown>
+          <link>
+            <![CDATA[/app/s4g-ca_drought/urban_water_supplier_explorer]]>
+          </link>
+        </drilldown>
+      </chart>
+      <chart>
+        <title>Conservation Goal Achieved by $supplier_name$ in $year1$-$month1$</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_uws_reports" Reporting_Month="$year1$-$month1$" (Supplier_Name="$supplier_name$" OR featureId="$supplier_name$")|`Unit_Conversion` | eval Percent_Saved = round(((('CALCULATED_R_GPCD_2013' - 'REPORTED_Residential_Gallons_per_Capita_Day')/'CALCULATED_R_GPCD_2013')*100),2) | eval "Goal Achieved"= (('Conservation_Standard' - Percent_Saved)*-1)|stats avg("Goal Achieved") as "Goal Achieved"  |table "Goal Achieved"</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">markerGauge</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">minimal</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.chart.orientation">x</option>
+        <option name="charting.data.offset">3</option>
+        <option name="charting.chart.rangeValues">[-50,-25,0,25,50]</option>
+        <option name="charting.gaugeColors">["0x7e9f44","0xfac61d","0xf7912c","0xd13b3b"]</option>
+        <option name="height">150px</option>
+        <drilldown>
+          <link>
+            <![CDATA[/app/s4g-ca_drought/urban_water_supplier_explorer]]>
+          </link>
+        </drilldown>
+      </chart>
+      <chart>
+        <title>Are suppliers achieving their Conservation Goal in $year1$-$month1$?</title>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_uws_reports" Reporting_Month="$year1$-$month1$" |`Unit_Conversion` | eval Percent_Saved = round(((('CALCULATED_R_GPCD_2013' - 'REPORTED_Residential_Gallons_per_Capita_Day')/'CALCULATED_R_GPCD_2013')*100),2) | eval "Percent Conserved"=Percent_Saved| rename Conservation_Standard TO "Mandatory Reductions Imposed" |rename featureId TO "Urban Water Supplier"|  eval "GA"= ('Mandatory Reductions Imposed' - 'Percent Conserved')*-1 | eval "Target achievement range"=case(GA&lt;-50,"Significantly not acheived" ,GA&lt;-30 AND GA&gt;-50, "Significantly not acheived", GA&lt;-20 AND GA&gt;-30, "Not acheived", GA &lt;-10 AND GA &gt;-20, "Not acheived",GA&lt;-5 AND GA&gt;-10, "Not acheived", GA&lt;0 AND GA&gt;-5, "Not acheived", GA&gt;=0 AND GA&lt;=5 ,"Acheived", GA&gt;5 AND GA&lt;=10, "Acheived", GA&gt;10 AND GA&lt;=20, "Acheived",GA&gt;20 AND GA&lt;=30, "Highly acheived", GA&gt;30 AND GA&lt;=50, "Highly acheived", GA&gt;50, "Acheived") |rename GA as "Goal Achieved" |stats count as "No of Suppliers " by "Target achievement range" | sort - "Target achievement range"</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="height">270px</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart.showPercent">false</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">true</option>
+        <option name="charting.chart.showLabels">true</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisEnd</option>
+        <option name="charting.seriesColors">[FF150D,CC1500,007F78,0B7F00,11CC00,FFFB00,FFD700,FF9242,FF7506,FF7146]</option>
+        <option name="charting.legend.placement">right</option>
+        <drilldown>
+          <link>
+            <![CDATA[/app/s4g-ca_drought/urban_water_supplier_explorer]]>
+          </link>
+        </drilldown>
+      </chart>
+    </panel>
+  </row>
+</form>

@@ -1,0 +1,5 @@
+County,FIPS_Code,featureId,agency_cd,site_no,site_tp_cd,lev_dt,lev_tm,lev_tz_cd,lev_va,sl_lev_va,sl_datum_cd,lev_status_cd,lev_agency_cd,lev_dt_acy_cd,lev_acy_cd,lev_src_cd,lev_meth_cd,lev_age_cd,Latitude,Longitude
+Kings County,31,Kings,USGS,361519119433401,GW,2010-06-30,17:40,PDT,12.68,NULL,NULL,NULL,USGS,m,2,S,S,A,36.25530556,-119.7272222
+Kings County,31,Kings,USGS,361852119350601,GW,2010-06-30,12:00,PST,116.51,NULL,NULL,NULL,USGS,D,2,S,S,A,36.3145222,-119.5855917
+Kings County,31,Kings,USGS,361905119472901,GW,2010-08-18,11:30,PDT,136.63,NULL,NULL,R,USGS,m,2,S,V,A,36.3169722,-119.7967778
+Kings County,31,Kings,USGS,361948119412201,GW,2010-06-30,17:05,PDT,24.55,NULL,NULL,NULL,USGS,m,2,S,S,A,36.3298722,-119.6904528

@@ -1,0 +1,3 @@
+County,FIPS_Code,featureId,agency_cd,site_no,site_tp_cd,lev_dt,lev_tm,lev_tz_cd,lev_va,sl_lev_va,sl_datum_cd,lev_status_cd,lev_agency_cd,lev_dt_acy_cd,lev_acy_cd,lev_src_cd,lev_meth_cd,lev_age_cd,Latitude,Longitude
+Santa Cruz County,87,Santa Cruz,USGS,370150122010601,GW,2012-12-10,09:35,PST,38.29,NULL,NULL,NULL,USGS,m,2,S,V,A,37.0307222,-122.0183889
+Santa Cruz County,87,Santa Cruz,USGS,370314121570801,GW,2012-12-10,13:55,PST,28.99,NULL,NULL,NULL,USGS,m,2,S,S,A,37.05394444,-121.9522778

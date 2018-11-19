@@ -1,0 +1,98 @@
+<form script="table_icons_inline_1.js" stylesheet="table_decorations.css">
+  <label>Urban Water Supplier Explorer</label>
+  <description>Water suppliers having more than 3000 connections are required to report on their conservation efforts starting June 2014. Explore the data.</description>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="multiselect" token="hydrologic_region" searchWhenChanged="true">
+      <default>*</default>
+      <choice value="*">All</choice>
+      <label>Hydrologic Region</label>
+      <search>
+        <query>index="ca_drought" sourcetype="cad_uws_reports"  Reporting_Month="14-Sep" | table Hydrologic_Region | dedup Hydrologic_Region | sort + Hydrologic_Region</query>
+      </search>
+      <fieldForLabel>Hydrologic_Region</fieldForLabel>
+      <fieldForValue>Hydrologic_Region</fieldForValue>
+      <prefix>(</prefix>
+      <suffix>)</suffix>
+      <valuePrefix>Hydrologic_Region="</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter> OR </delimiter>
+      <initialValue>*</initialValue>
+    </input>
+    <input type="multiselect" token="county" searchWhenChanged="true">
+      <label>County</label>
+      <default>*</default>
+      <choice value="*">All</choice>
+      <prefix>(</prefix>
+      <suffix>)</suffix>
+      <!-- Each value will be surrounded by the valuePrefix and valueSuffix -->
+      <valuePrefix>service_areas_county="</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter> OR </delimiter>
+      <search>
+        <query>index="ca_drought" sourcetype="cad_uws_reports"  Reporting_Month="14-Sep" AND $hydrologic_region$ | table service_areas_county | sort + service_areas_county | dedup service_areas_county | eval service_areas_county = upper(substr(service_areas_county,1,1)).lower(substr(service_areas_county,2))</query>
+        <earliest>0</earliest>
+      </search>
+      <fieldForLabel>service_areas_county</fieldForLabel>
+      <fieldForValue>service_areas_county</fieldForValue>
+    </input>
+    <input type="multiselect" token="water_supplier" searchWhenChanged="true">
+      <default>*</default>
+      <choice value="*">All</choice>
+      <prefix>(</prefix>
+      <suffix>)</suffix>
+      <!-- Each value will be surrounded by the valuePrefix and valueSuffix -->
+      <valuePrefix>Supplier_Name="</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter> OR </delimiter>
+      <label>Water Supplier</label>
+      <search>
+        <query>index="ca_drought" sourcetype="cad_uws_reports"  (Hydrologic_Region="*") (service_areas_county="*") Reporting_Month="15-Jan" | table Supplier_Name | dedup Supplier_Name | sort + Supplier_Name</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+      <fieldForLabel>Supplier_Name</fieldForLabel>
+      <fieldForValue>Supplier_Name</fieldForValue>
+    </input>
+    <input type="multiselect" token="rep_month" searchWhenChanged="true">
+      <label>Reporting Month</label>
+      <search>
+        <query>index="ca_drought" sourcetype="cad_uws_reports" $water_supplier$ | table  Reporting_Month | dedup Reporting_Month | sort + Reporting_Month</query>
+      </search>
+      <fieldForLabel>Reporting_Month</fieldForLabel>
+      <fieldForValue>Reporting_Month</fieldForValue>
+      <default>15-Jun</default>
+      <prefix>(</prefix>
+      <suffix>)</suffix>
+      <valuePrefix>Reporting_Month="</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter> OR </delimiter>
+      <choice value="*">All</choice>
+      <initialValue>15-Jun</initialValue>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <input type="dropdown" token="sort_value" searchWhenChanged="true">
+        <label>Top 10 Suppliers ordered by -</label>
+        <choice value="Water use 2014-15 (Gallons/capita/day)">Water use 2014-15</choice>
+        <choice value="Population Served">Population Served</choice>
+        <choice value="Percent Conserved">Conservation Percentage</choice>
+        <choice value="Mandatory Reductions">Mandatory Reductions</choice>
+        <choice value="Goal Achieved">Goal Achieved</choice>
+        <default>Reported GCPD</default>
+        <initialValue>Rep GCPD 2014-2015</initialValue>
+      </input>
+      <table>
+        <search>
+          <query>index="ca_drought" sourcetype="cad_uws_reports" $hydrologic_region$ $county$ $rep_month$ $water_supplier$ |`Unit_Conversion` | eval "Percent Conserved" = round(((('CALCULATED_R_GPCD_2013' - 'REPORTED_Residential_Gallons_per_Capita_Day')/'CALCULATED_R_GPCD_2013')*100),2) |  eval "Goal Achieved"= (('Conservation_Standard' - 'Percent Conserved')*-1)."%" | eval "Percent Conserved" = 'Percent Conserved'."%" | rename CALCULATED_R_GPCD_2013 AS "Water use 2013 (Gallons/capita/day)"   | rename REPORTED_Residential_Gallons_per_Capita_Day TO "Water use 2014-15 (Gallons/capita/day)" |rename Supplier_Name TO "Supplier Name" | rename Hydrologic_Region TO "Hydrologic Region" |  rename "TMP_14&amp;15_Gallons" AS "Total Monthly Usage (Gallons)"  |rename service_areas_county to County |rename Reporting_Month TO "Reporting Month" | eval "Mandatory Reductions" = Conservation_Standard."%" | eval "Residential Use" = round(((Percent_Residential_Use*100)),2)."%" | rename Total_Population_Served TO "Population Served" |eval County = upper(substr(County,1,1)).lower(substr(County,2))  | fieldformat "Population Served"=tostring('Population Served',"commas") | fieldformat "Total Monthly Usage (Gallons)"=tostring('Total Monthly Usage (Gallons)' ,"commas") | table "Supplier Name","Hydrologic Region",County,"Water use 2013 (Gallons/capita/day)","Water use 2014-15 (Gallons/capita/day)","Mandatory Reductions" "Percent Conserved", "Goal Achieved" ,"Residential Use","Population Served", "Total Monthly Usage (Gallons)" | sort - "$sort_value$"|head 10</query>
+          <earliest>0</earliest>
+        </search>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="count">10</option>
+      </table>
+    </panel>
+  </row>
+</form>
