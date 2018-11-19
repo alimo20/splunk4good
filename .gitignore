@@ -6,6 +6,8 @@
 !deployment-apps/
 !master-apps/
 master-apps/_cluster/
+master-apps/*/lookups/*/*.key
+master-apps/*/lookups/*/*.val
 
 !apps/
 apps/100_splunk4good_prod_splunkcloud/
@@ -28,6 +30,8 @@ apps/splunk_instrumentation/
 apps/SplunkLightForwarder/
 apps/splunk_monitoring_console/
 apps/user-prefs/
+apps/*/lookups/*/*.key
+apps/*/lookups/*/*.val
 !apps/*/local/
 !apps/*/local/serverclass.conf
 

@@ -1,0 +1,604 @@
+BOTANICAL,OBJECTID,"pruning_years"
+"Sawcut New Tree Well Site",525,
+"Platanus x acerifolia",417,3
+"Ficus microcarpa 'Nitida'",238,3
+"Vacant Planting Site - Small",585,
+"Lophostemon confertus",324,4
+"Metrosideros excelsa",360,5
+"Prunus cerasifera",438,5
+"Magnolia grandiflora",333,4
+"Pittosporum undulatum",413,4
+"Tristaniopsis laurina",566,5
+"Prunus serrulata 'Kwanzan'",453,5
+"Arbutus 'Marina'",58,5
+"Acacia melanoxylon",14,3
+"Olea europaea",371,5
+"Maytenus boaria",347,3
+"Callistemon citrinus",95,3
+"Corymbia ficifolia",161,3
+"Ginkgo biloba",261,5
+"Pyrus calleryana",473,4
+"Ulmus parvifolia",571,3
+"Ligustrum lucidum",316,5
+"Vacant Planting Site - Medium",584,
+"Eriobotrya deflexa",198,5
+"Cordyline australis",152,7
+"Juniperus chinensis 'Torulosa'",293,7
+"Tristaniopsis laurina 'Elegant'",567,5
+"Liquidambar styraciflua",320,3
+"Pyrus kawakamii",481,3
+Stump,536,
+"Melaleuca quinquenervia",353,4
+"Pittosporum crassifolium",409,5
+"Myoporum laetum",366,5
+"Jacaranda mimosifolia",284,3
+"Syagrus romanzoffianum",540,7
+"Eucalyptus polyanthemos",219,3
+"Laurus nobilis",305,4
+"Schinus terebinthifolius",530,5
+"Agonis flexuosa",44,4
+"Pinus radiata",402,5
+"Lagunaria patersonia",304,5
+"Ficus microcarpa",236,3
+"Callistemon viminalis",98,5
+"Phoenix canariensis",380,3
+"Magnolia grandiflora 'Little Gem'",334,5
+"Ceratonia siliqua",124,5
+"Cupressus macrocarpa",177,5
+"Coprosma repens",151,"not a tree"
+"Washingtonia robusta",591,5
+"Prunus serrulata",452,5
+"Arbutus unedo",59,5
+"Leptospermum scoparium",309,5
+"Acer rubrum",30,3
+"Crataegus phaenopyrum",172,4
+"Afrocarpus gracilior",41,5
+"Syzygium paniculatum",545,5
+"Acer palmatum",23,5
+"Taxus baccata",549,7
+"Eucalyptus sideroxylon",224,3
+"Yucca gloriosa",598,5
+"Rhaphiolepis 'Majestic Beauty'",503,5
+"Dodonaea viscosa 'Purpurea'",190,5
+"Acacia baileyana",5,3
+"Pyrus calleryana 'Aristocrat'",474,5
+"Fraxinus angustifolia subsp. oxycarpa",245,5
+"Vacant Planting Site",582,
+"Eucalyptus globulus",211,5
+"Crataegus laevigata",171,5
+"Rhamnus alaternus",499,5
+"Quercus agrifolia",483,7
+"Ulmus americana",569,3
+"Vacant Planting Site - Large",583,
+"Geijera parviflora",260,5
+"Acer buergeranum",19,5
+"Ulmus pumila",575,3
+"Pistacia chinensis",407,5
+"Other Tree",374,5
+"Koelreuteria paniculata",298,3
+"Schinus molle",528,5
+"Robinia x ambigua 'Purple Robe'",512,3
+"Pittosporum tenuifolium",411,5
+"Liriodendron tulipifera",322,5
+"Prunus x yedoensis",458,5
+"Chamaerops humilis",137,5
+"Prunus domestica",441,5
+"Leptospermum laevigatum",307,5
+"Melaleuca linariifolia",351,5
+"Acacia stenophylla",16,3
+"Trachycarpus fortunei",564,5
+"Ulmus rubra",576,3
+"Fraxinus uhdei",250,5
+"Lycianthes rantonnetii",326,7
+"Hymenosporum flavum",277,5
+"Ligustrum japonicum",315,5
+"Populus nigra var. italica",427,4
+"Cupaniopsis anacardioides",175,5
+"Ceanothus 'Ray Hartmann'",109,3
+"Eriobotrya japonica",199,5
+"Celtis sinensis",122,5
+"Prunus x blireiana",457,5
+"Malus floribunda",345,5
+"Thuja occidentalis",553,7
+"Pittosporum eugenioides",410,5
+"Agonis flexuosa 'After Dark'",45,5
+"Platycladus orientalis",419,7
+"Sequoia sempervirens",531,7
+"Lyonothamnus floribundus ssp. asplenifolius",328,5
+"Pinus pinea",401,5
+"Photinia fraseri",386,5
+"Pinus canariensis",393,7
+"Quercus suber",493,7
+"Cupressus sempervirens",179,7
+"Magnolia doltsopa",331,5
+"Pyrus calleryana 'Chanticleer'",476,5
+"Quercus ilex",487,7
+"Lyonothamnus floribundus",327,5
+"Magnolia grandiflora 'St. Mary'",337,5
+"Pyrus calleryana 'Bradford'",475,5
+"Cotoneaster lacteus",166,"not a tree"
+"Ficus microcarpa nitida 'Green Gem'",237,3
+"Betula pendula",76,3
+"Melaleuca ericifolia",350,5
+"Citrus limon",145,3
+"Brahea edulis",86,5
+"Washingtonia filifera",589,3
+"Aesculus x carnea",39,5
+"Ceiba speciosa",119,5
+"Malus domestica",344,5
+"Juniperus chinensis",291,7
+"Pinus thunbergiana",406,7
+"Corymbia maculata",162,3
+"Lagerstroemia indica",299,5
+"Melaleuca styphelioides",355,5
+"Cinnamomum camphora",143,5
+"Pittosporum tobira",412,5
+"Tilia cordata",560,5
+"Syzygium australe",544,7
+"Ceanothus species",111,"not a tree"
+"Podocarpus macrophyllus",422,5
+"Acer saccharinum",32,5
+"Magnolia grandiflora 'Russet'",335,5
+"Juniperus species",295,7
+"Liquidambar styraciflua 'Rotundiloba'",321,5
+"Ceanothus arboreus",110,3
+"Unsuitable Planting Site--Tree Well to be Paved/Filled",581,
+"Crataegus crus-galli f. inermis",170,5
+"Eucalyptus camaldulensis",205,5
+"Carpinus betulus",103,5
+"Eucalyptus leucoxylon",215,3
+"Morus alba",362,4
+"Quercus virginiana",495,5
+"Eucalyptus nicholii",218,5
+"Elaeocarpus decipiens",197,5
+"Ilex altaclarensis 'Wilsonii'",279,5
+"Magnolia champaca",330,5
+"Acacia longifolia",13,5
+"Magnolia grandiflora 'Samuel Sommer'",336,5
+"Phoenix dactylifera",381,3
+"Prunus cerasifera (green form)",440,5
+"Platanus racemosa",416,5
+"Fraxinus americana",244,5
+"Heteromeles arbutifolia",273,5
+"Persea americana",378,5
+"Cedrus deodara",114,5
+"Photinia serrulata",388,5
+"Eucalyptus conferruminiata",208,5
+"Brugmansia versicolor",89,5
+"Cedrus atlantica",113,5
+"Eriobotrya X 'Coppertone'",200,5
+"Tibouchina granulosa",556,5
+"Magnolia x soulangeana",343,5
+"Stump with no planting plan",537,
+"Tibouchina urvilleana",557,5
+"Griselinia littoralis",270,5
+"Acer x freemanii",35,5
+"Prunus cerasifera 'Purple Pony'",439,5
+"Prunus persica",448,5
+"Aesculus californica",37,5
+"Albizia julibrissin",48,5
+"Cercis occidentalis",129,5
+"Ilex aquifolium",280,5
+"Photinia serratifolia",387,5
+"Dracaena draco",192,7
+"Grevillea robusta",268,5
+"Betula papyrifera",75,5
+"Betula utilis var. jacquemontii",78,5
+"Melaleuca nesophila",352,5
+"Araucaria columnaris",56,7
+"Prunus laurocerasus",445,5
+"Cercis canadensis",126,5
+"Ficus carica",233,3
+"Prunus lyonii",447,5
+"Zelkova serrata",602,5
+"Acer palmatum 'Bloodgood'",24,5
+"Gleditsia triacanthos f. inermis",266,5
+"Liquidambar orientalis",319,5
+"Prunus species",454,5
+"Pyracantha coccinea",471,5
+"Calocedrus decurrens",99,7
+"Eucalyptus species",225,3
+"Strelitzia nicolai",535,5
+"Abelia grandiflora",2,"not a tree"
+"Gardenia augusta",258,5
+"Nerium oleander",369,7
+"Acer macrophyllum",21,5
+"Acer rubrum 'Armstrong'",31,5
+"Cupressocyparis leylandii",176,7
+"Alnus rhombifolia",51,5
+"Camellia reticulata",101,5
+"Hakea suaveolens",271,5
+"Prunus avium",435,5
+"Prunus caroliniana",437,7
+"Bambusa species",70,"not a tree"
+"Ficus rubiginosa",239,5
+"Agave americana",42,"not a tree"
+"Araucaria heterophylla",57,7
+"Brugmansia species",88,"not a tree"
+"Corymbia citriodora",160,5
+"Acacia cognata",6,5
+"Citrus sinensis",148,5
+"Pinus muricata",400,5
+"Prunus armeniaca",434,5
+"Ulmus parvifolia 'Drake'",573,3
+"Dicksonia antarctica",186,5
+"Fremontodendron californicum",254,3
+"Ilex cornuta",281,5
+"Pseudotsuga menziesii",466,7
+"Camellia japonica",100,5
+"Cussonia spicata",182,5
+"Eucalyptus pulverulenta",220,5
+"Pyrus communis",480,5
+"Cotoneaster pannosus",167,5
+"Picea pungens f. glauca",390,7
+"Pinus montana",399,5
+"Cyathea cooperi",183,5
+"Nyssa sylvatica",370,5
+"Persea indica",379,5
+"Platanus x acerifolia 'Columbia'",418,5
+"Prunus ilicifolia",444,5
+"Pyrus calleryana 'Redspire'",479,5
+"Styphnolobium japonicum",538,5
+"Acacia cyclops",9,5
+"Archontophoenix cunninghamiana",61,5
+"Cotoneaster species",168,5
+"Eucalyptus cornuta",209,5
+"Salix matsudana 'Tortuosa'",519,5
+"Ficus benjamina",232,5
+"Magnolia doltsopa 'Jack Fogg'",332,5
+"Metasequoia glyptostroboides",358,5
+"Populus tremuloides",429,5
+"Prunus subhirtella 'Pendula'",455,5
+"Alnus cordata",50,5
+"Celtis occidentalis",121,5
+"Ficus elastica",234,5
+"Umbellularia californica",579,5
+"Cercis canadensis 'Forest Pansy'",127,5
+"Fagus sylvatica 'Atropunicea'",231,5
+"Pinus halepensis",398,5
+"Salix lasiolepis",518,5
+"Quillaja saponaria",497,5
+"Acacia decurrens",11,5
+"Azara microphylla",67,5
+"Casuarina cunninghamiana",107,5
+"Dypsis cabadae",194,5
+"Howea forsteriana",276,5
+"Syzygium paniculatum 'Compacta'",546,5
+"Ulmus species",577,5
+"Vitex lucens",588,5
+"Afrocarpus falcatus",40,5
+"Albizia distachya",47,5
+"Aloe barberae",53,5
+"Corymbia calophylla",159,5
+"Escallonia x exoniensis 'Fradesii'",203,5
+"Furcraea roezlii",257,5
+"Gleditsia triacanthos",263,5
+"Gleditsia triacanthos 'Shademaster'",264,5
+"Juglans regia",288,5
+"Musa species",365,5
+"Thuja occidentalis 'Lutea'",554,7
+"Brachychiton acerifolius",80,5
+"Cryptomeria japonica",174,7
+"Fraxinus ornus",248,5
+"Grevillea 'Poorinda Constance'",267,5
+"Washingtonia filifera X robusta",590,3
+"Citrus aurantifolia",144,5
+"Citrus X paradisi",150,5
+"Cotinus coggygria",164,5
+"Cotinus coggygria 'Royal Purple'",165,5
+"Euonymus japonicus",228,5
+"Prunus x yedoensis",459,5
+"Quercus lobata",488,7
+"Quercus palustris",489,7
+"Rhododendron species",506,"not a tree"
+,1,
+"Acacia species",15,3
+"Brachychiton populneus",82,5
+"Buddleia davidii",90,"not a tree"
+"Celtis species",123,5
+"Gleditsia triacanthos 'Sunburst'",265,5
+"Juglans nigra",287,5
+"Olea europaea subsp. cuspidata",372,5
+"Palm species",375,3
+"Phoenix roebelenii",383,3
+"Psidium cattleianum",467,5
+"Punica granatum",470,5
+"Pyrus calleryana 'Cleveland Select'",477,5
+"Quercus rubra",491,7
+"Rhus lancea",509,5
+"Robinia pseudoacacia",511,5
+"Taxus species",550,5
+"Tilia americana",558,5
+"Acacia cultriformis",8,3
+"Ailanthus altissima",46,3
+"Archontophoenix myolensis",62,3
+"Betula nigra",74,5
+"Dahlia imperialis",185,"not a tree"
+"Dodonaea viscosa",189,5
+"Echium candicans",196,"not a tree"
+"Eucalyptus rudis",222,5
+"Eucalyptus viminalis",227,5
+"Koelreuteria bipinnata",296,4
+"Lavatera maritima",306,"not a tree"
+"Ligustrum ovalifolium",317,5
+"Melaleuca species",354,5
+"Podocarpus latifolius",421,5
+"Prunus dulcis",442,5
+"Prunus x yedoensis eAkebono",460,5
+"Quercus species",492,7
+"Salix babylonica",514,5
+"Ulmus x 'Frontier'",578,3
+"Vacant Planting Site_Brick-on-sand/gravel-filled",586,
+"Viburnum odoratissimum var. awabuki",587,5
+"Yucca elephantipes 'Elmila'",597,7
+"Abutilon hybridum",4,5
+"Acca sellowiana",18,5
+"Aesculus hippocastanum",38,5
+"Arctostaphylos 'Austin Griffiths'",63,5
+"Azara microphylla 'Variegata'",68,5
+"Butia capitata",91,5
+"Cassia leptophylla",106,5
+"Casuarina equisetifolia",108,5
+"Chamaecyparis species",135,5
+"Chitalpa tashkentensis",142,5
+"Cornus florida",154,5
+"Eucalyptus albopurpurea",204,5
+"Eucalyptus globulus 'Compacta'",212,5
+"Eucalyptus saligna",223,5
+"Fraxinus species",249,5
+"Ilex species",282,5
+"Iochroma species",283,5
+"Magnolia x alba",342,5
+"Phoenix x species",385,3
+"Pyrus betulifolia 'Southworth'",472,5
+"Pyrus calleryana 'New Bradford'",478,5
+"Quercus alba",484,5
+"Rhopalostylis baueri",507,5
+"Salix discolor",515,5
+"Syringa vulgaris",543,5
+"Thuja plicata",555,5
+"Unidentifiable Tree",580,5
+"Yucca species",601,7
+"Arctostaphylos densiflora 'Howard Mc Minn'",64,3
+"Baccharis pilularis",69,5
+"Betula pendula 'Purpurea'",77,5
+"Caryota gigas",105,5
+"Chamaecyparis obtusa",133,3
+"Chamaedorea plumosa",136,3
+"Chamaerops humilis var. argentea",138,3
+"Crataegus x lavallei",173,5
+"Cussonia paniculata",181,5
+"Escallonia bifida",202,5
+"Ficus species",240,3
+"Fortunella margarita",242,5
+"Fuchsia arborescens",255,5
+"Garrya ovata",259,5
+"Jubaea chilensis",285,5
+"Magnolia species",339,5
+"Melia azedarach",356,5
+"Opuntia ficus-indica",373,5
+"Podocarpus henkelii",420,5
+"Prunus x 'Hally Jolivette'",456,5
+"Psoralea pinnata",469,5
+"Schefflera arboricola",527,5
+"Sequoiadendron giganteum",532,7
+"Tilia species",562,5
+"Yucca recurvifolia",599,5
+"Acacia dealbata",10,3
+"Acacia vestita",17,3
+"Acer species",33,5
+"Arbutus unedo 'Compacta'",60,5
+"Banksia integrifolia",72,5
+"Cantua buxifolia",102,5
+"Cedrus deodara 'Karl Fuchs'",116,7
+"Celtis australis",120,5
+"Cercis canadensis var. texensis",128,5
+"Chamaecyparis pisifera",134,3
+"Chionanthus retusus",139,5
+"Chiranthofremontia lenzii",141,5
+"Cornus x 'Eddie's White Wonder'",157,5
+"Cupressus macrocarpa 'Donard Gold'",178,7
+"Diospyros kaki",187,5
+"Duranta repens",193,5
+"Eucalyptus lehmannii",214,5
+"Fraxinus excelsior",246,5
+"Fraxinus velutina",252,5
+"Hibiscus rosa-sinensis",274,5
+"Juniperus chinensis 'Blue Point'",292,7
+"Leucadendron 'Gold Strike'",310,7
+"Leucospermum cordifolium 'Yellow Bird'",314,5
+"Leucospermum 'Veldfire'",313,5
+"Ligustrum species",318,5
+"Magnolia liliiflora 'Galaxy'",338,5
+"Melaleuca armillaris",348,5
+"Morus rubra",364,5
+"Paulownia fortunei",376,5
+"Pinus coulteri",396,5
+"Pistacia vera",408,5
+"Pittosporum viridiflorum",414,5
+"Populus alba",424,5
+"Populus fremontii",426,5
+"Populus x hybrida",431,5
+"Prunus lusitanica",446,5
+"Prunus salicina",450,5
+"Psidium guajava",468,5
+"Quercus tomentella",494,5
+"Rhamnus californica",501,5
+"Salix laevigata",517,5
+"Sambucus nigra 'Aureomarginata'",523,5
+"Solanum macranthum",533,5
+"Taxodium mucronatum",548,5
+"Tilia americana 'Redmond'",559,5
+"Yucca aloifolia",595,5
+"Yucca elephantipes",596,5
+"Ziziphus jujuba",603,5
+"Acacia cognata 'Cousin Itt'",7,3
+"Acacia iteaphylla",12,3
+"Acer circinatum",20,5
+"Acer palmatum 'Crimson Queen Threadleaf'",25,5
+"Angophora species",54,5
+"Banksia grandis",71,5
+"Brachychiton discolor",81,3
+"Brachychiton rupestris",83,7
+"Brahea armata",84,7
+"Brugmansia sanguinea",87,"not a tree"
+"Callistemon 'Jeffers'",93,5
+"Callistemon species",97,5
+"Chiranthodendron pentadactylon",140,5
+"Cordyline australis 'Albertii'",153,5
+"Cornus species",156,5
+"Corylus avellana",158,5
+"Corynocarpus laevigata",163,5
+"Crataegus crus-galli",169,5
+"Cupressus sempervirens 'Swaine's Gold'",180,7
+"Cycas revoluta",184,3
+"Eucalyptus gunnii",213,5
+"Eucalyptus melliodora",217,5
+"Fagus sylvatica",230,5
+"Fraxinus uhdei 'Tomlinson'",251,5
+"Fraxinus velutina 'Rio Grande'",253,5
+"Furcraea macdougallii",256,5
+"Grewia occidentalis",269,5
+"Hypelate trifoliata",278,5
+"Juglans species",289,5
+"Lagerstroemia x 'Muskogee'",301,5
+"Leptospermum petersonii",308,5
+"Leucadendron argenteum",312,5
+"Magnolia stellata",340,5
+"Melaleuca decora",349,5
+"Meryta sinclairii",357,5
+"Metrosideros collina 'Springfire'",359,5
+"Paulownia tomentosa",377,5
+"Phoenix reclinata",382,3
+"Picea species",391,5
+"Pinus species",403,7
+"Platanus occidentalis",415,5
+"Populus species",428,5
+"Populus trichocarpa",430,5
+"Protea cynaroides",432,5
+"Quercus wislizenii",496,5
+"Radermachera sinica",498,5
+"Sambucus neomexicana",522,5
+"Sambucus species",524,5
+"Schefflera actinophylla",526,5
+"Schinus polygamus",529,5
+"Styrax japonicus",539,5
+"Tecoma capensis",551,5
+"Tecoma stans",552,5
+"Tilia cordata 'Greenspire'",561,5
+"Triadica sebifera",565,5
+"Trithrinax acanthocoma",568,5
+"Xanthorrhoea preissii",593,5
+"Xylosma congestum",594,5
+"Yucca rostrata",600,5
+"Abies procera",3,5
+"Acer negundo",22,5
+"Acer paxii",26,5
+"Acer plantanoides",27,5
+"Acer platanoides 'Crimson King'",28,5
+"Acer pseudoplatanus",29,5
+"Acer tegmentosum",34,5
+"Adenanthos sericeus",36,"not a tree"
+"Agave attenuata",43,"not a tree"
+"Albizia julibrissin 'Summer Chocolate'",49,5
+"Aloe arborescens",52,"not a tree"
+"Araucaria araucana",55,7
+"Auranticarpa rhombifolia",65,5
+"Azara dentata",66,5
+"Beaucarnea recurvata",73,5
+"Bougainvillea spectabilis",79,"not a tree"
+"Brahea brandegeei",85,3
+"Buxus sempervirens",92,"not a tree"
+"Callistemon 'Little Gem'",94,5
+"Callistemon rigidus",96,5
+"Carya illinoinensis",104,5
+"Cedrela fissilis",112,5
+"Cedrus deodara 'Blue Snake'",115,7
+"Cedrus libani",117,5
+"Ceiba insignis",118,5
+"Cercidiphyllum japonicum",125,5
+"Cercocarpus betuloides",130,5
+"Cestrum parqui",131,"not a tree"
+"Chamaecyparis lawsoniana",132,5
+"Citrus maxima",146,5
+"Citrus reticulata",147,5
+"Citrus species",149,5
+"Cornus nuttallii",155,5
+"Diospyros virginiana",188,5
+"Dracaena dermensis",191,5
+"Dypsis decaryi",195,5
+"Erythrina caffra",201,5
+"Eucalyptus cinerea",206,5
+"Eucalyptus cladocalyx",207,5
+"Eucalyptus erythrocorys",210,5
+"Eucalyptus leucoxylon megalocarpa 'Rosea'",216,5
+"Eucalyptus robusta",221,5
+"Eucalyptus torquata",226,5
+"Euphorbia ingens",229,5
+"Ficus macrophylla",235,3
+"Ficus virens",241,3
+"Fortunella margarita 'Centennial'",243,5
+"Fraxinus griffithii",247,5
+"Ginkgo biloba 'Autumn Gold'",262,5
+"Hamamelis x intermedia",272,5
+"Holodiscus discolor",275,"not a tree"
+"Juglans hindsii",286,5
+"Juniperus californica",290,7
+"Juniperus silicicola",294,7
+"Koelreuteria elegans subsp. formosana",297,3
+"Lagerstroemia speciosa",300,5
+"Lagerstroemia x 'Natchez'",302,5
+"Lagerstroemia x 'Tuscarora'",303,5
+"Leucadendron 'Safari Sunset'",311,"not a tree"
+"Livistona chinensis",323,5
+"Loropetalum chinense",325,5
+"Macadamia tetraphylla",329,5
+"Magnolia virginiana",341,5
+"Mangifera indica",346,5
+"Moringa oleifera",361,5
+"Morus alba 'Cooke's Pakistan'",363,5
+"Myrica californica",367,5
+"Myrtus communis 'Variegata'",368,5
+"Phoenix rupicola",384,3
+"Picea pungens",389,7
+"Pinus brutia var. eldarica",392,7
+"Pinus contorta",394,7
+"Pinus contorta var. murrayana",395,7
+"Pinus elliottii",397,7
+"Pinus strobus",404,7
+"Pinus sylvestris",405,7
+"Poncirus trifoliata",423,5
+"Populus deltoides",425,5
+"Prunus americana",433,5
+"Prunus campanulata",436,5
+"Prunus emarginata",443,5
+"Prunus persica var. nucipersica",449,5
+"Prunus serotina",451,5
+"Prunus x yedoensis eAkebonoe",461,5
+"Prunus x yedoensis fAkebono",462,5
+"Prunus x yedoensis fAkebonol",463,5
+"Prunus x yedoensis hAkebono",464,5
+"Pseudopanax lessonii",465,5
+"Pyrus pyrifolia",482,5
+"Quercus douglasii",485,5
+"Quercus engelmannii",486,5
+"Quercus robur",490,5
+"Rhamnus alaternus 'Variegata'",500,5
+"Rhamnus californica 'Eve Case'",502,5
+"Rhaphiolepis indica",504,5
+"Rhapis excelsa",505,"not a tree"
+"Rhopalostylis sapida",508,5
+"Rhus typhina 'Dissecta'",510,5
+"Sabal species",513,5
+"Salix gooddingii",516,5
+"Salix nigra",520,5
+"Salix species",521,5
+"Stenocarpus sinuatus",534,5
+"Syringa reticulata",541,5
+"Syringa reticulata 'Ivory Silk'",542,5
+"Taxodium distichum",547,5
+"Torreya californica",563,5
+"Ulmus crassifolia",570,3
+"Ulmus parvifolia 'Athena'",572,3
+"Ulmus procera",574,3
+"Wodyetia bifurcata",592,5
