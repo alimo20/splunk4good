@@ -10,6 +10,7 @@ from util.param_util import parse_args, parse_namespace_model_name
 from util import command_util
 from util.mlspl_loader import MLSPLConf
 from util.search_util import add_distributed_search_info
+# from util.telemetry_util import log_uuid, log_apply_time, Timer
 
 from chunked_controller import ChunkedController
 
@@ -128,8 +129,13 @@ class ApplyCommand(BaseChunkHandler):
         # Our final farewell
         return ({'finished': finished_flag}, output_body)
 
-
 if __name__ == "__main__":
     logger.debug("Starting apply.py.")
+
+    # with Timer() as t:
+    #     ApplyCommand(handler_data=BaseChunkHandler.DATA_RAW).run()
     ApplyCommand(handler_data=BaseChunkHandler.DATA_RAW).run()
+
+    # log_uuid()
+    # log_apply_time(t.interval)
     logger.debug("Exiting gracefully. Byee!!")

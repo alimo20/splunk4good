@@ -26,6 +26,7 @@ function(
     var AXIS_FORMAT_MINUTES = d3.time.format("%I:%M %p");
     var AXIS_FORMAT_DAYS = d3.time.format("%B %d");
 
+    var isDarkTheme = vizUtils.getCurrentTheme && vizUtils.getCurrentTheme() === 'dark';
 
     function stringToInt(input, defaultVal) {
         var toReturn = parseInt(input);
@@ -43,6 +44,9 @@ function(
             SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
             this.$el = $(this.el);
             this.$el.addClass('splunk-horizon-chart');
+            if (isDarkTheme){
+              this.$el.addClass('dark');
+            }
             this.$el.css('position', 'absolute');
         },
 
@@ -235,10 +239,11 @@ function(
                 }
             });
 
+            var rangeStop = isDarkTheme ? '#000' : '#FFF';
             // calculate colors
             var colorScale = d3.scale.linear()
                 .domain([-this.options.numBands, 0, this.options.numBands])
-                .range([this.options.negativeColor, '#FFF', this.options.positiveColor]);
+                .range([this.options.negativeColor, rangeStop, this.options.positiveColor]);
 
             var colorArray = _.map(
                 d3.range(-this.options.numBands, 0).concat(d3.range(1, this.options.numBands + 1)),

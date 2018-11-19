@@ -98,3 +98,10 @@
 .ch-tooltip {
   display: none!important;
 }
+
+/* Dark Theme */
+
+.splunk-calendar-heatmap.dark div,
+.splunk-calendar-heatmap.dark .title {
+    color: #F2F4F5;
+}

@@ -1,4 +1,4 @@
-define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(__WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_4__) { return /******/ (function(modules) { // webpackBootstrap
+define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(__WEBPACK_EXTERNAL_MODULE_4__, __WEBPACK_EXTERNAL_MODULE_5__) { return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 
@@ -42,7 +42,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
 	 * Calendar Heatmap visualization view class
@@ -50,12 +50,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
 	    __webpack_require__(1),
 	    __webpack_require__(2),
-	    __webpack_require__(3),
 	    __webpack_require__(4),
 	    __webpack_require__(5),
 	    __webpack_require__(6),
 	    __webpack_require__(7),
-	    __webpack_require__(110)
+	    __webpack_require__(8),
+	    __webpack_require__(133)
 	], __WEBPACK_AMD_DEFINE_RESULT__ = function(
 	    $,
 	    _,
@@ -92,6 +92,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
 	            this.$el = $(this.el);
 	            this.$el.addClass('splunk-calendar-heatmap');
+	            if (vizUtils.getCurrentTheme && vizUtils.getCurrentTheme() === 'dark'){
+	              this.$el.addClass('dark');
+	            }
 
 	            this.compiledTemplate = _.template(this._template);
 
@@ -505,12 +508,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 
-/***/ },
+/***/ }),
 /* 1 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
-	 * jQuery JavaScript Library v2.2.3
+	 * jQuery JavaScript Library v2.2.4
 	 * http://jquery.com/
 	 *
 	 * Includes Sizzle.js
@@ -520,7 +523,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	 * Released under the MIT license
 	 * http://jquery.org/license
 	 *
-	 * Date: 2016-04-05T19:26Z
+	 * Date: 2016-05-20T17:23Z
 	 */
 
 	(function( global, factory ) {
@@ -576,7 +579,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 	var
-		version = "2.2.3",
+		version = "2.2.4",
 
 		// Define a local copy of jQuery
 		jQuery = function( selector, context ) {
@@ -5517,13 +5520,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 		isDefaultPrevented: returnFalse,
 		isPropagationStopped: returnFalse,
 		isImmediatePropagationStopped: returnFalse,
+		isSimulated: false,
 
 		preventDefault: function() {
 			var e = this.originalEvent;
 
 			this.isDefaultPrevented = returnTrue;
 
-			if ( e ) {
+			if ( e && !this.isSimulated ) {
 				e.preventDefault();
 			}
 		},
@@ -5532,7 +5536,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 			this.isPropagationStopped = returnTrue;
 
-			if ( e ) {
+			if ( e && !this.isSimulated ) {
 				e.stopPropagation();
 			}
 		},
@@ -5541,7 +5545,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 			this.isImmediatePropagationStopped = returnTrue;
 
-			if ( e ) {
+			if ( e && !this.isSimulated ) {
 				e.stopImmediatePropagation();
 			}
 
@@ -6471,19 +6475,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 			val = name === "width" ? elem.offsetWidth : elem.offsetHeight,
 			styles = getStyles( elem ),
 			isBorderBox = jQuery.css( elem, "boxSizing", false, styles ) === "border-box";
-
-		// Support: IE11 only
-		// In IE 11 fullscreen elements inside of an iframe have
-		// 100x too small dimensions (gh-1764).
-		if ( document.msFullscreenElement && window.top !== window ) {
-
-			// Support: IE11 only
-			// Running getBoundingClientRect on a disconnected node
-			// in IE throws an error.
-			if ( elem.getClientRects().length ) {
-				val = Math.round( elem.getBoundingClientRect()[ name ] * 100 );
-			}
-		}
 
 		// Some non-html elements return undefined for offsetWidth, so check for null/undefined
 		// svg - https://bugzilla.mozilla.org/show_bug.cgi?id=649285
@@ -8375,6 +8366,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 		},
 
 		// Piggyback on a donor event to simulate a different one
+		// Used only for `focus(in | out)` events
 		simulate: function( type, elem, event ) {
 			var e = jQuery.extend(
 				new jQuery.Event(),
@@ -8382,27 +8374,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 				{
 					type: type,
 					isSimulated: true
-
-					// Previously, `originalEvent: {}` was set here, so stopPropagation call
-					// would not be triggered on donor event, since in our own
-					// jQuery.event.stopPropagation function we had a check for existence of
-					// originalEvent.stopPropagation method, so, consequently it would be a noop.
-					//
-					// But now, this "simulate" function is used only for events
-					// for which stopPropagation() is noop, so there is no need for that anymore.
-					//
-					// For the 1.x branch though, guard for "click" and "submit"
-					// events is still used, but was moved to jQuery.event.stopPropagation function
-					// because `originalEvent` should point to the original event for the constancy
-					// with other events and for more focused logic
 				}
 			);
 
 			jQuery.event.trigger( e, null, elem );
-
-			if ( e.isDefaultPrevented() ) {
-				event.preventDefault();
-			}
 		}
 
 	} );
@@ -10353,13 +10328,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	}));
 
 
-/***/ },
+/***/ }),
 /* 2 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//     Underscore.js 1.8.3
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global, module) {//     Underscore.js 1.9.1
 	//     http://underscorejs.org
-	//     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+	//     (c) 2009-2018 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	//     Underscore may be freely distributed under the MIT license.
 
 	(function() {
@@ -10367,29 +10342,32 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // Baseline setup
 	  // --------------
 
-	  // Establish the root object, `window` in the browser, or `exports` on the server.
-	  var root = this;
+	  // Establish the root object, `window` (`self`) in the browser, `global`
+	  // on the server, or `this` in some virtual machines. We use `self`
+	  // instead of `window` for `WebWorker` support.
+	  var root = typeof self == 'object' && self.self === self && self ||
+	            typeof global == 'object' && global.global === global && global ||
+	            this ||
+	            {};
 
 	  // Save the previous value of the `_` variable.
 	  var previousUnderscore = root._;
 
 	  // Save bytes in the minified (but not gzipped) version:
-	  var ArrayProto = Array.prototype, ObjProto = Object.prototype, FuncProto = Function.prototype;
+	  var ArrayProto = Array.prototype, ObjProto = Object.prototype;
+	  var SymbolProto = typeof Symbol !== 'undefined' ? Symbol.prototype : null;
 
 	  // Create quick reference variables for speed access to core prototypes.
-	  var
-	    push             = ArrayProto.push,
-	    slice            = ArrayProto.slice,
-	    toString         = ObjProto.toString,
-	    hasOwnProperty   = ObjProto.hasOwnProperty;
+	  var push = ArrayProto.push,
+	      slice = ArrayProto.slice,
+	      toString = ObjProto.toString,
+	      hasOwnProperty = ObjProto.hasOwnProperty;
 
 	  // All **ECMAScript 5** native function implementations that we hope to use
 	  // are declared here.
-	  var
-	    nativeIsArray      = Array.isArray,
-	    nativeKeys         = Object.keys,
-	    nativeBind         = FuncProto.bind,
-	    nativeCreate       = Object.create;
+	  var nativeIsArray = Array.isArray,
+	      nativeKeys = Object.keys,
+	      nativeCreate = Object.create;
 
 	  // Naked function reference for surrogate-prototype-swapping.
 	  var Ctor = function(){};
@@ -10402,10 +10380,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  };
 
 	  // Export the Underscore object for **Node.js**, with
-	  // backwards-compatibility for the old `require()` API. If we're in
+	  // backwards-compatibility for their old module API. If we're in
 	  // the browser, add `_` as a global object.
-	  if (true) {
-	    if (typeof module !== 'undefined' && module.exports) {
+	  // (`nodeType` is checked to ensure that `module`
+	  // and `exports` are not HTML elements.)
+	  if (typeof exports != 'undefined' && !exports.nodeType) {
+	    if (typeof module != 'undefined' && !module.nodeType && module.exports) {
 	      exports = module.exports = _;
 	    }
 	    exports._ = _;
@@ -10414,7 +10394,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  }
 
 	  // Current version.
-	  _.VERSION = '1.8.3';
+	  _.VERSION = '1.9.1';
 
 	  // Internal function that returns an efficient (for current engines) version
 	  // of the passed-in callback, to be repeatedly applied in other Underscore
@@ -10425,9 +10405,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      case 1: return function(value) {
 	        return func.call(context, value);
 	      };
-	      case 2: return function(value, other) {
-	        return func.call(context, value, other);
-	      };
+	      // The 2-argument case is omitted because we’re not using it.
 	      case 3: return function(value, index, collection) {
 	        return func.call(context, value, index, collection);
 	      };
@@ -10440,34 +10418,51 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    };
 	  };
 
-	  // A mostly-internal function to generate callbacks that can be applied
-	  // to each element in a collection, returning the desired result — either
-	  // identity, an arbitrary callback, a property matcher, or a property accessor.
+	  var builtinIteratee;
+
+	  // An internal function to generate callbacks that can be applied to each
+	  // element in a collection, returning the desired result — either `identity`,
+	  // an arbitrary callback, a property matcher, or a property accessor.
 	  var cb = function(value, context, argCount) {
+	    if (_.iteratee !== builtinIteratee) return _.iteratee(value, context);
 	    if (value == null) return _.identity;
 	    if (_.isFunction(value)) return optimizeCb(value, context, argCount);
-	    if (_.isObject(value)) return _.matcher(value);
+	    if (_.isObject(value) && !_.isArray(value)) return _.matcher(value);
 	    return _.property(value);
 	  };
-	  _.iteratee = function(value, context) {
+
+	  // External wrapper for our callback generator. Users may customize
+	  // `_.iteratee` if they want additional predicate/iteratee shorthand styles.
+	  // This abstraction hides the internal-only argCount argument.
+	  _.iteratee = builtinIteratee = function(value, context) {
 	    return cb(value, context, Infinity);
 	  };
 
-	  // An internal function for creating assigner functions.
-	  var createAssigner = function(keysFunc, undefinedOnly) {
-	    return function(obj) {
-	      var length = arguments.length;
-	      if (length < 2 || obj == null) return obj;
-	      for (var index = 1; index < length; index++) {
-	        var source = arguments[index],
-	            keys = keysFunc(source),
-	            l = keys.length;
-	        for (var i = 0; i < l; i++) {
-	          var key = keys[i];
-	          if (!undefinedOnly || obj[key] === void 0) obj[key] = source[key];
-	        }
+	  // Some functions take a variable number of arguments, or a few expected
+	  // arguments at the beginning and then a variable number of values to operate
+	  // on. This helper accumulates all remaining arguments past the function’s
+	  // argument length (or an explicit `startIndex`), into an array that becomes
+	  // the last argument. Similar to ES6’s "rest parameter".
+	  var restArguments = function(func, startIndex) {
+	    startIndex = startIndex == null ? func.length - 1 : +startIndex;
+	    return function() {
+	      var length = Math.max(arguments.length - startIndex, 0),
+	          rest = Array(length),
+	          index = 0;
+	      for (; index < length; index++) {
+	        rest[index] = arguments[index + startIndex];
 	      }
-	      return obj;
+	      switch (startIndex) {
+	        case 0: return func.call(this, rest);
+	        case 1: return func.call(this, arguments[0], rest);
+	        case 2: return func.call(this, arguments[0], arguments[1], rest);
+	      }
+	      var args = Array(startIndex + 1);
+	      for (index = 0; index < startIndex; index++) {
+	        args[index] = arguments[index];
+	      }
+	      args[startIndex] = rest;
+	      return func.apply(this, args);
 	    };
 	  };
 
@@ -10481,18 +10476,31 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return result;
 	  };
 
-	  var property = function(key) {
+	  var shallowProperty = function(key) {
 	    return function(obj) {
 	      return obj == null ? void 0 : obj[key];
 	    };
 	  };
 
+	  var has = function(obj, path) {
+	    return obj != null && hasOwnProperty.call(obj, path);
+	  }
+
+	  var deepGet = function(obj, path) {
+	    var length = path.length;
+	    for (var i = 0; i < length; i++) {
+	      if (obj == null) return void 0;
+	      obj = obj[path[i]];
+	    }
+	    return length ? obj : void 0;
+	  };
+
 	  // Helper for collection methods to determine whether a collection
-	  // should be iterated as an array or as an object
+	  // should be iterated as an array or as an object.
 	  // Related: http://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength
 	  // Avoids a very nasty iOS 8 JIT bug on ARM-64. #2094
 	  var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
-	  var getLength = property('length');
+	  var getLength = shallowProperty('length');
 	  var isArrayLike = function(collection) {
 	    var length = getLength(collection);
 	    return typeof length == 'number' && length >= 0 && length <= MAX_ARRAY_INDEX;
@@ -10534,30 +10542,29 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  };
 
 	  // Create a reducing function iterating left or right.
-	  function createReduce(dir) {
-	    // Optimized iterator function as using arguments.length
-	    // in the main function will deoptimize the, see #1991.
-	    function iterator(obj, iteratee, memo, keys, index, length) {
+	  var createReduce = function(dir) {
+	    // Wrap code that reassigns argument variables in a separate function than
+	    // the one that accesses `arguments.length` to avoid a perf hit. (#1991)
+	    var reducer = function(obj, iteratee, memo, initial) {
+	      var keys = !isArrayLike(obj) && _.keys(obj),
+	          length = (keys || obj).length,
+	          index = dir > 0 ? 0 : length - 1;
+	      if (!initial) {
+	        memo = obj[keys ? keys[index] : index];
+	        index += dir;
+	      }
 	      for (; index >= 0 && index < length; index += dir) {
 	        var currentKey = keys ? keys[index] : index;
 	        memo = iteratee(memo, obj[currentKey], currentKey, obj);
 	      }
 	      return memo;
-	    }
+	    };
 
 	    return function(obj, iteratee, memo, context) {
-	      iteratee = optimizeCb(iteratee, context, 4);
-	      var keys = !isArrayLike(obj) && _.keys(obj),
-	          length = (keys || obj).length,
-	          index = dir > 0 ? 0 : length - 1;
-	      // Determine the initial value if none is provided.
-	      if (arguments.length < 3) {
-	        memo = obj[keys ? keys[index] : index];
-	        index += dir;
-	      }
-	      return iterator(obj, iteratee, memo, keys, index, length);
+	      var initial = arguments.length >= 3;
+	      return reducer(obj, optimizeCb(iteratee, context, 4), memo, initial);
 	    };
-	  }
+	  };
 
 	  // **Reduce** builds up a single result from a list of values, aka `inject`,
 	  // or `foldl`.
@@ -10568,12 +10575,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Return the first value which passes a truth test. Aliased as `detect`.
 	  _.find = _.detect = function(obj, predicate, context) {
-	    var key;
-	    if (isArrayLike(obj)) {
-	      key = _.findIndex(obj, predicate, context);
-	    } else {
-	      key = _.findKey(obj, predicate, context);
-	    }
+	    var keyFinder = isArrayLike(obj) ? _.findIndex : _.findKey;
+	    var key = keyFinder(obj, predicate, context);
 	    if (key !== void 0 && key !== -1) return obj[key];
 	  };
 
@@ -10628,14 +10631,26 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  };
 
 	  // Invoke a method (with arguments) on every item in a collection.
-	  _.invoke = function(obj, method) {
-	    var args = slice.call(arguments, 2);
-	    var isFunc = _.isFunction(method);
-	    return _.map(obj, function(value) {
-	      var func = isFunc ? method : value[method];
-	      return func == null ? func : func.apply(value, args);
+	  _.invoke = restArguments(function(obj, path, args) {
+	    var contextPath, func;
+	    if (_.isFunction(path)) {
+	      func = path;
+	    } else if (_.isArray(path)) {
+	      contextPath = path.slice(0, -1);
+	      path = path[path.length - 1];
+	    }
+	    return _.map(obj, function(context) {
+	      var method = func;
+	      if (!method) {
+	        if (contextPath && contextPath.length) {
+	          context = deepGet(context, contextPath);
+	        }
+	        if (context == null) return void 0;
+	        method = context[path];
+	      }
+	      return method == null ? method : method.apply(context, args);
 	    });
-	  };
+	  });
 
 	  // Convenience version of a common use case of `map`: fetching a property.
 	  _.pluck = function(obj, key) {
@@ -10658,20 +10673,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  _.max = function(obj, iteratee, context) {
 	    var result = -Infinity, lastComputed = -Infinity,
 	        value, computed;
-	    if (iteratee == null && obj != null) {
+	    if (iteratee == null || typeof iteratee == 'number' && typeof obj[0] != 'object' && obj != null) {
 	      obj = isArrayLike(obj) ? obj : _.values(obj);
 	      for (var i = 0, length = obj.length; i < length; i++) {
 	        value = obj[i];
-	        if (value > result) {
+	        if (value != null && value > result) {
 	          result = value;
 	        }
 	      }
 	    } else {
 	      iteratee = cb(iteratee, context);
-	      _.each(obj, function(value, index, list) {
-	        computed = iteratee(value, index, list);
+	      _.each(obj, function(v, index, list) {
+	        computed = iteratee(v, index, list);
 	        if (computed > lastComputed || computed === -Infinity && result === -Infinity) {
-	          result = value;
+	          result = v;
 	          lastComputed = computed;
 	        }
 	      });
@@ -10683,20 +10698,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  _.min = function(obj, iteratee, context) {
 	    var result = Infinity, lastComputed = Infinity,
 	        value, computed;
-	    if (iteratee == null && obj != null) {
+	    if (iteratee == null || typeof iteratee == 'number' && typeof obj[0] != 'object' && obj != null) {
 	      obj = isArrayLike(obj) ? obj : _.values(obj);
 	      for (var i = 0, length = obj.length; i < length; i++) {
 	        value = obj[i];
-	        if (value < result) {
+	        if (value != null && value < result) {
 	          result = value;
 	        }
 	      }
 	    } else {
 	      iteratee = cb(iteratee, context);
-	      _.each(obj, function(value, index, list) {
-	        computed = iteratee(value, index, list);
+	      _.each(obj, function(v, index, list) {
+	        computed = iteratee(v, index, list);
 	        if (computed < lastComputed || computed === Infinity && result === Infinity) {
-	          result = value;
+	          result = v;
 	          lastComputed = computed;
 	        }
 	      });
@@ -10704,21 +10719,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return result;
 	  };
 
-	  // Shuffle a collection, using the modern version of the
-	  // [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
+	  // Shuffle a collection.
 	  _.shuffle = function(obj) {
-	    var set = isArrayLike(obj) ? obj : _.values(obj);
-	    var length = set.length;
-	    var shuffled = Array(length);
-	    for (var index = 0, rand; index < length; index++) {
-	      rand = _.random(0, index);
-	      if (rand !== index) shuffled[index] = shuffled[rand];
-	      shuffled[rand] = set[index];
-	    }
-	    return shuffled;
+	    return _.sample(obj, Infinity);
 	  };
 
-	  // Sample **n** random values from a collection.
+	  // Sample **n** random values from a collection using the modern version of the
+	  // [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
 	  // If **n** is not specified, returns a single random element.
 	  // The internal `guard` argument allows it to work with `map`.
 	  _.sample = function(obj, n, guard) {
@@ -10726,17 +10733,28 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      if (!isArrayLike(obj)) obj = _.values(obj);
 	      return obj[_.random(obj.length - 1)];
 	    }
-	    return _.shuffle(obj).slice(0, Math.max(0, n));
+	    var sample = isArrayLike(obj) ? _.clone(obj) : _.values(obj);
+	    var length = getLength(sample);
+	    n = Math.max(Math.min(n, length), 0);
+	    var last = length - 1;
+	    for (var index = 0; index < n; index++) {
+	      var rand = _.random(index, last);
+	      var temp = sample[index];
+	      sample[index] = sample[rand];
+	      sample[rand] = temp;
+	    }
+	    return sample.slice(0, n);
 	  };
 
 	  // Sort the object's values by a criterion produced by an iteratee.
 	  _.sortBy = function(obj, iteratee, context) {
+	    var index = 0;
 	    iteratee = cb(iteratee, context);
-	    return _.pluck(_.map(obj, function(value, index, list) {
+	    return _.pluck(_.map(obj, function(value, key, list) {
 	      return {
 	        value: value,
-	        index: index,
-	        criteria: iteratee(value, index, list)
+	        index: index++,
+	        criteria: iteratee(value, key, list)
 	      };
 	    }).sort(function(left, right) {
 	      var a = left.criteria;
@@ -10750,9 +10768,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  };
 
 	  // An internal function used for aggregate "group by" operations.
-	  var group = function(behavior) {
+	  var group = function(behavior, partition) {
 	    return function(obj, iteratee, context) {
-	      var result = {};
+	      var result = partition ? [[], []] : {};
 	      iteratee = cb(iteratee, context);
 	      _.each(obj, function(value, index) {
 	        var key = iteratee(value, index, obj);
@@ -10765,7 +10783,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // Groups the object's values by a criterion. Pass either a string attribute
 	  // to group by, or a function that returns the criterion.
 	  _.groupBy = group(function(result, value, key) {
-	    if (_.has(result, key)) result[key].push(value); else result[key] = [value];
+	    if (has(result, key)) result[key].push(value); else result[key] = [value];
 	  });
 
 	  // Indexes the object's values by a criterion, similar to `groupBy`, but for
@@ -10778,13 +10796,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // either a string attribute to count by, or a function that returns the
 	  // criterion.
 	  _.countBy = group(function(result, value, key) {
-	    if (_.has(result, key)) result[key]++; else result[key] = 1;
+	    if (has(result, key)) result[key]++; else result[key] = 1;
 	  });
 
+	  var reStrSymbol = /[^\ud800-\udfff]|[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udfff]/g;
 	  // Safely create a real, live array from anything iterable.
 	  _.toArray = function(obj) {
 	    if (!obj) return [];
 	    if (_.isArray(obj)) return slice.call(obj);
+	    if (_.isString(obj)) {
+	      // Keep surrogate pair characters together
+	      return obj.match(reStrSymbol);
+	    }
 	    if (isArrayLike(obj)) return _.map(obj, _.identity);
 	    return _.values(obj);
 	  };
@@ -10797,14 +10820,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Split a collection into two arrays: one whose elements all satisfy the given
 	  // predicate, and one whose elements all do not satisfy the predicate.
-	  _.partition = function(obj, predicate, context) {
-	    predicate = cb(predicate, context);
-	    var pass = [], fail = [];
-	    _.each(obj, function(value, key, obj) {
-	      (predicate(value, key, obj) ? pass : fail).push(value);
-	    });
-	    return [pass, fail];
-	  };
+	  _.partition = group(function(result, value, pass) {
+	    result[pass ? 0 : 1].push(value);
+	  }, true);
 
 	  // Array Functions
 	  // ---------------
@@ -10813,7 +10831,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // values in the array. Aliased as `head` and `take`. The **guard** check
 	  // allows it to work with `_.map`.
 	  _.first = _.head = _.take = function(array, n, guard) {
-	    if (array == null) return void 0;
+	    if (array == null || array.length < 1) return n == null ? void 0 : [];
 	    if (n == null || guard) return array[0];
 	    return _.initial(array, array.length - n);
 	  };
@@ -10828,7 +10846,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // Get the last element of an array. Passing **n** will return the last N
 	  // values in the array.
 	  _.last = function(array, n, guard) {
-	    if (array == null) return void 0;
+	    if (array == null || array.length < 1) return n == null ? void 0 : [];
 	    if (n == null || guard) return array[array.length - 1];
 	    return _.rest(array, Math.max(0, array.length - n));
 	  };
@@ -10842,21 +10860,23 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Trim out all falsy values from an array.
 	  _.compact = function(array) {
-	    return _.filter(array, _.identity);
+	    return _.filter(array, Boolean);
 	  };
 
 	  // Internal implementation of a recursive `flatten` function.
-	  var flatten = function(input, shallow, strict, startIndex) {
-	    var output = [], idx = 0;
-	    for (var i = startIndex || 0, length = getLength(input); i < length; i++) {
+	  var flatten = function(input, shallow, strict, output) {
+	    output = output || [];
+	    var idx = output.length;
+	    for (var i = 0, length = getLength(input); i < length; i++) {
 	      var value = input[i];
 	      if (isArrayLike(value) && (_.isArray(value) || _.isArguments(value))) {
-	        //flatten current level of array or arguments object
-	        if (!shallow) value = flatten(value, shallow, strict);
-	        var j = 0, len = value.length;
-	        output.length += len;
-	        while (j < len) {
-	          output[idx++] = value[j++];
+	        // Flatten current level of array or arguments object.
+	        if (shallow) {
+	          var j = 0, len = value.length;
+	          while (j < len) output[idx++] = value[j++];
+	        } else {
+	          flatten(value, shallow, strict, output);
+	          idx = output.length;
 	        }
 	      } else if (!strict) {
 	        output[idx++] = value;
@@ -10871,12 +10891,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  };
 
 	  // Return a version of the array that does not contain the specified value(s).
-	  _.without = function(array) {
-	    return _.difference(array, slice.call(arguments, 1));
-	  };
+	  _.without = restArguments(function(array, otherArrays) {
+	    return _.difference(array, otherArrays);
+	  });
 
 	  // Produce a duplicate-free version of the array. If the array has already
 	  // been sorted, you have the option of using a faster algorithm.
+	  // The faster algorithm will not work with an iteratee if the iteratee
+	  // is not a one-to-one function, so providing an iteratee will disable
+	  // the faster algorithm.
 	  // Aliased as `unique`.
 	  _.uniq = _.unique = function(array, isSorted, iteratee, context) {
 	    if (!_.isBoolean(isSorted)) {
@@ -10890,7 +10913,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    for (var i = 0, length = getLength(array); i < length; i++) {
 	      var value = array[i],
 	          computed = iteratee ? iteratee(value, i, array) : value;
-	      if (isSorted) {
+	      if (isSorted && !iteratee) {
 	        if (!i || seen !== computed) result.push(value);
 	        seen = computed;
 	      } else if (iteratee) {
@@ -10907,9 +10930,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Produce an array that contains the union: each distinct element from all of
 	  // the passed-in arrays.
-	  _.union = function() {
-	    return _.uniq(flatten(arguments, true, true));
-	  };
+	  _.union = restArguments(function(arrays) {
+	    return _.uniq(flatten(arrays, true, true));
+	  });
 
 	  // Produce an array that contains every item shared between all the
 	  // passed-in arrays.
@@ -10919,7 +10942,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    for (var i = 0, length = getLength(array); i < length; i++) {
 	      var item = array[i];
 	      if (_.contains(result, item)) continue;
-	      for (var j = 1; j < argsLength; j++) {
+	      var j;
+	      for (j = 1; j < argsLength; j++) {
 	        if (!_.contains(arguments[j], item)) break;
 	      }
 	      if (j === argsLength) result.push(item);
@@ -10929,21 +10953,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Take the difference between one array and a number of other arrays.
 	  // Only the elements present in just the first array will remain.
-	  _.difference = function(array) {
-	    var rest = flatten(arguments, true, true, 1);
+	  _.difference = restArguments(function(array, rest) {
+	    rest = flatten(rest, true, true);
 	    return _.filter(array, function(value){
 	      return !_.contains(rest, value);
 	    });
-	  };
-
-	  // Zip together multiple lists into a single array -- elements that share
-	  // an index go together.
-	  _.zip = function() {
-	    return _.unzip(arguments);
-	  };
+	  });
 
 	  // Complement of _.zip. Unzip accepts an array of arrays and groups
-	  // each array's elements on shared indices
+	  // each array's elements on shared indices.
 	  _.unzip = function(array) {
 	    var length = array && _.max(array, getLength).length || 0;
 	    var result = Array(length);
@@ -10954,9 +10972,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return result;
 	  };
 
+	  // Zip together multiple lists into a single array -- elements that share
+	  // an index go together.
+	  _.zip = restArguments(_.unzip);
+
 	  // Converts lists into objects. Pass either a single array of `[key, value]`
 	  // pairs, or two parallel arrays of the same length -- one of keys, and one of
-	  // the corresponding values.
+	  // the corresponding values. Passing by pairs is the reverse of _.pairs.
 	  _.object = function(list, values) {
 	    var result = {};
 	    for (var i = 0, length = getLength(list); i < length; i++) {
@@ -10969,8 +10991,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return result;
 	  };
 
-	  // Generator function to create the findIndex and findLastIndex functions
-	  function createPredicateIndexFinder(dir) {
+	  // Generator function to create the findIndex and findLastIndex functions.
+	  var createPredicateIndexFinder = function(dir) {
 	    return function(array, predicate, context) {
 	      predicate = cb(predicate, context);
 	      var length = getLength(array);
@@ -10980,9 +11002,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      }
 	      return -1;
 	    };
-	  }
+	  };
 
-	  // Returns the first index on an array-like that passes a predicate test
+	  // Returns the first index on an array-like that passes a predicate test.
 	  _.findIndex = createPredicateIndexFinder(1);
 	  _.findLastIndex = createPredicateIndexFinder(-1);
 
@@ -10999,15 +11021,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return low;
 	  };
 
-	  // Generator function to create the indexOf and lastIndexOf functions
-	  function createIndexFinder(dir, predicateFind, sortedIndex) {
+	  // Generator function to create the indexOf and lastIndexOf functions.
+	  var createIndexFinder = function(dir, predicateFind, sortedIndex) {
 	    return function(array, item, idx) {
 	      var i = 0, length = getLength(array);
 	      if (typeof idx == 'number') {
 	        if (dir > 0) {
-	            i = idx >= 0 ? idx : Math.max(idx + length, i);
+	          i = idx >= 0 ? idx : Math.max(idx + length, i);
 	        } else {
-	            length = idx >= 0 ? Math.min(idx + 1, length) : idx + length + 1;
+	          length = idx >= 0 ? Math.min(idx + 1, length) : idx + length + 1;
 	        }
 	      } else if (sortedIndex && idx && length) {
 	        idx = sortedIndex(array, item);
@@ -11022,7 +11044,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      }
 	      return -1;
 	    };
-	  }
+	  };
 
 	  // Return the position of the first occurrence of an item in an array,
 	  // or -1 if the item is not included in the array.
@@ -11039,7 +11061,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      stop = start || 0;
 	      start = 0;
 	    }
-	    step = step || 1;
+	    if (!step) {
+	      step = stop < start ? -1 : 1;
+	    }
 
 	    var length = Math.max(Math.ceil((stop - start) / step), 0);
 	    var range = Array(length);
@@ -11051,11 +11075,23 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return range;
 	  };
 
+	  // Chunk a single array into multiple arrays, each containing `count` or fewer
+	  // items.
+	  _.chunk = function(array, count) {
+	    if (count == null || count < 1) return [];
+	    var result = [];
+	    var i = 0, length = array.length;
+	    while (i < length) {
+	      result.push(slice.call(array, i, i += count));
+	    }
+	    return result;
+	  };
+
 	  // Function (ahem) Functions
 	  // ------------------
 
 	  // Determines whether to execute a function as a constructor
-	  // or a normal function with the provided arguments
+	  // or a normal function with the provided arguments.
 	  var executeBound = function(sourceFunc, boundFunc, context, callingContext, args) {
 	    if (!(callingContext instanceof boundFunc)) return sourceFunc.apply(context, args);
 	    var self = baseCreate(sourceFunc.prototype);
@@ -11067,52 +11103,53 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // Create a function bound to a given object (assigning `this`, and arguments,
 	  // optionally). Delegates to **ECMAScript 5**'s native `Function.bind` if
 	  // available.
-	  _.bind = function(func, context) {
-	    if (nativeBind && func.bind === nativeBind) return nativeBind.apply(func, slice.call(arguments, 1));
+	  _.bind = restArguments(function(func, context, args) {
 	    if (!_.isFunction(func)) throw new TypeError('Bind must be called on a function');
-	    var args = slice.call(arguments, 2);
-	    var bound = function() {
-	      return executeBound(func, bound, context, this, args.concat(slice.call(arguments)));
-	    };
+	    var bound = restArguments(function(callArgs) {
+	      return executeBound(func, bound, context, this, args.concat(callArgs));
+	    });
 	    return bound;
-	  };
+	  });
 
 	  // Partially apply a function by creating a version that has had some of its
 	  // arguments pre-filled, without changing its dynamic `this` context. _ acts
-	  // as a placeholder, allowing any combination of arguments to be pre-filled.
-	  _.partial = function(func) {
-	    var boundArgs = slice.call(arguments, 1);
+	  // as a placeholder by default, allowing any combination of arguments to be
+	  // pre-filled. Set `_.partial.placeholder` for a custom placeholder argument.
+	  _.partial = restArguments(function(func, boundArgs) {
+	    var placeholder = _.partial.placeholder;
 	    var bound = function() {
 	      var position = 0, length = boundArgs.length;
 	      var args = Array(length);
 	      for (var i = 0; i < length; i++) {
-	        args[i] = boundArgs[i] === _ ? arguments[position++] : boundArgs[i];
+	        args[i] = boundArgs[i] === placeholder ? arguments[position++] : boundArgs[i];
 	      }
 	      while (position < arguments.length) args.push(arguments[position++]);
 	      return executeBound(func, bound, this, this, args);
 	    };
 	    return bound;
-	  };
+	  });
+
+	  _.partial.placeholder = _;
 
 	  // Bind a number of an object's methods to that object. Remaining arguments
 	  // are the method names to be bound. Useful for ensuring that all callbacks
 	  // defined on an object belong to it.
-	  _.bindAll = function(obj) {
-	    var i, length = arguments.length, key;
-	    if (length <= 1) throw new Error('bindAll must be passed function names');
-	    for (i = 1; i < length; i++) {
-	      key = arguments[i];
+	  _.bindAll = restArguments(function(obj, keys) {
+	    keys = flatten(keys, false, false);
+	    var index = keys.length;
+	    if (index < 1) throw new Error('bindAll must be passed function names');
+	    while (index--) {
+	      var key = keys[index];
 	      obj[key] = _.bind(obj[key], obj);
 	    }
-	    return obj;
-	  };
+	  });
 
 	  // Memoize an expensive function by storing its results.
 	  _.memoize = function(func, hasher) {
 	    var memoize = function(key) {
 	      var cache = memoize.cache;
 	      var address = '' + (hasher ? hasher.apply(this, arguments) : key);
-	      if (!_.has(cache, address)) cache[address] = func.apply(this, arguments);
+	      if (!has(cache, address)) cache[address] = func.apply(this, arguments);
 	      return cache[address];
 	    };
 	    memoize.cache = {};
@@ -11121,12 +11158,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Delays a function for the given number of milliseconds, and then calls
 	  // it with the arguments supplied.
-	  _.delay = function(func, wait) {
-	    var args = slice.call(arguments, 2);
-	    return setTimeout(function(){
+	  _.delay = restArguments(function(func, wait, args) {
+	    return setTimeout(function() {
 	      return func.apply(null, args);
 	    }, wait);
-	  };
+	  });
 
 	  // Defers a function, scheduling it to run after the current call stack has
 	  // cleared.
@@ -11138,17 +11174,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // but if you'd like to disable the execution on the leading edge, pass
 	  // `{leading: false}`. To disable execution on the trailing edge, ditto.
 	  _.throttle = function(func, wait, options) {
-	    var context, args, result;
-	    var timeout = null;
+	    var timeout, context, args, result;
 	    var previous = 0;
 	    if (!options) options = {};
+
 	    var later = function() {
 	      previous = options.leading === false ? 0 : _.now();
 	      timeout = null;
 	      result = func.apply(context, args);
 	      if (!timeout) context = args = null;
 	    };
-	    return function() {
+
+	    var throttled = function() {
 	      var now = _.now();
 	      if (!previous && options.leading === false) previous = now;
 	      var remaining = wait - (now - previous);
@@ -11167,6 +11204,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      }
 	      return result;
 	    };
+
+	    throttled.cancel = function() {
+	      clearTimeout(timeout);
+	      previous = 0;
+	      timeout = context = args = null;
+	    };
+
+	    return throttled;
 	  };
 
 	  // Returns a function, that, as long as it continues to be invoked, will not
@@ -11174,35 +11219,32 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // N milliseconds. If `immediate` is passed, trigger the function on the
 	  // leading edge, instead of the trailing.
 	  _.debounce = function(func, wait, immediate) {
-	    var timeout, args, context, timestamp, result;
+	    var timeout, result;
 
-	    var later = function() {
-	      var last = _.now() - timestamp;
-
-	      if (last < wait && last >= 0) {
-	        timeout = setTimeout(later, wait - last);
-	      } else {
-	        timeout = null;
-	        if (!immediate) {
-	          result = func.apply(context, args);
-	          if (!timeout) context = args = null;
-	        }
-	      }
+	    var later = function(context, args) {
+	      timeout = null;
+	      if (args) result = func.apply(context, args);
 	    };
 
-	    return function() {
-	      context = this;
-	      args = arguments;
-	      timestamp = _.now();
-	      var callNow = immediate && !timeout;
-	      if (!timeout) timeout = setTimeout(later, wait);
-	      if (callNow) {
-	        result = func.apply(context, args);
-	        context = args = null;
+	    var debounced = restArguments(function(args) {
+	      if (timeout) clearTimeout(timeout);
+	      if (immediate) {
+	        var callNow = !timeout;
+	        timeout = setTimeout(later, wait);
+	        if (callNow) result = func.apply(this, args);
+	      } else {
+	        timeout = _.delay(later, wait, this, args);
 	      }
 
 	      return result;
+	    });
+
+	    debounced.cancel = function() {
+	      clearTimeout(timeout);
+	      timeout = null;
 	    };
+
+	    return debounced;
 	  };
 
 	  // Returns the first function passed as an argument to the second,
@@ -11257,22 +11299,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // often you call it. Useful for lazy initialization.
 	  _.once = _.partial(_.before, 2);
 
+	  _.restArguments = restArguments;
+
 	  // Object Functions
 	  // ----------------
 
 	  // Keys in IE < 9 that won't be iterated by `for key in ...` and thus missed.
 	  var hasEnumBug = !{toString: null}.propertyIsEnumerable('toString');
 	  var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString',
-	                      'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'];
+	    'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'];
 
-	  function collectNonEnumProps(obj, keys) {
+	  var collectNonEnumProps = function(obj, keys) {
 	    var nonEnumIdx = nonEnumerableProps.length;
 	    var constructor = obj.constructor;
-	    var proto = (_.isFunction(constructor) && constructor.prototype) || ObjProto;
+	    var proto = _.isFunction(constructor) && constructor.prototype || ObjProto;
 
 	    // Constructor is a special case.
 	    var prop = 'constructor';
-	    if (_.has(obj, prop) && !_.contains(keys, prop)) keys.push(prop);
+	    if (has(obj, prop) && !_.contains(keys, prop)) keys.push(prop);
 
 	    while (nonEnumIdx--) {
 	      prop = nonEnumerableProps[nonEnumIdx];
@@ -11280,15 +11324,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        keys.push(prop);
 	      }
 	    }
-	  }
+	  };
 
 	  // Retrieve the names of an object's own properties.
-	  // Delegates to **ECMAScript 5**'s native `Object.keys`
+	  // Delegates to **ECMAScript 5**'s native `Object.keys`.
 	  _.keys = function(obj) {
 	    if (!_.isObject(obj)) return [];
 	    if (nativeKeys) return nativeKeys(obj);
 	    var keys = [];
-	    for (var key in obj) if (_.has(obj, key)) keys.push(key);
+	    for (var key in obj) if (has(obj, key)) keys.push(key);
 	    // Ahem, IE < 9.
 	    if (hasEnumBug) collectNonEnumProps(obj, keys);
 	    return keys;
@@ -11315,22 +11359,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return values;
 	  };
 
-	  // Returns the results of applying the iteratee to each element of the object
-	  // In contrast to _.map it returns an object
+	  // Returns the results of applying the iteratee to each element of the object.
+	  // In contrast to _.map it returns an object.
 	  _.mapObject = function(obj, iteratee, context) {
 	    iteratee = cb(iteratee, context);
-	    var keys =  _.keys(obj),
-	          length = keys.length,
-	          results = {},
-	          currentKey;
-	      for (var index = 0; index < length; index++) {
-	        currentKey = keys[index];
-	        results[currentKey] = iteratee(obj[currentKey], currentKey, obj);
-	      }
-	      return results;
+	    var keys = _.keys(obj),
+	        length = keys.length,
+	        results = {};
+	    for (var index = 0; index < length; index++) {
+	      var currentKey = keys[index];
+	      results[currentKey] = iteratee(obj[currentKey], currentKey, obj);
+	    }
+	    return results;
 	  };
 
 	  // Convert an object into a list of `[key, value]` pairs.
+	  // The opposite of _.object.
 	  _.pairs = function(obj) {
 	    var keys = _.keys(obj);
 	    var length = keys.length;
@@ -11352,7 +11396,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  };
 
 	  // Return a sorted list of the function names available on the object.
-	  // Aliased as `methods`
+	  // Aliased as `methods`.
 	  _.functions = _.methods = function(obj) {
 	    var names = [];
 	    for (var key in obj) {
@@ -11361,14 +11405,33 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return names.sort();
 	  };
 
+	  // An internal function for creating assigner functions.
+	  var createAssigner = function(keysFunc, defaults) {
+	    return function(obj) {
+	      var length = arguments.length;
+	      if (defaults) obj = Object(obj);
+	      if (length < 2 || obj == null) return obj;
+	      for (var index = 1; index < length; index++) {
+	        var source = arguments[index],
+	            keys = keysFunc(source),
+	            l = keys.length;
+	        for (var i = 0; i < l; i++) {
+	          var key = keys[i];
+	          if (!defaults || obj[key] === void 0) obj[key] = source[key];
+	        }
+	      }
+	      return obj;
+	    };
+	  };
+
 	  // Extend a given object with all the properties in passed-in object(s).
 	  _.extend = createAssigner(_.allKeys);
 
-	  // Assigns a given object with all the own properties in the passed-in object(s)
+	  // Assigns a given object with all the own properties in the passed-in object(s).
 	  // (https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
 	  _.extendOwn = _.assign = createAssigner(_.keys);
 
-	  // Returns the first key on an object that passes a predicate test
+	  // Returns the first key on an object that passes a predicate test.
 	  _.findKey = function(obj, predicate, context) {
 	    predicate = cb(predicate, context);
 	    var keys = _.keys(obj), key;
@@ -11378,16 +11441,21 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 	  };
 
+	  // Internal pick helper function to determine if `obj` has key `key`.
+	  var keyInObj = function(value, key, obj) {
+	    return key in obj;
+	  };
+
 	  // Return a copy of the object only containing the whitelisted properties.
-	  _.pick = function(object, oiteratee, context) {
-	    var result = {}, obj = object, iteratee, keys;
+	  _.pick = restArguments(function(obj, keys) {
+	    var result = {}, iteratee = keys[0];
 	    if (obj == null) return result;
-	    if (_.isFunction(oiteratee)) {
+	    if (_.isFunction(iteratee)) {
+	      if (keys.length > 1) iteratee = optimizeCb(iteratee, keys[1]);
 	      keys = _.allKeys(obj);
-	      iteratee = optimizeCb(oiteratee, context);
 	    } else {
-	      keys = flatten(arguments, false, false, 1);
-	      iteratee = function(value, key, obj) { return key in obj; };
+	      iteratee = keyInObj;
+	      keys = flatten(keys, false, false);
 	      obj = Object(obj);
 	    }
 	    for (var i = 0, length = keys.length; i < length; i++) {
@@ -11396,20 +11464,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      if (iteratee(value, key, obj)) result[key] = value;
 	    }
 	    return result;
-	  };
+	  });
 
-	   // Return a copy of the object without the blacklisted properties.
-	  _.omit = function(obj, iteratee, context) {
+	  // Return a copy of the object without the blacklisted properties.
+	  _.omit = restArguments(function(obj, keys) {
+	    var iteratee = keys[0], context;
 	    if (_.isFunction(iteratee)) {
 	      iteratee = _.negate(iteratee);
+	      if (keys.length > 1) context = keys[1];
 	    } else {
-	      var keys = _.map(flatten(arguments, false, false, 1), String);
+	      keys = _.map(flatten(keys, false, false), String);
 	      iteratee = function(value, key) {
 	        return !_.contains(keys, key);
 	      };
 	    }
 	    return _.pick(obj, iteratee, context);
-	  };
+	  });
 
 	  // Fill in a given object with default properties.
 	  _.defaults = createAssigner(_.allKeys, true);
@@ -11451,12 +11521,23 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 	  // Internal recursive comparison function for `isEqual`.
-	  var eq = function(a, b, aStack, bStack) {
+	  var eq, deepEq;
+	  eq = function(a, b, aStack, bStack) {
 	    // Identical objects are equal. `0 === -0`, but they aren't identical.
 	    // See the [Harmony `egal` proposal](http://wiki.ecmascript.org/doku.php?id=harmony:egal).
 	    if (a === b) return a !== 0 || 1 / a === 1 / b;
-	    // A strict comparison is necessary because `null == undefined`.
-	    if (a == null || b == null) return a === b;
+	    // `null` or `undefined` only equal to itself (strict comparison).
+	    if (a == null || b == null) return false;
+	    // `NaN`s are equivalent, but non-reflexive.
+	    if (a !== a) return b !== b;
+	    // Exhaust primitive checks
+	    var type = typeof a;
+	    if (type !== 'function' && type !== 'object' && typeof b != 'object') return false;
+	    return deepEq(a, b, aStack, bStack);
+	  };
+
+	  // Internal recursive comparison function for `isEqual`.
+	  deepEq = function(a, b, aStack, bStack) {
 	    // Unwrap any wrapped objects.
 	    if (a instanceof _) a = a._wrapped;
 	    if (b instanceof _) b = b._wrapped;
@@ -11473,7 +11554,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return '' + a === '' + b;
 	      case '[object Number]':
 	        // `NaN`s are equivalent, but non-reflexive.
-	        // Object(NaN) is equivalent to NaN
+	        // Object(NaN) is equivalent to NaN.
 	        if (+a !== +a) return +b !== +b;
 	        // An `egal` comparison is performed for other numeric values.
 	        return +a === 0 ? 1 / +a === 1 / b : +a === +b;
@@ -11483,6 +11564,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        // millisecond representations. Note that invalid dates with millisecond representations
 	        // of `NaN` are not equivalent.
 	        return +a === +b;
+	      case '[object Symbol]':
+	        return SymbolProto.valueOf.call(a) === SymbolProto.valueOf.call(b);
 	    }
 
 	    var areArrays = className === '[object Array]';
@@ -11534,7 +11617,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      while (length--) {
 	        // Deep compare each member
 	        key = keys[length];
-	        if (!(_.has(b, key) && eq(a[key], b[key], aStack, bStack))) return false;
+	        if (!(has(b, key) && eq(a[key], b[key], aStack, bStack))) return false;
 	      }
 	    }
 	    // Remove the first object from the stack of traversed objects.
@@ -11573,8 +11656,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return type === 'function' || type === 'object' && !!obj;
 	  };
 
-	  // Add some isType methods: isArguments, isFunction, isString, isNumber, isDate, isRegExp, isError.
-	  _.each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp', 'Error'], function(name) {
+	  // Add some isType methods: isArguments, isFunction, isString, isNumber, isDate, isRegExp, isError, isMap, isWeakMap, isSet, isWeakSet.
+	  _.each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp', 'Error', 'Symbol', 'Map', 'WeakMap', 'Set', 'WeakSet'], function(name) {
 	    _['is' + name] = function(obj) {
 	      return toString.call(obj) === '[object ' + name + ']';
 	    };
@@ -11584,13 +11667,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // there isn't any inspectable "Arguments" type.
 	  if (!_.isArguments(arguments)) {
 	    _.isArguments = function(obj) {
-	      return _.has(obj, 'callee');
+	      return has(obj, 'callee');
 	    };
 	  }
 
 	  // Optimize `isFunction` if appropriate. Work around some typeof bugs in old v8,
-	  // IE 11 (#1621), and in Safari 8 (#1929).
-	  if (typeof /./ != 'function' && typeof Int8Array != 'object') {
+	  // IE 11 (#1621), Safari 8 (#1929), and PhantomJS (#2236).
+	  var nodelist = root.document && root.document.childNodes;
+	  if (typeof /./ != 'function' && typeof Int8Array != 'object' && typeof nodelist != 'function') {
 	    _.isFunction = function(obj) {
 	      return typeof obj == 'function' || false;
 	    };
@@ -11598,12 +11682,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Is a given object a finite number?
 	  _.isFinite = function(obj) {
-	    return isFinite(obj) && !isNaN(parseFloat(obj));
+	    return !_.isSymbol(obj) && isFinite(obj) && !isNaN(parseFloat(obj));
 	  };
 
-	  // Is the given value `NaN`? (NaN is the only number which does not equal itself).
+	  // Is the given value `NaN`?
 	  _.isNaN = function(obj) {
-	    return _.isNumber(obj) && obj !== +obj;
+	    return _.isNumber(obj) && isNaN(obj);
 	  };
 
 	  // Is a given value a boolean?
@@ -11623,8 +11707,19 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Shortcut function for checking if an object has a given property directly
 	  // on itself (in other words, not on a prototype).
-	  _.has = function(obj, key) {
-	    return obj != null && hasOwnProperty.call(obj, key);
+	  _.has = function(obj, path) {
+	    if (!_.isArray(path)) {
+	      return has(obj, path);
+	    }
+	    var length = path.length;
+	    for (var i = 0; i < length; i++) {
+	      var key = path[i];
+	      if (obj == null || !hasOwnProperty.call(obj, key)) {
+	        return false;
+	      }
+	      obj = obj[key];
+	    }
+	    return !!length;
 	  };
 
 	  // Utility Functions
@@ -11651,12 +11746,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  _.noop = function(){};
 
-	  _.property = property;
+	  // Creates a function that, when passed an object, will traverse that object’s
+	  // properties down the given `path`, specified as an array of keys or indexes.
+	  _.property = function(path) {
+	    if (!_.isArray(path)) {
+	      return shallowProperty(path);
+	    }
+	    return function(obj) {
+	      return deepGet(obj, path);
+	    };
+	  };
 
 	  // Generates a function for a given object that returns a given property.
 	  _.propertyOf = function(obj) {
-	    return obj == null ? function(){} : function(key) {
-	      return obj[key];
+	    if (obj == null) {
+	      return function(){};
+	    }
+	    return function(path) {
+	      return !_.isArray(path) ? obj[path] : deepGet(obj, path);
 	    };
 	  };
 
@@ -11691,7 +11798,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return new Date().getTime();
 	  };
 
-	   // List of HTML entities for escaping.
+	  // List of HTML entities for escaping.
 	  var escapeMap = {
 	    '&': '&amp;',
 	    '<': '&lt;',
@@ -11707,7 +11814,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    var escaper = function(match) {
 	      return map[match];
 	    };
-	    // Regexes for identifying a key that needs to be escaped
+	    // Regexes for identifying a key that needs to be escaped.
 	    var source = '(?:' + _.keys(map).join('|') + ')';
 	    var testRegexp = RegExp(source);
 	    var replaceRegexp = RegExp(source, 'g');
@@ -11719,14 +11826,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  _.escape = createEscaper(escapeMap);
 	  _.unescape = createEscaper(unescapeMap);
 
-	  // If the value of the named `property` is a function then invoke it with the
-	  // `object` as context; otherwise, return it.
-	  _.result = function(object, property, fallback) {
-	    var value = object == null ? void 0 : object[property];
-	    if (value === void 0) {
-	      value = fallback;
+	  // Traverses the children of `obj` along `path`. If a child is a function, it
+	  // is invoked with its parent as context. Returns the value of the final
+	  // child, or `fallback` if any child is undefined.
+	  _.result = function(obj, path, fallback) {
+	    if (!_.isArray(path)) path = [path];
+	    var length = path.length;
+	    if (!length) {
+	      return _.isFunction(fallback) ? fallback.call(obj) : fallback;
 	    }
-	    return _.isFunction(value) ? value.call(object) : value;
+	    for (var i = 0; i < length; i++) {
+	      var prop = obj == null ? void 0 : obj[path[i]];
+	      if (prop === void 0) {
+	        prop = fallback;
+	        i = length; // Ensure we don't continue iterating.
+	      }
+	      obj = _.isFunction(prop) ? prop.call(obj) : prop;
+	    }
+	    return obj;
 	  };
 
 	  // Generate a unique integer id (unique within the entire client session).
@@ -11740,9 +11857,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // By default, Underscore uses ERB-style template delimiters, change the
 	  // following template settings to use alternative delimiters.
 	  _.templateSettings = {
-	    evaluate    : /<%([\s\S]+?)%>/g,
-	    interpolate : /<%=([\s\S]+?)%>/g,
-	    escape      : /<%-([\s\S]+?)%>/g
+	    evaluate: /<%([\s\S]+?)%>/g,
+	    interpolate: /<%=([\s\S]+?)%>/g,
+	    escape: /<%-([\s\S]+?)%>/g
 	  };
 
 	  // When customizing `templateSettings`, if you don't want to define an
@@ -11753,15 +11870,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // Certain characters need to be escaped so that they can be put into a
 	  // string literal.
 	  var escapes = {
-	    "'":      "'",
-	    '\\':     '\\',
-	    '\r':     'r',
-	    '\n':     'n',
+	    "'": "'",
+	    '\\': '\\',
+	    '\r': 'r',
+	    '\n': 'n',
 	    '\u2028': 'u2028',
 	    '\u2029': 'u2029'
 	  };
 
-	  var escaper = /\\|'|\r|\n|\u2028|\u2029/g;
+	  var escapeRegExp = /\\|'|\r|\n|\u2028|\u2029/g;
 
 	  var escapeChar = function(match) {
 	    return '\\' + escapes[match];
@@ -11786,7 +11903,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    var index = 0;
 	    var source = "__p+='";
 	    text.replace(matcher, function(match, escape, interpolate, evaluate, offset) {
-	      source += text.slice(index, offset).replace(escaper, escapeChar);
+	      source += text.slice(index, offset).replace(escapeRegExp, escapeChar);
 	      index = offset + match.length;
 
 	      if (escape) {
@@ -11797,7 +11914,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        source += "';\n" + evaluate + "\n__p+='";
 	      }
 
-	      // Adobe VMs need the match returned to produce the correct offest.
+	      // Adobe VMs need the match returned to produce the correct offset.
 	      return match;
 	    });
 	    source += "';\n";
@@ -11809,8 +11926,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      "print=function(){__p+=__j.call(arguments,'');};\n" +
 	      source + 'return __p;\n';
 
+	    var render;
 	    try {
-	      var render = new Function(settings.variable || 'obj', '_', source);
+	      render = new Function(settings.variable || 'obj', '_', source);
 	    } catch (e) {
 	      e.source = source;
 	      throw e;
@@ -11841,7 +11959,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // underscore functions. Wrapped objects may be chained.
 
 	  // Helper function to continue chaining intermediate results.
-	  var result = function(instance, obj) {
+	  var chainResult = function(instance, obj) {
 	    return instance._chain ? _(obj).chain() : obj;
 	  };
 
@@ -11852,9 +11970,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      _.prototype[name] = function() {
 	        var args = [this._wrapped];
 	        push.apply(args, arguments);
-	        return result(this, func.apply(_, args));
+	        return chainResult(this, func.apply(_, args));
 	      };
 	    });
+	    return _;
 	  };
 
 	  // Add all of the Underscore functions to the wrapper object.
@@ -11867,7 +11986,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      var obj = this._wrapped;
 	      method.apply(obj, arguments);
 	      if ((name === 'shift' || name === 'splice') && obj.length === 0) delete obj[0];
-	      return result(this, obj);
+	      return chainResult(this, obj);
 	    };
 	  });
 
@@ -11875,7 +11994,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  _.each(['concat', 'join', 'slice'], function(name) {
 	    var method = ArrayProto[name];
 	    _.prototype[name] = function() {
-	      return result(this, method.apply(this._wrapped, arguments));
+	      return chainResult(this, method.apply(this._wrapped, arguments));
 	    };
 	  });
 
@@ -11889,7 +12008,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  _.prototype.valueOf = _.prototype.toJSON = _.prototype.value;
 
 	  _.prototype.toString = function() {
-	    return '' + this._wrapped;
+	    return String(this._wrapped);
 	  };
 
 	  // AMD registration happens at the end for compatibility with AMD loaders
@@ -11904,28 +12023,45 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      return _;
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	  }
-	}.call(this));
+	}());
 
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(3)(module)))
 
-/***/ },
+/***/ }),
 /* 3 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
-	module.exports = __WEBPACK_EXTERNAL_MODULE_3__;
+	module.exports = function(module) {
+		if(!module.webpackPolyfill) {
+			module.deprecate = function() {};
+			module.paths = [];
+			// module.parent = undefined by default
+			module.children = [];
+			module.webpackPolyfill = 1;
+		}
+		return module;
+	}
 
-/***/ },
+
+/***/ }),
 /* 4 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	module.exports = __WEBPACK_EXTERNAL_MODULE_4__;
 
-/***/ },
+/***/ }),
 /* 5 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
+
+	module.exports = __WEBPACK_EXTERNAL_MODULE_5__;
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;!function() {
 	  var d3 = {
-	    version: "3.5.16"
+	    version: "3.5.17"
 	  };
 	  var d3_arraySlice = [].slice, d3_array = function(list) {
 	    return d3_arraySlice.call(list);
@@ -15450,7 +15586,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        λ0 = λ, sinφ0 = sinφ, cosφ0 = cosφ, point0 = point;
 	      }
 	    }
-	    return (polarAngle < -ε || polarAngle < ε && d3_geo_areaRingSum < 0) ^ winding & 1;
+	    return (polarAngle < -ε || polarAngle < ε && d3_geo_areaRingSum < -ε) ^ winding & 1;
 	  }
 	  function d3_geo_clipCircle(radius) {
 	    var cr = Math.cos(radius), smallRadius = cr > 0, notHemisphere = abs(cr) > ε, interpolate = d3_geo_circleInterpolate(radius, 6 * d3_radians);
@@ -21478,39 +21614,35 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  if (true) this.d3 = d3, !(__WEBPACK_AMD_DEFINE_FACTORY__ = (d3), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.call(exports, __webpack_require__, exports, module)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__)); else if (typeof module === "object" && module.exports) module.exports = d3; else this.d3 = d3;
 	}();
 
-/***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*! cal-heatmap v3.5.4 (Mon Aug 24 2015 10:02:32)
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*! cal-heatmap v3.6.2 (Mon Oct 10 2016 01:36:42)
 	 *  ---------------------------------------------
 	 *  Cal-Heatmap is a javascript module to create calendar heatmap to visualize time series data
 	 *  https://github.com/wa0x6e/cal-heatmap
 	 *  Licensed under the MIT license
 	 *  Copyright 2014 Wan Qi Chen
 	 */
-	function mergeRecursive(a,b){"use strict";for(var c in b)try{a[c]=b[c].constructor===Object?mergeRecursive(a[c],b[c]):b[c]}catch(d){a[c]=b[c]}return a}function arrayEquals(a,b){"use strict";if(!b||!a)return!1;if(a.length!==b.length)return!1;for(var c=0;c<a.length;c++)if(a[c]instanceof Array&&b[c]instanceof Array){if(!arrayEquals(a[c],b[c]))return!1}else if(a[c]!==b[c])return!1;return!0}var d3= true?__webpack_require__(5):window.d3,CalHeatMap=function(){"use strict";function a(){d.verticalDomainLabel="top"===d.options.label.position||"bottom"===d.options.label.position,d.domainVerticalLabelHeight=null===d.options.label.height?Math.max(25,2*d.options.cellSize):d.options.label.height,d.domainHorizontalLabelWidth=0,""===d.options.domainLabelFormat&&null===d.options.label.height&&(d.domainVerticalLabelHeight=0),d.verticalDomainLabel||(d.domainVerticalLabelHeight=0,d.domainHorizontalLabelWidth=d.options.label.width),d.paint(),d.options.nextSelector!==!1&&d3.select(d.options.nextSelector).on("click."+d.options.itemNamespace,function(){return d3.event.preventDefault(),d.loadNextDomain(1)}),d.options.previousSelector!==!1&&d3.select(d.options.previousSelector).on("click."+d.options.itemNamespace,function(){return d3.event.preventDefault(),d.loadPreviousDomain(1)}),d.Legend.redraw(d.graphDim.width-d.options.domainGutter-d.options.cellPadding),d.afterLoad();var a=d.getDomainKeys();d.options.loadOnInit?d.getDatas(d.options.data,new Date(a[0]),d.getSubDomain(a[a.length-1]).pop(),function(){d.fill(),d.onComplete()}):d.onComplete(),d.checkIfMinDomainIsReached(a[0]),d.checkIfMaxDomainIsReached(d.getNextDomain().getTime())}function b(a,b){var c=d.options.cellSize*d._domainType[d.options.subDomain].column(a)+d.options.cellPadding*d._domainType[d.options.subDomain].column(a);return 2===arguments.length&&b===!0?c+=d.domainHorizontalLabelWidth+d.options.domainGutter+d.options.domainMargin[1]+d.options.domainMargin[3]:c}function c(a,b){var c=d.options.cellSize*d._domainType[d.options.subDomain].row(a)+d.options.cellPadding*d._domainType[d.options.subDomain].row(a);return 2===arguments.length&&b===!0&&(c+=d.options.domainGutter+d.domainVerticalLabelHeight+d.options.domainMargin[0]+d.options.domainMargin[2]),c}var d=this;this.allowedDataType=["json","csv","tsv","txt"],this.options={itemSelector:"#cal-heatmap",paintOnLoad:!0,range:12,cellSize:10,cellPadding:2,cellRadius:0,domainGutter:2,domainMargin:[0,0,0,0],domain:"hour",subDomain:"min",colLimit:null,rowLimit:null,weekStartOnMonday:!0,start:new Date,minDate:null,maxDate:null,data:"",dataType:this.allowedDataType[0],dataPostPayload:null,considerMissingDataAsZero:!1,loadOnInit:!0,verticalOrientation:!1,domainDynamicDimension:!0,label:{position:"bottom",align:"center",offset:{x:0,y:0},rotate:null,width:100,height:null},legend:[10,20,30,40],displayLegend:!0,legendCellSize:10,legendCellPadding:2,legendMargin:[0,0,0,0],legendVerticalPosition:"bottom",legendHorizontalPosition:"left",legendOrientation:"horizontal",legendColors:null,highlight:[],itemName:["item","items"],domainLabelFormat:null,subDomainTitleFormat:{empty:"{date}",filled:"{count} {name} {connector} {date}"},subDomainDateFormat:null,subDomainTextFormat:null,legendTitleFormat:{lower:"less than {min} {name}",inner:"between {down} and {up} {name}",upper:"more than {max} {name}"},animationDuration:500,nextSelector:!1,previousSelector:!1,itemNamespace:"cal-heatmap",tooltip:!1,onClick:null,afterLoad:null,afterLoadNextDomain:null,afterLoadPreviousDomain:null,onComplete:null,afterLoadData:function(a){return a},onMaxDomainReached:null,onMinDomainReached:null},this._domainType={min:{name:"minute",level:10,maxItemNumber:60,defaultRowNumber:10,defaultColumnNumber:6,row:function(a){return d.getSubDomainRowNumber(a)},column:function(a){return d.getSubDomainColumnNumber(a)},position:{x:function(a){return Math.floor(a.getMinutes()/d._domainType.min.row(a))},y:function(a){return a.getMinutes()%d._domainType.min.row(a)}},format:{date:"%H:%M, %A %B %-e, %Y",legend:"",connector:"at"},extractUnit:function(a){return new Date(a.getFullYear(),a.getMonth(),a.getDate(),a.getHours(),a.getMinutes()).getTime()}},hour:{name:"hour",level:20,maxItemNumber:function(a){switch(d.options.domain){case"day":return 24;case"week":return 168;case"month":return 24*(d.options.domainDynamicDimension?d.getDayCountInMonth(a):31)}},defaultRowNumber:6,defaultColumnNumber:function(a){switch(d.options.domain){case"day":return 4;case"week":return 28;case"month":return d.options.domainDynamicDimension?d.getDayCountInMonth(a):31}},row:function(a){return d.getSubDomainRowNumber(a)},column:function(a){return d.getSubDomainColumnNumber(a)},position:{x:function(a){return"month"===d.options.domain?d.options.colLimit>0||d.options.rowLimit>0?Math.floor((a.getHours()+24*(a.getDate()-1))/d._domainType.hour.row(a)):Math.floor(a.getHours()/d._domainType.hour.row(a))+4*(a.getDate()-1):"week"===d.options.domain?d.options.colLimit>0||d.options.rowLimit>0?Math.floor((a.getHours()+24*d.getWeekDay(a))/d._domainType.hour.row(a)):Math.floor(a.getHours()/d._domainType.hour.row(a))+4*d.getWeekDay(a):Math.floor(a.getHours()/d._domainType.hour.row(a))},y:function(a){var b=a.getHours();if(d.options.colLimit>0||d.options.rowLimit>0)switch(d.options.domain){case"month":b+=24*(a.getDate()-1);break;case"week":b+=24*d.getWeekDay(a)}return Math.floor(b%d._domainType.hour.row(a))}},format:{date:"%Hh, %A %B %-e, %Y",legend:"%H:00",connector:"at"},extractUnit:function(a){return new Date(a.getFullYear(),a.getMonth(),a.getDate(),a.getHours()).getTime()}},day:{name:"day",level:30,maxItemNumber:function(a){switch(d.options.domain){case"week":return 7;case"month":return d.options.domainDynamicDimension?d.getDayCountInMonth(a):31;case"year":return d.options.domainDynamicDimension?d.getDayCountInYear(a):366}},defaultColumnNumber:function(a){switch(a=new Date(a),d.options.domain){case"week":return 1;case"month":return d.options.domainDynamicDimension&&!d.options.verticalOrientation?d.getWeekNumber(new Date(a.getFullYear(),a.getMonth()+1,0))-d.getWeekNumber(a)+1:6;case"year":return d.options.domainDynamicDimension?d.getWeekNumber(new Date(a.getFullYear(),11,31))-d.getWeekNumber(new Date(a.getFullYear(),0))+1:54}},defaultRowNumber:7,row:function(a){return d.getSubDomainRowNumber(a)},column:function(a){return d.getSubDomainColumnNumber(a)},position:{x:function(a){switch(d.options.domain){case"week":return Math.floor(d.getWeekDay(a)/d._domainType.day.row(a));case"month":return d.options.colLimit>0||d.options.rowLimit>0?Math.floor((a.getDate()-1)/d._domainType.day.row(a)):d.getWeekNumber(a)-d.getWeekNumber(new Date(a.getFullYear(),a.getMonth()));case"year":return d.options.colLimit>0||d.options.rowLimit>0?Math.floor((d.getDayOfYear(a)-1)/d._domainType.day.row(a)):d.getWeekNumber(a)}},y:function(a){var b=d.getWeekDay(a);if(d.options.colLimit>0||d.options.rowLimit>0)switch(d.options.domain){case"year":b=d.getDayOfYear(a)-1;break;case"week":b=d.getWeekDay(a);break;case"month":b=a.getDate()-1}return Math.floor(b%d._domainType.day.row(a))}},format:{date:"%A %B %-e, %Y",legend:"%e %b",connector:"on"},extractUnit:function(a){return new Date(a.getFullYear(),a.getMonth(),a.getDate()).getTime()}},week:{name:"week",level:40,maxItemNumber:54,defaultColumnNumber:function(a){switch(a=new Date(a),d.options.domain){case"year":return d._domainType.week.maxItemNumber;case"month":return d.options.domainDynamicDimension?d.getWeekNumber(new Date(a.getFullYear(),a.getMonth()+1,0))-d.getWeekNumber(a):5}},defaultRowNumber:1,row:function(a){return d.getSubDomainRowNumber(a)},column:function(a){return d.getSubDomainColumnNumber(a)},position:{x:function(a){switch(d.options.domain){case"year":return Math.floor(d.getWeekNumber(a)/d._domainType.week.row(a));case"month":return Math.floor(d.getMonthWeekNumber(a)/d._domainType.week.row(a))}},y:function(a){return d.getWeekNumber(a)%d._domainType.week.row(a)}},format:{date:"%B Week #%W",legend:"%B Week #%W",connector:"in"},extractUnit:function(a){var b=new Date(a.getFullYear(),a.getMonth(),a.getDate()),c=b.getDay()-1;return 0>c&&(c=6),b.setDate(b.getDate()-c),b.getTime()}},month:{name:"month",level:50,maxItemNumber:12,defaultColumnNumber:12,defaultRowNumber:1,row:function(){return d.getSubDomainRowNumber()},column:function(){return d.getSubDomainColumnNumber()},position:{x:function(a){return Math.floor(a.getMonth()/d._domainType.month.row(a))},y:function(a){return a.getMonth()%d._domainType.month.row(a)}},format:{date:"%B %Y",legend:"%B",connector:"in"},extractUnit:function(a){return new Date(a.getFullYear(),a.getMonth()).getTime()}},year:{name:"year",level:60,row:function(){return d.options.rowLimit||1},column:function(){return d.options.colLimit||1},position:{x:function(){return 1},y:function(){return 1}},format:{date:"%Y",legend:"%Y",connector:"in"},extractUnit:function(a){return new Date(a.getFullYear()).getTime()}}};for(var e in this._domainType)if(this._domainType.hasOwnProperty(e)){var f=this._domainType[e];this._domainType["x_"+e]={name:"x_"+e,level:f.type,maxItemNumber:f.maxItemNumber,defaultRowNumber:f.defaultRowNumber,defaultColumnNumber:f.defaultColumnNumber,row:f.column,column:f.row,position:{x:f.position.y,y:f.position.x},format:f.format,extractUnit:f.extractUnit}}this.lastInsertedSvg=null,this._completed=!1,this._domains=d3.map(),this.graphDim={width:0,height:0},this.legendDim={width:0,height:0},this.NAVIGATE_LEFT=1,this.NAVIGATE_RIGHT=2,this.RESET_ALL_ON_UPDATE=0,this.RESET_SINGLE_ON_UPDATE=1,this.APPEND_ON_UPDATE=2,this.DEFAULT_LEGEND_MARGIN=10,this.root=null,this.tooltip=null,this._maxDomainReached=!1,this._minDomainReached=!1,this.domainPosition=new DomainPosition,this.Legend=null,this.legendScale=null,this.DSTDomain=[],this._init=function(){return d.getDomain(d.options.start).map(function(a){return a.getTime()}).map(function(a){d._domains.set(a,d.getSubDomain(a).map(function(a){return{t:d._domainType[d.options.subDomain].extractUnit(a),v:null}}))}),d.root=d3.select(d.options.itemSelector).append("svg").attr("class","cal-heatmap-container"),d.tooltip=d3.select(d.options.itemSelector).attr("style",function(){var a=d3.select(d.options.itemSelector).attr("style");return(null!==a?a:"")+"position:relative;"}).append("div").attr("class","ch-tooltip"),d.root.attr("x",0).attr("y",0).append("svg").attr("class","graph"),d.Legend=new Legend(d),d.options.paintOnLoad&&a(),!0},this.paint=function(a){function e(b,c,e,f){var g=0;switch(a){case!1:return g=c[e],c[e]+=f,d.domainPosition.setPosition(b,g),g;case d.NAVIGATE_RIGHT:return d.domainPosition.setPosition(b,c[e]),i=f,j=d.domainPosition.getPositionFromIndex(1),d.domainPosition.shiftRightBy(j),c[e];case d.NAVIGATE_LEFT:return g=-f,i=-g,j=c[e]-d.domainPosition.getLast(),d.domainPosition.setPosition(b,g),d.domainPosition.shiftLeftBy(i),g}}function f(a){switch(g.label.rotate){case"right":a.attr("transform",function(a){var c="rotate(90), ";switch(g.label.position){case"right":c+="translate(-"+b(a)+" , -"+b(a)+")";break;case"left":c+="translate(0, -"+d.domainHorizontalLabelWidth+")"}return c});break;case"left":a.attr("transform",function(a){var c="rotate(270), ";switch(g.label.position){case"right":c+="translate(-"+(b(a)+d.domainHorizontalLabelWidth)+" , "+b(a)+")";break;case"left":c+="translate(-"+d.domainHorizontalLabelWidth+" , "+d.domainHorizontalLabelWidth+")"}return c})}}var g=d.options;0===arguments.length&&(a=!1);var h=d.root.select(".graph").selectAll(".graph-domain").data(function(){var b=d.getDomainKeys();return a===d.NAVIGATE_LEFT?b.reverse():b},function(a){return a}),i=0,j=0,k=h.enter().append("svg").attr("width",function(a){return b(a,!0)}).attr("height",function(a){return c(a,!0)}).attr("x",function(a){return g.verticalOrientation?(d.graphDim.width=Math.max(d.graphDim.width,b(a,!0)),0):e(a,d.graphDim,"width",b(a,!0))}).attr("y",function(a){return g.verticalOrientation?e(a,d.graphDim,"height",c(a,!0)):(d.graphDim.height=Math.max(d.graphDim.height,c(a,!0)),0)}).attr("class",function(a){var b="graph-domain",c=new Date(a);switch(g.domain){case"hour":b+=" h_"+c.getHours();case"day":b+=" d_"+c.getDate()+" dy_"+c.getDay();case"week":b+=" w_"+d.getWeekNumber(c);case"month":b+=" m_"+(c.getMonth()+1);case"year":b+=" y_"+c.getFullYear()}return b});d.lastInsertedSvg=k,k.append("rect").attr("width",function(a){return b(a,!0)-g.domainGutter-g.cellPadding}).attr("height",function(a){return c(a,!0)-g.domainGutter-g.cellPadding}).attr("class","domain-background");var l=k.append("svg").attr("x",function(){return"left"===g.label.position?d.domainHorizontalLabelWidth+g.domainMargin[3]:g.domainMargin[3]}).attr("y",function(){return"top"===g.label.position?d.domainVerticalLabelHeight+g.domainMargin[0]:g.domainMargin[0]}).attr("class","graph-subdomain-group"),m=l.selectAll("g").data(function(a){return d._domains.get(a)}).enter().append("g");m.append("rect").attr("class",function(a){return"graph-rect"+d.getHighlightClassName(a.t)+(null!==g.onClick?" hover_cursor":"")}).attr("width",g.cellSize).attr("height",g.cellSize).attr("x",function(a){return d.positionSubDomainX(a.t)}).attr("y",function(a){return d.positionSubDomainY(a.t)}).on("click",function(a){return null!==g.onClick?d.onClick(new Date(a.t),a.v):void 0}).call(function(a){g.cellRadius>0&&a.attr("rx",g.cellRadius).attr("ry",g.cellRadius),null!==d.legendScale&&null!==g.legendColors&&g.legendColors.hasOwnProperty("base")&&a.attr("fill",g.legendColors.base),g.tooltip&&(a.on("mouseover",function(a){var b=this.parentNode.parentNode;d.tooltip.html(d.getSubDomainTitle(a)).attr("style","display: block;");var c=d.positionSubDomainX(a.t)-d.tooltip[0][0].offsetWidth/2+g.cellSize/2,e=d.positionSubDomainY(a.t)-d.tooltip[0][0].offsetHeight-g.cellSize/2;c+=parseInt(b.getAttribute("x"),10),e+=parseInt(b.getAttribute("y"),10),c+=parseInt(d.root.select(".graph").attr("x"),10),e+=parseInt(d.root.select(".graph").attr("y"),10),c+=parseInt(b.parentNode.getAttribute("x"),10),e+=parseInt(b.parentNode.getAttribute("y"),10),d.tooltip.attr("style","display: block; left: "+c+"px; top: "+e+"px;")}),a.on("mouseout",function(){d.tooltip.attr("style","display:none").html("")}))}),g.tooltip||m.append("title").text(function(a){return d.formatDate(new Date(a.t),g.subDomainDateFormat)}),""!==g.domainLabelFormat&&k.append("text").attr("class","graph-label").attr("y",function(a){var b=g.domainMargin[0];switch(g.label.position){case"top":b+=d.domainVerticalLabelHeight/2;break;case"bottom":b+=c(a)+d.domainVerticalLabelHeight/2}return b+g.label.offset.y*("right"===g.label.rotate&&"right"===g.label.position||"left"===g.label.rotate&&"left"===g.label.position?-1:1)}).attr("x",function(a){var c=g.domainMargin[3];switch(g.label.position){case"right":c+=b(a);break;case"bottom":case"top":c+=b(a)/2}return"right"===g.label.align?c+d.domainHorizontalLabelWidth-g.label.offset.x*("right"===g.label.rotate?-1:1):c+g.label.offset.x}).attr("text-anchor",function(){switch(g.label.align){case"start":case"left":return"start";case"end":case"right":return"end";default:return"middle"}}).attr("dominant-baseline",function(){return d.verticalDomainLabel?"middle":"top"}).text(function(a){return d.formatDate(new Date(a),g.domainLabelFormat)}).call(f),null!==g.subDomainTextFormat&&m.append("text").attr("class",function(a){return"subdomain-text"+d.getHighlightClassName(a.t)}).attr("x",function(a){return d.positionSubDomainX(a.t)+g.cellSize/2}).attr("y",function(a){return d.positionSubDomainY(a.t)+g.cellSize/2}).attr("text-anchor","middle").attr("dominant-baseline","central").text(function(a){return d.formatDate(new Date(a.t),g.subDomainTextFormat)}),a!==!1&&h.transition().duration(g.animationDuration).attr("x",function(a){return g.verticalOrientation?0:d.domainPosition.getPosition(a)}).attr("y",function(a){return g.verticalOrientation?d.domainPosition.getPosition(a):0});var n=d.graphDim.width,o=d.graphDim.height;g.verticalOrientation?d.graphDim.height+=i-j:d.graphDim.width+=i-j,h.exit().transition().duration(g.animationDuration).attr("x",function(c){if(g.verticalOrientation)return 0;switch(a){case d.NAVIGATE_LEFT:return Math.min(d.graphDim.width,n);case d.NAVIGATE_RIGHT:return-b(c,!0)}}).attr("y",function(b){if(!g.verticalOrientation)return 0;switch(a){case d.NAVIGATE_LEFT:return Math.min(d.graphDim.height,o);case d.NAVIGATE_RIGHT:return-c(b,!0)}}).remove(),d.resize()}};CalHeatMap.prototype={init:function(a){"use strict";function b(a,b,c){if((b&&a===!1||a instanceof Element||"string"==typeof a)&&""!==a)return!0;throw new Error("The "+c+" is not valid")}function c(a){switch(a){case"year":return"month";case"month":return"day";case"week":return"day";case"day":return"hour";default:return"min"}}function d(){if(!k._domainType.hasOwnProperty(l.domain)||"min"===l.domain||"x_"===l.domain.substring(0,2))throw new Error("The domain '"+l.domain+"' is not valid");if(!k._domainType.hasOwnProperty(l.subDomain)||"year"===l.subDomain)throw new Error("The subDomain '"+l.subDomain+"' is not valid");if(k._domainType[l.domain].level<=k._domainType[l.subDomain].level)throw new Error("'"+l.subDomain+"' is not a valid subDomain to '"+l.domain+"'");return!0}function e(){if(!a.hasOwnProperty("label")||a.hasOwnProperty("label")&&!a.label.hasOwnProperty("align")){switch(l.label.position){case"left":l.label.align="right";break;case"right":l.label.align="left";break;default:l.label.align="center"}"left"===l.label.rotate?l.label.align="right":"right"===l.label.rotate&&(l.label.align="left")}(!a.hasOwnProperty("label")||a.hasOwnProperty("label")&&!a.label.hasOwnProperty("offset"))&&("left"===l.label.position||"right"===l.label.position)&&(l.label.offset={x:10,y:15})}function f(){switch(l.legendVerticalPosition){case"top":l.legendMargin[2]=k.DEFAULT_LEGEND_MARGIN;break;case"bottom":l.legendMargin[0]=k.DEFAULT_LEGEND_MARGIN;break;case"middle":case"center":l.legendMargin["right"===l.legendHorizontalPosition?3:1]=k.DEFAULT_LEGEND_MARGIN}}function g(a){switch("number"==typeof a&&(a=[a]),Array.isArray(a)||(console.log("Margin only takes an integer or an array of integers"),a=[0]),a.length){case 1:return[a[0],a[0],a[0],a[0]];case 2:return[a[0],a[1],a[0],a[1]];case 3:return[a[0],a[1],a[2],a[1]];case 4:return a;default:return a.slice(0,4)}}function h(a){return"string"==typeof a?[a,a+(""!==a?"s":"")]:Array.isArray(a)?1===a.length?[a[0],a[0]+"s"]:a.length>2?a.slice(0,2):a:["item","items"]}function i(a){return a>0?a:null}function j(a){return a>0&&l.colLimit>0?(console.log("colLimit and rowLimit are mutually exclusive, rowLimit will be ignored"),null):a>0?a:null}var k=this,l=k.options=mergeRecursive(k.options,a);if(d(),b(l.itemSelector,!1,"itemSelector"),-1===k.allowedDataType.indexOf(l.dataType))throw new Error("The data type '"+l.dataType+"' is not valid data type");if(null===d3.select(l.itemSelector)[0][0])throw new Error("The node '"+l.itemSelector+"' specified in itemSelector does not exists");try{b(l.nextSelector,!0,"nextSelector"),b(l.previousSelector,!0,"previousSelector")}catch(m){return console.log(m.message),!1}a.hasOwnProperty("subDomain")||(this.options.subDomain=c(a.domain)),("string"!=typeof l.itemNamespace||""===l.itemNamespace)&&(console.log("itemNamespace can not be empty, falling back to cal-heatmap"),l.itemNamespace="cal-heatmap");var n=["data","onComplete","onClick","afterLoad","afterLoadData","afterLoadPreviousDomain","afterLoadNextDomain"];for(var o in n)a.hasOwnProperty(n[o])&&(l[n[o]]=a[n[o]]);return l.subDomainDateFormat="string"==typeof l.subDomainDateFormat||"function"==typeof l.subDomainDateFormat?l.subDomainDateFormat:this._domainType[l.subDomain].format.date,l.domainLabelFormat="string"==typeof l.domainLabelFormat||"function"==typeof l.domainLabelFormat?l.domainLabelFormat:this._domainType[l.domain].format.legend,l.subDomainTextFormat="string"==typeof l.subDomainTextFormat&&""!==l.subDomainTextFormat||"function"==typeof l.subDomainTextFormat?l.subDomainTextFormat:null,l.domainMargin=g(l.domainMargin),l.legendMargin=g(l.legendMargin),l.highlight=k.expandDateSetting(l.highlight),l.itemName=h(l.itemName),l.colLimit=i(l.colLimit),l.rowLimit=j(l.rowLimit),a.hasOwnProperty("legendMargin")||f(),e(),this._init()},expandDateSetting:function(a){"use strict";return Array.isArray(a)||(a=[a]),a.map(function(a){return"now"===a?new Date:a instanceof Date?a:!1}).filter(function(a){return a!==!1})},fill:function(a){"use strict";function b(a){return null===d.legendScale?!1:void a.attr("fill",function(a){return null===a.v&&e.hasOwnProperty("considerMissingDataAsZero")&&!e.considerMissingDataAsZero&&e.legendColors.hasOwnProperty("base")?e.legendColors.base:null!==e.legendColors&&e.legendColors.hasOwnProperty("empty")&&(0===a.v||null===a.v&&e.hasOwnProperty("considerMissingDataAsZero")&&e.considerMissingDataAsZero)?e.legendColors.empty:a.v<0&&e.legend[0]>0&&null!==e.legendColors&&e.legendColors.hasOwnProperty("overflow")?e.legendColors.overflow:d.legendScale(Math.min(a.v,e.legend[e.legend.length-1]))})}function c(a){"function"==typeof e.subDomainTextFormat&&a.text(function(a){return e.subDomainTextFormat(a.t,a.v)})}var d=this,e=d.options;0===arguments.length&&(a=d.root.selectAll(".graph-domain"));var f=a.selectAll("svg").selectAll("g").data(function(a){return d._domains.get(a)});f.transition().duration(e.animationDuration).select("rect").attr("class",function(a){var b=d.getHighlightClassName(a.t).trim().split(" "),c=d.dateIsLessThan(a.t,new Date);return(null===d.legendScale||null===a.v&&e.hasOwnProperty("considerMissingDataAsZero")&&!e.considerMissingDataAsZero&&!e.legendColors.hasOwnProperty("base"))&&b.push("graph-rect"),c||-1!==b.indexOf("now")||b.push("future"),null!==a.v?b.push(d.Legend.getClass(a.v,null===d.legendScale)):e.considerMissingDataAsZero&&c&&b.push(d.Legend.getClass(0,null===d.legendScale)),null!==e.onClick&&b.push("hover_cursor"),b.join(" ")}).call(b),f.transition().duration(e.animationDuration).select("title").text(function(a){return d.getSubDomainTitle(a)}),f.transition().duration(e.animationDuration).select("text").attr("class",function(a){return"subdomain-text"+d.getHighlightClassName(a.t)}).call(c)},triggerEvent:function(a,b,c){"use strict";return 3===arguments.length&&c||null===this.options[a]?!0:"function"==typeof this.options[a]?("function"==typeof b&&(b=b()),this.options[a].apply(this,b)):(console.log("Provided callback for "+a+" is not a function."),!1)},onClick:function(a,b){"use strict";return this.triggerEvent("onClick",[a,b])},afterLoad:function(){"use strict";return this.triggerEvent("afterLoad")},onComplete:function(){"use strict";var a=this.triggerEvent("onComplete",[],this._completed);return this._completed=!0,a},afterLoadPreviousDomain:function(a){"use strict";var b=this;return this.triggerEvent("afterLoadPreviousDomain",function(){var c=b.getSubDomain(a);return[c.shift(),c.pop()]})},afterLoadNextDomain:function(a){"use strict";var b=this;return this.triggerEvent("afterLoadNextDomain",function(){var c=b.getSubDomain(a);return[c.shift(),c.pop()]})},onMinDomainReached:function(a){"use strict";return this._minDomainReached=a,this.triggerEvent("onMinDomainReached",[a])},onMaxDomainReached:function(a){"use strict";return this._maxDomainReached=a,this.triggerEvent("onMaxDomainReached",[a])},checkIfMinDomainIsReached:function(a,b){"use strict";this.minDomainIsReached(a)&&this.onMinDomainReached(!0),2===arguments.length&&this._maxDomainReached&&!this.maxDomainIsReached(b)&&this.onMaxDomainReached(!1)},checkIfMaxDomainIsReached:function(a,b){"use strict";this.maxDomainIsReached(a)&&this.onMaxDomainReached(!0),2===arguments.length&&this._minDomainReached&&!this.minDomainIsReached(b)&&this.onMinDomainReached(!1)},formatNumber:d3.format(",g"),formatDate:function(a,b){"use strict";if(arguments.length<2&&(b="title"),"function"==typeof b)return b(a);var c=d3.time.format(b);return c(a)},getSubDomainTitle:function(a){"use strict";if(null!==a.v||this.options.considerMissingDataAsZero){var b=a.v;return null===b&&this.options.considerMissingDataAsZero&&(b=0),this.options.subDomainTitleFormat.filled.format({count:this.formatNumber(b),name:this.options.itemName[1!==b?1:0],connector:this._domainType[this.options.subDomain].format.connector,date:this.formatDate(new Date(a.t),this.options.subDomainDateFormat)})}return this.options.subDomainTitleFormat.empty.format({date:this.formatDate(new Date(a.t),this.options.subDomainDateFormat)})},loadNextDomain:function(a){"use strict";if(this._maxDomainReached||0===a)return!1;var b=this.loadNewDomains(this.NAVIGATE_RIGHT,this.getDomain(this.getNextDomain(),a));return this.afterLoadNextDomain(b.end),this.checkIfMaxDomainIsReached(this.getNextDomain().getTime(),b.start),!0},loadPreviousDomain:function(a){"use strict";if(this._minDomainReached||0===a)return!1;var b=this.loadNewDomains(this.NAVIGATE_LEFT,this.getDomain(this.getDomainKeys()[0],-a).reverse());return this.afterLoadPreviousDomain(b.start),this.checkIfMinDomainIsReached(b.start,b.end),!0},loadNewDomains:function(a,b){"use strict";function c(a){return{t:d._domainType[d.options.subDomain].extractUnit(a),v:null}}for(var d=this,e=a===this.NAVIGATE_LEFT,f=-1,g=b.length,h=this.getDomainKeys();++f<g;){if(e&&this.minDomainIsReached(b[f])){b=b.slice(0,f+1);break}if(!e&&this.maxDomainIsReached(b[f])){b=b.slice(0,f);break}}for(b=b.slice(-this.options.range),f=0,g=b.length;g>f;f++)this._domains.set(b[f].getTime(),this.getSubDomain(b[f]).map(c)),this._domains.remove(e?h.pop():h.shift());return h=this.getDomainKeys(),e&&(b=b.reverse()),this.paint(a),this.getDatas(this.options.data,b[0],this.getSubDomain(b[b.length-1]).pop(),function(){d.fill(d.lastInsertedSvg)}),{start:b[e?0:1],end:h[h.length-1]}},maxDomainIsReached:function(a){"use strict";return null!==this.options.maxDate&&this.options.maxDate.getTime()<a},minDomainIsReached:function(a){"use strict";return null!==this.options.minDate&&this.options.minDate.getTime()>=a},getDomainKeys:function(){"use strict";return this._domains.keys().map(function(a){return parseInt(a,10)}).sort(function(a,b){return a-b})},positionSubDomainX:function(a){"use strict";var b=this._domainType[this.options.subDomain].position.x(new Date(a));return b*this.options.cellSize+b*this.options.cellPadding},positionSubDomainY:function(a){"use strict";var b=this._domainType[this.options.subDomain].position.y(new Date(a));return b*this.options.cellSize+b*this.options.cellPadding},getSubDomainColumnNumber:function(a){"use strict";if(this.options.rowLimit>0){var b=this._domainType[this.options.subDomain].maxItemNumber;return"function"==typeof b&&(b=b(a)),Math.ceil(b/this.options.rowLimit)}var c=this._domainType[this.options.subDomain].defaultColumnNumber;return"function"==typeof c&&(c=c(a)),this.options.colLimit||c},getSubDomainRowNumber:function(a){"use strict";if(this.options.colLimit>0){var b=this._domainType[this.options.subDomain].maxItemNumber;return"function"==typeof b&&(b=b(a)),Math.ceil(b/this.options.colLimit)}var c=this._domainType[this.options.subDomain].defaultRowNumber;return"function"==typeof c&&(c=c(a)),this.options.rowLimit||c},getHighlightClassName:function(a){"use strict";if(a=new Date(a),this.options.highlight.length>0)for(var b in this.options.highlight)if(this.options.highlight[b]instanceof Date&&this.dateIsEqual(this.options.highlight[b],a))return" highlight"+(this.isNow(this.options.highlight[b])?" now":"");return""},isNow:function(a){"use strict";return this.dateIsEqual(a,new Date)},dateIsEqual:function(a,b){"use strict";switch(this.options.subDomain){case"x_min":case"min":return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()&&a.getHours()===b.getHours()&&a.getMinutes()===b.getMinutes();case"x_hour":case"hour":return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()&&a.getHours()===b.getHours();case"x_day":case"day":return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();case"x_week":case"week":return a.getFullYear()===b.getFullYear()&&this.getWeekNumber(a)===this.getWeekNumber(b);case"x_month":case"month":return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth();default:return!1}},dateIsLessThan:function(a,b){"use strict";function c(a,b){switch(b){case"x_min":case"min":return new Date(a.getFullYear(),a.getMonth(),a.getDate(),a.getHours(),a.getMinutes()).getTime();case"x_hour":case"hour":return new Date(a.getFullYear(),a.getMonth(),a.getDate(),a.getHours()).getTime();case"x_day":case"day":return new Date(a.getFullYear(),a.getMonth(),a.getDate()).getTime();case"x_week":case"week":case"x_month":case"month":return new Date(a.getFullYear(),a.getMonth()).getTime();default:return a.getTime()}}return a instanceof Date||(a=new Date(a)),b instanceof Date||(b=new Date(b)),c(a,this.options.subDomain)<c(b,this.options.subDomain)},getDayOfYear:d3.time.format("%j"),getWeekNumber:function(a){"use strict";var b=d3.time.format(this.options.weekStartOnMonday===!0?"%W":"%U");return b(a)},getMonthWeekNumber:function(a){"use strict";"number"==typeof a&&(a=new Date(a));var b=this.getWeekNumber(new Date(a.getFullYear(),a.getMonth()));return this.getWeekNumber(a)-b-1},getWeekNumberInYear:function(a){"use strict";"number"==typeof a&&(a=new Date(a))},getDayCountInMonth:function(a){"use strict";return this.getEndOfMonth(a).getDate()},getDayCountInYear:function(a){"use strict";return"number"==typeof a&&(a=new Date(a)),1===new Date(a.getFullYear(),1,29).getMonth()?366:365},getWeekDay:function(a){"use strict";return this.options.weekStartOnMonday===!1?a.getDay():0===a.getDay()?6:a.getDay()-1},getEndOfMonth:function(a){"use strict";return"number"==typeof a&&(a=new Date(a)),new Date(a.getFullYear(),a.getMonth()+1,0)},jumpDate:function(a,b,c){"use strict";var d=new Date(a);switch(c){case"hour":d.setHours(d.getHours()+b);break;case"day":d.setHours(d.getHours()+24*b);break;case"week":d.setHours(d.getHours()+24*b*7);break;case"month":d.setMonth(d.getMonth()+b);break;case"year":d.setFullYear(d.getFullYear()+b)}return new Date(d)},getMinuteDomain:function(a,b){"use strict";var c=new Date(a.getFullYear(),a.getMonth(),a.getDate(),a.getHours()),d=null;return d=b instanceof Date?new Date(b.getFullYear(),b.getMonth(),b.getDate(),b.getHours()):new Date(+c+1e3*b*60),d3.time.minutes(Math.min(c,d),Math.max(c,d))},getHourDomain:function(a,b){"use strict";var c=new Date(a.getFullYear(),a.getMonth(),a.getDate(),a.getHours()),d=null;b instanceof Date?d=new Date(b.getFullYear(),b.getMonth(),b.getDate(),b.getHours()):(d=new Date(c),d.setHours(d.getHours()+b));var e=d3.time.hours(Math.min(c,d),Math.max(c,d)),f=0,g=e.length;for(f=0;g>f;f++)if(f>0&&e[f].getHours()===e[f-1].getHours()){this.DSTDomain.push(e[f].getTime()),e.splice(f,1);break}return"number"==typeof b&&e.length>Math.abs(b)&&e.splice(e.length-1,1),e},getDayDomain:function(a,b){"use strict";var c=new Date(a.getFullYear(),a.getMonth(),a.getDate()),d=null;return b instanceof Date?d=new Date(b.getFullYear(),b.getMonth(),b.getDate()):(d=new Date(c),d=new Date(d.setDate(d.getDate()+parseInt(b,10)))),d3.time.days(Math.min(c,d),Math.max(c,d))},getWeekDomain:function(a,b){"use strict";var c;this.options.weekStartOnMonday===!1?c=new Date(a.getFullYear(),a.getMonth(),a.getDate()-a.getDay()):1===a.getDay()?c=new Date(a.getFullYear(),a.getMonth(),a.getDate()):0===a.getDay()?(c=new Date(a.getFullYear(),a.getMonth(),a.getDate()),c.setDate(c.getDate()-6)):c=new Date(a.getFullYear(),a.getMonth(),a.getDate()-a.getDay()+1);var d=new Date(c),e=b;return"object"!=typeof b&&(e=new Date(d.setDate(d.getDate()+7*b))),this.options.weekStartOnMonday===!0?d3.time.mondays(Math.min(c,e),Math.max(c,e)):d3.time.sundays(Math.min(c,e),Math.max(c,e))},getMonthDomain:function(a,b){"use strict";var c=new Date(a.getFullYear(),a.getMonth()),d=null;return b instanceof Date?d=new Date(b.getFullYear(),b.getMonth()):(d=new Date(c),d=d.setMonth(d.getMonth()+b)),d3.time.months(Math.min(c,d),Math.max(c,d))},getYearDomain:function(a,b){"use strict";var c=new Date(a.getFullYear(),0),d=null;return d=b instanceof Date?new Date(b.getFullYear(),0):new Date(a.getFullYear()+b,0),d3.time.years(Math.min(c,d),Math.max(c,d))
-	},getDomain:function(a,b){"use strict";switch("number"==typeof a&&(a=new Date(a)),arguments.length<2&&(b=this.options.range),this.options.domain){case"hour":var c=this.getHourDomain(a,b);return"number"==typeof b&&c.length<b&&(b>0?c.push(this.getHourDomain(c[c.length-1],2)[1]):c.shift(this.getHourDomain(c[0],-2)[0])),c;case"day":return this.getDayDomain(a,b);case"week":return this.getWeekDomain(a,b);case"month":return this.getMonthDomain(a,b);case"year":return this.getYearDomain(a,b)}},getSubDomain:function(a){"use strict";"number"==typeof a&&(a=new Date(a));var b=this,c=function(a,c){switch(c){case"year":return b.getDayCountInYear(a);case"month":return b.getDayCountInMonth(a);case"week":return 7}},d=function(a,b){switch(b){case"hour":return 60;case"day":return 1440;case"week":return 10080}},e=function(a,c){switch(c){case"day":return 24;case"week":return 168;case"month":return 24*b.getDayCountInMonth(a)}},f=function(a,c){if("month"===c){var d=new Date(a.getFullYear(),a.getMonth()+1,0),e=b.getWeekNumber(d),f=b.getWeekNumber(new Date(a.getFullYear(),a.getMonth()));return f>e&&(f=0,e++),e-f+1}return"year"===c?b.getWeekNumber(new Date(a.getFullYear(),11,31)):void 0};switch(this.options.subDomain){case"x_min":case"min":return this.getMinuteDomain(a,d(a,this.options.domain));case"x_hour":case"hour":return this.getHourDomain(a,e(a,this.options.domain));case"x_day":case"day":return this.getDayDomain(a,c(a,this.options.domain));case"x_week":case"week":return this.getWeekDomain(a,f(a,this.options.domain));case"x_month":case"month":return this.getMonthDomain(a,12)}},getNextDomain:function(a){"use strict";return 0===arguments.length&&(a=1),this.getDomain(this.jumpDate(this.getDomainKeys().pop(),a,this.options.domain),1)[0]},getPreviousDomain:function(a){"use strict";return 0===arguments.length&&(a=1),this.getDomain(this.jumpDate(this.getDomainKeys().shift(),-a,this.options.domain),1)[0]},getDatas:function(a,b,c,d,e,f){"use strict";var g=this;arguments.length<5&&(e=!0),arguments.length<6&&(f=this.APPEND_ON_UPDATE);var h=function(a){e!==!1?"function"==typeof e?a=e(a):"function"==typeof g.options.afterLoadData?a=g.options.afterLoadData(a):console.log("Provided callback for afterLoadData is not a function."):("csv"===g.options.dataType||"tsv"===g.options.dataType)&&(a=this.interpretCSV(a)),g.parseDatas(a,f,b,c),"function"==typeof d&&d()};switch(typeof a){case"string":if(""===a)return h({}),!0;var i=this.parseURI(a,b,c),j="GET";null!==g.options.dataPostPayload&&(j="POST");var k=null;switch(null!==g.options.dataPostPayload&&(k=this.parseURI(g.options.dataPostPayload,b,c)),this.options.dataType){case"json":d3.json(i,h).send(j,k);break;case"csv":d3.csv(i,h).send(j,k);break;case"tsv":d3.tsv(i,h).send(j,k);break;case"txt":d3.text(i,"text/plain",h).send(j,k)}return!1;case"object":if(a===Object(a))return h(a),!1;default:return h({}),!0}},parseDatas:function(a,b,c,d){"use strict";b===this.RESET_ALL_ON_UPDATE&&this._domains.forEach(function(a,b){b.forEach(function(a,b,c){c[b].v=null})});var e={},f=function(a){return a.t};for(var g in a){var h=new Date(1e3*g),i=this.getDomain(h)[0].getTime();if(this.DSTDomain.indexOf(i)>=0&&this._domains.has(i-36e5)&&(i-=36e5),!isNaN(g)&&a.hasOwnProperty(g)&&this._domains.has(i)&&i>=+c&&+d>i){var j=this._domains.get(i);e.hasOwnProperty(i)||(e[i]=j.map(f));var k=e[i].indexOf(this._domainType[this.options.subDomain].extractUnit(h));b===this.RESET_SINGLE_ON_UPDATE?j[k].v=a[g]:isNaN(j[k].v)?j[k].v=a[g]:j[k].v+=a[g]}}},parseURI:function(a,b,c){"use strict";return a=a.replace(/\{\{t:start\}\}/g,b.getTime()/1e3),a=a.replace(/\{\{t:end\}\}/g,c.getTime()/1e3),a=a.replace(/\{\{d:start\}\}/g,b.toISOString()),a=a.replace(/\{\{d:end\}\}/g,c.toISOString())},interpretCSV:function(a){"use strict";var b,c,d={},e=Object.keys(a[0]);for(b=0,c=a.length;c>b;b++)d[a[b][e[0]]]=+a[b][e[1]];return d},resize:function(){"use strict";var a=this,b=a.options,c=b.displayLegend?a.Legend.getDim("width")+b.legendMargin[1]+b.legendMargin[3]:0,d=b.displayLegend?a.Legend.getDim("height")+b.legendMargin[0]+b.legendMargin[2]:0,e=a.graphDim.width-b.domainGutter-b.cellPadding,f=a.graphDim.height-b.domainGutter-b.cellPadding;this.root.transition().duration(b.animationDuration).attr("width",function(){return"middle"===b.legendVerticalPosition||"center"===b.legendVerticalPosition?e+c:Math.max(e,c)}).attr("height",function(){return"middle"===b.legendVerticalPosition||"center"===b.legendVerticalPosition?Math.max(f,d):f+d}),this.root.select(".graph").transition().duration(b.animationDuration).attr("y",function(){return"top"===b.legendVerticalPosition?d:0}).attr("x",function(){return"middle"!==b.legendVerticalPosition&&"center"!==b.legendVerticalPosition||"left"!==b.legendHorizontalPosition?0:c})},next:function(a){"use strict";return 0===arguments.length&&(a=1),this.loadNextDomain(a)},previous:function(a){"use strict";return 0===arguments.length&&(a=1),this.loadPreviousDomain(a)},jumpTo:function(a,b){"use strict";arguments.length<2&&(b=!1);var c=this.getDomainKeys(),d=c[0],e=c[c.length-1];return d>a?this.loadPreviousDomain(this.getDomain(d,a).length):b?this.loadNextDomain(this.getDomain(d,a).length):a>e?this.loadNextDomain(this.getDomain(e,a).length):!1},rewind:function(){"use strict";this.jumpTo(this.options.start,!0)},update:function(a,b,c){"use strict";arguments.length<2&&(b=!0),arguments.length<3&&(c=this.RESET_ALL_ON_UPDATE);var d=this.getDomainKeys(),e=this;this.getDatas(a,new Date(d[0]),this.getSubDomain(d[d.length-1]).pop(),function(){e.fill()},b,c)},setLegend:function(){"use strict";var a=this.options.legend.slice(0);arguments.length>=1&&Array.isArray(arguments[0])&&(this.options.legend=arguments[0]),arguments.length>=2&&(this.options.legendColors=Array.isArray(arguments[1])&&arguments[1].length>=2?[arguments[1][0],arguments[1][1]]:arguments[1]),(arguments.length>0&&!arrayEquals(a,this.options.legend)||arguments.length>=2)&&(this.Legend.buildColors(),this.fill()),this.Legend.redraw(this.graphDim.width-this.options.domainGutter-this.options.cellPadding)},removeLegend:function(){"use strict";return this.options.displayLegend?(this.options.displayLegend=!1,this.Legend.remove(),!0):!1},showLegend:function(){"use strict";return this.options.displayLegend?!1:(this.options.displayLegend=!0,this.Legend.redraw(this.graphDim.width-this.options.domainGutter-this.options.cellPadding),!0)},highlight:function(a){"use strict";return(this.options.highlight=this.expandDateSetting(a)).length>0?(this.fill(),!0):!1},destroy:function(a){"use strict";return this.root.transition().duration(this.options.animationDuration).attr("width",0).attr("height",0).remove().each("end",function(){"function"==typeof a?a():"undefined"!=typeof a&&console.log("Provided callback for destroy() is not a function.")}),null},getSVG:function(){"use strict";for(var a={".cal-heatmap-container":{},".graph":{},".graph-rect":{},"rect.highlight":{},"rect.now":{},"text.highlight":{},"text.now":{},".domain-background":{},".graph-label":{},".subdomain-text":{},".q0":{},".qi":{}},b=1,c=this.options.legend.length+1;c>=b;b++)a[".q"+b]={};var d=this.root,e=["stroke","stroke-width","stroke-opacity","stroke-dasharray","stroke-dashoffset","stroke-linecap","stroke-miterlimit","fill","fill-opacity","fill-rule","marker","marker-start","marker-mid","marker-end","alignement-baseline","baseline-shift","dominant-baseline","glyph-orientation-horizontal","glyph-orientation-vertical","kerning","text-anchor","shape-rendering","text-transform","font-family","font","font-size","font-weight"],f=function(b,c,d){-1!==e.indexOf(c)&&(a[b][c]=d)},g=function(a){return d.select(a)[0][0]};for(var h in a)if(a.hasOwnProperty(h)){var i=g(h);if(null!==i)if("getComputedStyle"in window){var j=getComputedStyle(i,null);if(0!==j.length)for(var k=0;k<j.length;k++)f(h,j.item(k),j.getPropertyValue(j.item(k)));else for(var l in j)j.hasOwnProperty(l)&&f(h,l,j[l])}else if("currentStyle"in i){var m=i.currentStyle;for(var n in m)f(h,n,m[n])}}var o='<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><style type="text/css"><![CDATA[ ';for(var p in a){o+=p+" {\n";for(var q in a[p])o+="	"+q+":"+a[p][q]+";\n";o+="}\n"}return o+="]]></style>",o+=(new XMLSerializer).serializeToString(this.root[0][0]),o+="</svg>"}};var DomainPosition=function(){"use strict";this.positions=d3.map()};DomainPosition.prototype.getPosition=function(a){"use strict";return this.positions.get(a)},DomainPosition.prototype.getPositionFromIndex=function(a){"use strict";var b=this.getKeys();return this.positions.get(b[a])},DomainPosition.prototype.getLast=function(){"use strict";var a=this.getKeys();return this.positions.get(a[a.length-1])},DomainPosition.prototype.setPosition=function(a,b){"use strict";this.positions.set(a,b)},DomainPosition.prototype.shiftRightBy=function(a){"use strict";this.positions.forEach(function(b,c){this.set(b,c-a)});var b=this.getKeys();this.positions.remove(b[0])},DomainPosition.prototype.shiftLeftBy=function(a){"use strict";this.positions.forEach(function(b,c){this.set(b,c+a)});var b=this.getKeys();this.positions.remove(b[b.length-1])},DomainPosition.prototype.getKeys=function(){"use strict";return this.positions.keys().sort(function(a,b){return parseInt(a,10)-parseInt(b,10)})};var Legend=function(a){"use strict";this.calendar=a,this.computeDim(),null!==a.options.legendColors&&this.buildColors()};Legend.prototype.computeDim=function(){"use strict";var a=this.calendar.options;this.dim={width:a.legendCellSize*(a.legend.length+1)+a.legendCellPadding*a.legend.length,height:a.legendCellSize}},Legend.prototype.remove=function(){"use strict";this.calendar.root.select(".graph-legend").remove(),this.calendar.resize()},Legend.prototype.redraw=function(a){"use strict";function b(a){a.attr("width",i.legendCellSize).attr("height",i.legendCellSize).attr("x",function(a,b){return b*(i.legendCellSize+i.legendCellPadding)})}function c(){switch(i.legendHorizontalPosition){case"right":return"center"===i.legendVerticalPosition||"middle"===i.legendVerticalPosition?a+i.legendMargin[3]:a-f.getDim("width")-i.legendMargin[1];case"middle":case"center":return Math.round(a/2-f.getDim("width")/2);default:return i.legendMargin[3]}}function d(){return"bottom"===i.legendVerticalPosition?g.graphDim.height+i.legendMargin[0]-i.domainGutter-i.cellPadding:i.legendMargin[0]}if(!this.calendar.options.displayLegend)return!1;var e,f=this,g=this.calendar,h=g.root,i=g.options;this.computeDim();var j=i.legend.slice(0);j.push(j[j.length-1]+1);var k=g.root.select(".graph-legend");null!==k[0][0]?(h=k,e=h.select("g").selectAll("rect").data(j)):(h="top"===i.legendVerticalPosition?h.insert("svg",".graph"):h.append("svg"),h.attr("x",c()).attr("y",d()),e=h.attr("class","graph-legend").attr("height",f.getDim("height")).attr("width",f.getDim("width")).append("g").selectAll().data(j)),e.enter().append("rect").call(b).attr("class",function(a){return g.Legend.getClass(a,null===g.legendScale)}).attr("fill-opacity",0).call(function(a){null!==g.legendScale&&null!==i.legendColors&&i.legendColors.hasOwnProperty("base")&&a.attr("fill",i.legendColors.base)}).append("title"),e.exit().transition().duration(i.animationDuration).attr("fill-opacity",0).remove(),e.transition().delay(function(a,b){return i.animationDuration*b/10}).call(b).attr("fill-opacity",1).call(function(a){a.attr("fill",function(a,b){return null===g.legendScale?"":g.legendScale(0===b?a-1:i.legend[b-1])}),a.attr("class",function(a){return g.Legend.getClass(a,null===g.legendScale)})}),e.select("title").text(function(a,b){return 0===b?i.legendTitleFormat.lower.format({min:i.legend[b],name:i.itemName[1]}):b===j.length-1?i.legendTitleFormat.upper.format({max:i.legend[b-1],name:i.itemName[1]}):i.legendTitleFormat.inner.format({down:i.legend[b-1],up:i.legend[b],name:i.itemName[1]})}),h.transition().duration(i.animationDuration).attr("x",c()).attr("y",d()).attr("width",f.getDim("width")).attr("height",f.getDim("height")),h.select("g").transition().duration(i.animationDuration).attr("transform",function(){return"vertical"===i.legendOrientation?"rotate(90 "+i.legendCellSize/2+" "+i.legendCellSize/2+")":""}),g.resize()},Legend.prototype.getDim=function(a){"use strict";var b="horizontal"===this.calendar.options.legendOrientation;switch(a){case"width":return this.dim[b?"width":"height"];case"height":return this.dim[b?"height":"width"]}},Legend.prototype.buildColors=function(){"use strict";var a=this.calendar.options;if(null===a.legendColors)return this.calendar.legendScale=null,!1;var b=[];if(Array.isArray(a.legendColors))b=a.legendColors;else{if(!a.legendColors.hasOwnProperty("min")||!a.legendColors.hasOwnProperty("max"))return a.legendColors=null,!1;b=[a.legendColors.min,a.legendColors.max]}var c=a.legend.slice(0);c[0]>0?c.unshift(0):c[0]<0&&c.unshift(c[0]-(c[c.length-1]-c[0])/c.length);var d=d3.scale.linear().range(b).interpolate(d3.interpolateHcl).domain([d3.min(c),d3.max(c)]),e=c.map(function(a){return d(a)});return this.calendar.legendScale=d3.scale.threshold().domain(a.legend).range(e),!0},Legend.prototype.getClass=function(a,b){"use strict";if(null===a||isNaN(a))return"";for(var c=[this.calendar.options.legend.length+1],d=0,e=this.calendar.options.legend.length-1;e>=d;d++){if(this.calendar.options.legend[0]>0&&0>a){c=["1","i"];break}if(a<=this.calendar.options.legend[d]){c=[d+1];break}}return 0===a&&c.push(0),c.unshift(""),(c.join(" r")+(b?c.join(" q"):"")).trim()},String.prototype.format=function(){"use strict";var a=this;for(var b in arguments[0])if(arguments[0].hasOwnProperty(b)){var c=new RegExp("\\{"+b+"\\}","gi");a=a.replace(c,arguments[0][b])}return a}, true?!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5)], __WEBPACK_AMD_DEFINE_RESULT__ = function(){"use strict";return CalHeatMap}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__)):"object"==typeof module&&module.exports?module.exports=CalHeatMap:window.CalHeatMap=CalHeatMap;
+	function mergeRecursive(a,b){"use strict";for(var c in b)try{b[c].constructor===Object?a[c]=mergeRecursive(a[c],b[c]):a[c]=b[c]}catch(d){a[c]=b[c]}return a}function arrayEquals(a,b){"use strict";if(!b||!a)return!1;if(a.length!==b.length)return!1;for(var c=0;c<a.length;c++)if(a[c]instanceof Array&&b[c]instanceof Array){if(!arrayEquals(a[c],b[c]))return!1}else if(a[c]!==b[c])return!1;return!0}var d3= true?__webpack_require__(6):window.d3,CalHeatMap=function(){"use strict";function a(){d.verticalDomainLabel="top"===d.options.label.position||"bottom"===d.options.label.position,d.domainVerticalLabelHeight=null===d.options.label.height?Math.max(25,2*d.options.cellSize):d.options.label.height,d.domainHorizontalLabelWidth=0,""===d.options.domainLabelFormat&&null===d.options.label.height&&(d.domainVerticalLabelHeight=0),d.verticalDomainLabel||(d.domainVerticalLabelHeight=0,d.domainHorizontalLabelWidth=d.options.label.width),d.paint(),d.options.nextSelector!==!1&&d3.select(d.options.nextSelector).on("click."+d.options.itemNamespace,function(){return d3.event.preventDefault(),d.loadNextDomain(1)}),d.options.previousSelector!==!1&&d3.select(d.options.previousSelector).on("click."+d.options.itemNamespace,function(){return d3.event.preventDefault(),d.loadPreviousDomain(1)}),d.Legend.redraw(d.graphDim.width-d.options.domainGutter-d.options.cellPadding),d.afterLoad();var a=d.getDomainKeys();d.options.loadOnInit?d.getDatas(d.options.data,new Date(a[0]),d.getSubDomain(a[a.length-1]).pop(),function(){d.fill(),d.onComplete()}):d.onComplete(),d.checkIfMinDomainIsReached(a[0]),d.checkIfMaxDomainIsReached(d.getNextDomain().getTime())}function b(a,b){var c=d.options.cellSize*d._domainType[d.options.subDomain].column(a)+d.options.cellPadding*d._domainType[d.options.subDomain].column(a);return 2===arguments.length&&b===!0?c+=d.domainHorizontalLabelWidth+d.options.domainGutter+d.options.domainMargin[1]+d.options.domainMargin[3]:c}function c(a,b){var c=d.options.cellSize*d._domainType[d.options.subDomain].row(a)+d.options.cellPadding*d._domainType[d.options.subDomain].row(a);return 2===arguments.length&&b===!0&&(c+=d.options.domainGutter+d.domainVerticalLabelHeight+d.options.domainMargin[0]+d.options.domainMargin[2]),c}var d=this;this.allowedDataType=["json","csv","tsv","txt"],this.options={itemSelector:"#cal-heatmap",paintOnLoad:!0,range:12,cellSize:10,cellPadding:2,cellRadius:0,domainGutter:2,domainMargin:[0,0,0,0],domain:"hour",subDomain:"min",colLimit:null,rowLimit:null,weekStartOnMonday:!0,start:new Date,minDate:null,maxDate:null,data:"",dataType:this.allowedDataType[0],dataPostPayload:null,considerMissingDataAsZero:!1,loadOnInit:!0,verticalOrientation:!1,domainDynamicDimension:!0,label:{position:"bottom",align:"center",offset:{x:0,y:0},rotate:null,width:100,height:null},legend:[10,20,30,40],displayLegend:!0,legendCellSize:10,legendCellPadding:2,legendMargin:[0,0,0,0],legendVerticalPosition:"bottom",legendHorizontalPosition:"left",legendOrientation:"horizontal",legendColors:null,highlight:[],itemName:["item","items"],domainLabelFormat:null,subDomainTitleFormat:{empty:"{date}",filled:"{count} {name} {connector} {date}"},subDomainDateFormat:null,subDomainTextFormat:null,legendTitleFormat:{lower:"less than {min} {name}",inner:"between {down} and {up} {name}",upper:"more than {max} {name}"},animationDuration:500,nextSelector:!1,previousSelector:!1,itemNamespace:"cal-heatmap",tooltip:!1,onClick:null,afterLoad:null,afterLoadNextDomain:null,afterLoadPreviousDomain:null,onComplete:null,afterLoadData:function(a){return a},onMaxDomainReached:null,onMinDomainReached:null},this._domainType={min:{name:"minute",level:10,maxItemNumber:60,defaultRowNumber:10,defaultColumnNumber:6,row:function(a){return d.getSubDomainRowNumber(a)},column:function(a){return d.getSubDomainColumnNumber(a)},position:{x:function(a){return Math.floor(a.getMinutes()/d._domainType.min.row(a))},y:function(a){return a.getMinutes()%d._domainType.min.row(a)}},format:{date:"%H:%M, %A %B %-e, %Y",legend:"",connector:"at"},extractUnit:function(a){return new Date(a.getFullYear(),a.getMonth(),a.getDate(),a.getHours(),a.getMinutes()).getTime()}},hour:{name:"hour",level:20,maxItemNumber:function(a){switch(d.options.domain){case"day":return 24;case"week":return 168;case"month":return 24*(d.options.domainDynamicDimension?d.getDayCountInMonth(a):31)}},defaultRowNumber:6,defaultColumnNumber:function(a){switch(d.options.domain){case"day":return 4;case"week":return 28;case"month":return d.options.domainDynamicDimension?d.getDayCountInMonth(a):31}},row:function(a){return d.getSubDomainRowNumber(a)},column:function(a){return d.getSubDomainColumnNumber(a)},position:{x:function(a){return"month"===d.options.domain?d.options.colLimit>0||d.options.rowLimit>0?Math.floor((a.getHours()+24*(a.getDate()-1))/d._domainType.hour.row(a)):Math.floor(a.getHours()/d._domainType.hour.row(a))+4*(a.getDate()-1):"week"===d.options.domain?d.options.colLimit>0||d.options.rowLimit>0?Math.floor((a.getHours()+24*d.getWeekDay(a))/d._domainType.hour.row(a)):Math.floor(a.getHours()/d._domainType.hour.row(a))+4*d.getWeekDay(a):Math.floor(a.getHours()/d._domainType.hour.row(a))},y:function(a){var b=a.getHours();if(d.options.colLimit>0||d.options.rowLimit>0)switch(d.options.domain){case"month":b+=24*(a.getDate()-1);break;case"week":b+=24*d.getWeekDay(a)}return Math.floor(b%d._domainType.hour.row(a))}},format:{date:"%Hh, %A %B %-e, %Y",legend:"%H:00",connector:"at"},extractUnit:function(a){return new Date(a.getFullYear(),a.getMonth(),a.getDate(),a.getHours()).getTime()}},day:{name:"day",level:30,maxItemNumber:function(a){switch(d.options.domain){case"week":return 7;case"month":return d.options.domainDynamicDimension?d.getDayCountInMonth(a):31;case"year":return d.options.domainDynamicDimension?d.getDayCountInYear(a):366}},defaultColumnNumber:function(a){switch(a=new Date(a),d.options.domain){case"week":return 1;case"month":return d.options.domainDynamicDimension&&!d.options.verticalOrientation?d.getWeekNumber(new Date(a.getFullYear(),a.getMonth()+1,0))-d.getWeekNumber(a)+1:6;case"year":return d.options.domainDynamicDimension?d.getWeekNumber(new Date(a.getFullYear(),11,31))-d.getWeekNumber(new Date(a.getFullYear(),0))+1:54}},defaultRowNumber:7,row:function(a){return d.getSubDomainRowNumber(a)},column:function(a){return d.getSubDomainColumnNumber(a)},position:{x:function(a){switch(d.options.domain){case"week":return Math.floor(d.getWeekDay(a)/d._domainType.day.row(a));case"month":return d.options.colLimit>0||d.options.rowLimit>0?Math.floor((a.getDate()-1)/d._domainType.day.row(a)):d.getWeekNumber(a)-d.getWeekNumber(new Date(a.getFullYear(),a.getMonth()));case"year":return d.options.colLimit>0||d.options.rowLimit>0?Math.floor((d.getDayOfYear(a)-1)/d._domainType.day.row(a)):d.getWeekNumber(a)}},y:function(a){var b=d.getWeekDay(a);if(d.options.colLimit>0||d.options.rowLimit>0)switch(d.options.domain){case"year":b=d.getDayOfYear(a)-1;break;case"week":b=d.getWeekDay(a);break;case"month":b=a.getDate()-1}return Math.floor(b%d._domainType.day.row(a))}},format:{date:"%A %B %-e, %Y",legend:"%e %b",connector:"on"},extractUnit:function(a){return new Date(a.getFullYear(),a.getMonth(),a.getDate()).getTime()}},week:{name:"week",level:40,maxItemNumber:54,defaultColumnNumber:function(a){switch(a=new Date(a),d.options.domain){case"year":return d._domainType.week.maxItemNumber;case"month":return d.options.domainDynamicDimension?d.getWeekNumber(new Date(a.getFullYear(),a.getMonth()+1,0))-d.getWeekNumber(a):5}},defaultRowNumber:1,row:function(a){return d.getSubDomainRowNumber(a)},column:function(a){return d.getSubDomainColumnNumber(a)},position:{x:function(a){switch(d.options.domain){case"year":return Math.floor(d.getWeekNumber(a)/d._domainType.week.row(a));case"month":return Math.floor(d.getMonthWeekNumber(a)/d._domainType.week.row(a))}},y:function(a){return d.getWeekNumber(a)%d._domainType.week.row(a)}},format:{date:"%B Week #%W",legend:"%B Week #%W",connector:"in"},extractUnit:function(a){var b=new Date(a.getFullYear(),a.getMonth(),a.getDate()),c=b.getDay()-(d.options.weekStartOnMonday?1:0);return c<0&&(c=6),b.setDate(b.getDate()-c),b.getTime()}},month:{name:"month",level:50,maxItemNumber:12,defaultColumnNumber:12,defaultRowNumber:1,row:function(){return d.getSubDomainRowNumber()},column:function(){return d.getSubDomainColumnNumber()},position:{x:function(a){return Math.floor(a.getMonth()/d._domainType.month.row(a))},y:function(a){return a.getMonth()%d._domainType.month.row(a)}},format:{date:"%B %Y",legend:"%B",connector:"in"},extractUnit:function(a){return new Date(a.getFullYear(),a.getMonth()).getTime()}},year:{name:"year",level:60,row:function(){return d.options.rowLimit||1},column:function(){return d.options.colLimit||1},position:{x:function(){return 1},y:function(){return 1}},format:{date:"%Y",legend:"%Y",connector:"in"},extractUnit:function(a){return new Date(a.getFullYear()).getTime()}}};for(var e in this._domainType)if(this._domainType.hasOwnProperty(e)){var f=this._domainType[e];this._domainType["x_"+e]={name:"x_"+e,level:f.type,maxItemNumber:f.maxItemNumber,defaultRowNumber:f.defaultRowNumber,defaultColumnNumber:f.defaultColumnNumber,row:f.column,column:f.row,position:{x:f.position.y,y:f.position.x},format:f.format,extractUnit:f.extractUnit}}this.lastInsertedSvg=null,this._completed=!1,this._domains=d3.map(),this.graphDim={width:0,height:0},this.legendDim={width:0,height:0},this.NAVIGATE_LEFT=1,this.NAVIGATE_RIGHT=2,this.RESET_ALL_ON_UPDATE=0,this.RESET_SINGLE_ON_UPDATE=1,this.APPEND_ON_UPDATE=2,this.DEFAULT_LEGEND_MARGIN=10,this.root=null,this.tooltip=null,this._maxDomainReached=!1,this._minDomainReached=!1,this.domainPosition=new DomainPosition,this.Legend=null,this.legendScale=null,this.DSTDomain=[],this._init=function(){return d.getDomain(d.options.start).map(function(a){return a.getTime()}).map(function(a){d._domains.set(a,d.getSubDomain(a).map(function(a){return{t:d._domainType[d.options.subDomain].extractUnit(a),v:null}}))}),d.root=d3.select(d.options.itemSelector).append("svg").attr("class","cal-heatmap-container"),d.tooltip=d3.select(d.options.itemSelector).attr("style",function(){var a=d3.select(d.options.itemSelector).attr("style");return(null!==a?a:"")+"position:relative;"}).append("div").attr("class","ch-tooltip"),d.root.attr("x",0).attr("y",0).append("svg").attr("class","graph"),d.Legend=new Legend(d),d.options.paintOnLoad&&a(),!0},this.paint=function(a){function e(b,c,e,f){var g=0;switch(a){case!1:return g=c[e],c[e]+=f,d.domainPosition.setPosition(b,g),g;case d.NAVIGATE_RIGHT:return d.domainPosition.setPosition(b,c[e]),i=f,j=d.domainPosition.getPositionFromIndex(1),d.domainPosition.shiftRightBy(j),c[e];case d.NAVIGATE_LEFT:return g=-f,i=-g,j=c[e]-d.domainPosition.getLast(),d.domainPosition.setPosition(b,g),d.domainPosition.shiftLeftBy(i),g}}function f(a){switch(g.label.rotate){case"right":a.attr("transform",function(a){var c="rotate(90), ";switch(g.label.position){case"right":c+="translate(-"+b(a)+" , -"+b(a)+")";break;case"left":c+="translate(0, -"+d.domainHorizontalLabelWidth+")"}return c});break;case"left":a.attr("transform",function(a){var c="rotate(270), ";switch(g.label.position){case"right":c+="translate(-"+(b(a)+d.domainHorizontalLabelWidth)+" , "+b(a)+")";break;case"left":c+="translate(-"+d.domainHorizontalLabelWidth+" , "+d.domainHorizontalLabelWidth+")"}return c})}}var g=d.options;0===arguments.length&&(a=!1);var h=d.root.select(".graph").selectAll(".graph-domain").data(function(){var b=d.getDomainKeys();return a===d.NAVIGATE_LEFT?b.reverse():b},function(a){return a}),i=0,j=0,k=h.enter().append("svg").attr("width",function(a){return b(a,!0)}).attr("height",function(a){return c(a,!0)}).attr("x",function(a){return g.verticalOrientation?(d.graphDim.width=Math.max(d.graphDim.width,b(a,!0)),0):e(a,d.graphDim,"width",b(a,!0))}).attr("y",function(a){return g.verticalOrientation?e(a,d.graphDim,"height",c(a,!0)):(d.graphDim.height=Math.max(d.graphDim.height,c(a,!0)),0)}).attr("class",function(a){var b="graph-domain",c=new Date(a);switch(g.domain){case"hour":b+=" h_"+c.getHours();case"day":b+=" d_"+c.getDate()+" dy_"+c.getDay();case"week":b+=" w_"+d.getWeekNumber(c);case"month":b+=" m_"+(c.getMonth()+1);case"year":b+=" y_"+c.getFullYear()}return b});d.lastInsertedSvg=k,k.append("rect").attr("width",function(a){return b(a,!0)-g.domainGutter-g.cellPadding}).attr("height",function(a){return c(a,!0)-g.domainGutter-g.cellPadding}).attr("class","domain-background");var l=k.append("svg").attr("x",function(){return"left"===g.label.position?d.domainHorizontalLabelWidth+g.domainMargin[3]:g.domainMargin[3]}).attr("y",function(){return"top"===g.label.position?d.domainVerticalLabelHeight+g.domainMargin[0]:g.domainMargin[0]}).attr("class","graph-subdomain-group"),m=l.selectAll("g").data(function(a){return d._domains.get(a)}).enter().append("g");m.append("rect").attr("class",function(a){return"graph-rect"+d.getHighlightClassName(a.t)+(null!==g.onClick?" hover_cursor":"")}).attr("width",g.cellSize).attr("height",g.cellSize).attr("x",function(a){return d.positionSubDomainX(a.t)}).attr("y",function(a){return d.positionSubDomainY(a.t)}).on("click",function(a){if(null!==g.onClick)return d.onClick(new Date(a.t),a.v)}).call(function(a){g.cellRadius>0&&a.attr("rx",g.cellRadius).attr("ry",g.cellRadius),null!==d.legendScale&&null!==g.legendColors&&g.legendColors.hasOwnProperty("base")&&a.attr("fill",g.legendColors.base),g.tooltip&&(a.on("mouseover",function(a){var b=this.parentNode.parentNode;d.tooltip.html(d.getSubDomainTitle(a)).attr("style","display: block;");var c=d.positionSubDomainX(a.t)-d.tooltip[0][0].offsetWidth/2+g.cellSize/2,e=d.positionSubDomainY(a.t)-d.tooltip[0][0].offsetHeight-g.cellSize/2;c+=parseInt(b.getAttribute("x"),10),e+=parseInt(b.getAttribute("y"),10),c+=parseInt(d.root.select(".graph").attr("x"),10),e+=parseInt(d.root.select(".graph").attr("y"),10),c+=parseInt(b.parentNode.getAttribute("x"),10),e+=parseInt(b.parentNode.getAttribute("y"),10),d.tooltip.attr("style","display: block; left: "+c+"px; top: "+e+"px;")}),a.on("mouseout",function(){d.tooltip.attr("style","display:none").html("")}))}),g.tooltip||m.append("title").text(function(a){return d.formatDate(new Date(a.t),g.subDomainDateFormat)}),""!==g.domainLabelFormat&&k.append("text").attr("class","graph-label").attr("y",function(a){var b=g.domainMargin[0];switch(g.label.position){case"top":b+=d.domainVerticalLabelHeight/2;break;case"bottom":b+=c(a)+d.domainVerticalLabelHeight/2}return b+g.label.offset.y*("right"===g.label.rotate&&"right"===g.label.position||"left"===g.label.rotate&&"left"===g.label.position?-1:1)}).attr("x",function(a){var c=g.domainMargin[3];switch(g.label.position){case"right":c+=b(a);break;case"bottom":case"top":c+=b(a)/2}return"right"===g.label.align?c+d.domainHorizontalLabelWidth-g.label.offset.x*("right"===g.label.rotate?-1:1):c+g.label.offset.x}).attr("text-anchor",function(){switch(g.label.align){case"start":case"left":return"start";case"end":case"right":return"end";default:return"middle"}}).attr("dominant-baseline",function(){return d.verticalDomainLabel?"middle":"top"}).text(function(a){return d.formatDate(new Date(a),g.domainLabelFormat)}).call(f),null!==g.subDomainTextFormat&&m.append("text").attr("class",function(a){return"subdomain-text"+d.getHighlightClassName(a.t)}).attr("x",function(a){return d.positionSubDomainX(a.t)+g.cellSize/2}).attr("y",function(a){return d.positionSubDomainY(a.t)+g.cellSize/2}).attr("text-anchor","middle").attr("dominant-baseline","central").text(function(a){return d.formatDate(new Date(a.t),g.subDomainTextFormat)}),a!==!1&&h.transition().duration(g.animationDuration).attr("x",function(a){return g.verticalOrientation?0:d.domainPosition.getPosition(a)}).attr("y",function(a){return g.verticalOrientation?d.domainPosition.getPosition(a):0});var n=d.graphDim.width,o=d.graphDim.height;g.verticalOrientation?d.graphDim.height+=i-j:d.graphDim.width+=i-j,h.exit().transition().duration(g.animationDuration).attr("x",function(c){if(g.verticalOrientation)return 0;switch(a){case d.NAVIGATE_LEFT:return Math.min(d.graphDim.width,n);case d.NAVIGATE_RIGHT:return-b(c,!0)}}).attr("y",function(b){if(!g.verticalOrientation)return 0;switch(a){case d.NAVIGATE_LEFT:return Math.min(d.graphDim.height,o);case d.NAVIGATE_RIGHT:return-c(b,!0)}}).remove(),d.resize()}};CalHeatMap.prototype={init:function(a){"use strict";function b(a,b,c){if((b&&a===!1||a instanceof Element||"string"==typeof a)&&""!==a)return!0;throw new Error("The "+c+" is not valid")}function c(a){switch(a){case"year":return"month";case"month":return"day";case"week":return"day";case"day":return"hour";default:return"min"}}function d(){if(!k._domainType.hasOwnProperty(l.domain)||"min"===l.domain||"x_"===l.domain.substring(0,2))throw new Error("The domain '"+l.domain+"' is not valid");if(!k._domainType.hasOwnProperty(l.subDomain)||"year"===l.subDomain)throw new Error("The subDomain '"+l.subDomain+"' is not valid");if(k._domainType[l.domain].level<=k._domainType[l.subDomain].level)throw new Error("'"+l.subDomain+"' is not a valid subDomain to '"+l.domain+"'");return!0}function e(){if(!a.hasOwnProperty("label")||a.hasOwnProperty("label")&&!a.label.hasOwnProperty("align")){switch(l.label.position){case"left":l.label.align="right";break;case"right":l.label.align="left";break;default:l.label.align="center"}"left"===l.label.rotate?l.label.align="right":"right"===l.label.rotate&&(l.label.align="left")}(!a.hasOwnProperty("label")||a.hasOwnProperty("label")&&!a.label.hasOwnProperty("offset"))&&("left"!==l.label.position&&"right"!==l.label.position||(l.label.offset={x:10,y:15}))}function f(){switch(l.legendVerticalPosition){case"top":l.legendMargin[2]=k.DEFAULT_LEGEND_MARGIN;break;case"bottom":l.legendMargin[0]=k.DEFAULT_LEGEND_MARGIN;break;case"middle":case"center":l.legendMargin["right"===l.legendHorizontalPosition?3:1]=k.DEFAULT_LEGEND_MARGIN}}function g(a){switch("number"==typeof a&&(a=[a]),Array.isArray(a)||(console.log("Margin only takes an integer or an array of integers"),a=[0]),a.length){case 1:return[a[0],a[0],a[0],a[0]];case 2:return[a[0],a[1],a[0],a[1]];case 3:return[a[0],a[1],a[2],a[1]];case 4:return a;default:return a.slice(0,4)}}function h(a){return"string"==typeof a?[a,a+(""!==a?"s":"")]:Array.isArray(a)?1===a.length?[a[0],a[0]+"s"]:a.length>2?a.slice(0,2):a:["item","items"]}function i(a){return a>0?a:null}function j(a){return a>0&&l.colLimit>0?(console.log("colLimit and rowLimit are mutually exclusive, rowLimit will be ignored"),null):a>0?a:null}var k=this,l=k.options=mergeRecursive(k.options,a);if(d(),b(l.itemSelector,!1,"itemSelector"),k.allowedDataType.indexOf(l.dataType)===-1)throw new Error("The data type '"+l.dataType+"' is not valid data type");if(null===d3.select(l.itemSelector)[0][0])throw new Error("The node '"+l.itemSelector+"' specified in itemSelector does not exists");try{b(l.nextSelector,!0,"nextSelector"),b(l.previousSelector,!0,"previousSelector")}catch(a){return console.log(a.message),!1}a.hasOwnProperty("subDomain")||(this.options.subDomain=c(a.domain)),"string"==typeof l.itemNamespace&&""!==l.itemNamespace||(console.log("itemNamespace can not be empty, falling back to cal-heatmap"),l.itemNamespace="cal-heatmap");var m=["data","onComplete","onClick","afterLoad","afterLoadData","afterLoadPreviousDomain","afterLoadNextDomain"];for(var n in m)a.hasOwnProperty(m[n])&&(l[m[n]]=a[m[n]]);return l.subDomainDateFormat="string"==typeof l.subDomainDateFormat||"function"==typeof l.subDomainDateFormat?l.subDomainDateFormat:this._domainType[l.subDomain].format.date,l.domainLabelFormat="string"==typeof l.domainLabelFormat||"function"==typeof l.domainLabelFormat?l.domainLabelFormat:this._domainType[l.domain].format.legend,l.subDomainTextFormat="string"==typeof l.subDomainTextFormat&&""!==l.subDomainTextFormat||"function"==typeof l.subDomainTextFormat?l.subDomainTextFormat:null,l.domainMargin=g(l.domainMargin),l.legendMargin=g(l.legendMargin),l.highlight=k.expandDateSetting(l.highlight),l.itemName=h(l.itemName),l.colLimit=i(l.colLimit),l.rowLimit=j(l.rowLimit),a.hasOwnProperty("legendMargin")||f(),e(),this._init()},expandDateSetting:function(a){"use strict";return Array.isArray(a)||(a=[a]),a.map(function(a){return"now"===a?new Date:a instanceof Date&&a}).filter(function(a){return a!==!1})},fill:function(a){"use strict";function b(a){return null!==d.legendScale&&void a.attr("fill",function(a){return null===a.v&&e.hasOwnProperty("considerMissingDataAsZero")&&!e.considerMissingDataAsZero&&e.legendColors.hasOwnProperty("base")?e.legendColors.base:null!==e.legendColors&&e.legendColors.hasOwnProperty("empty")&&(0===a.v||null===a.v&&e.hasOwnProperty("considerMissingDataAsZero")&&e.considerMissingDataAsZero)?e.legendColors.empty:a.v<0&&e.legend[0]>0&&null!==e.legendColors&&e.legendColors.hasOwnProperty("overflow")?e.legendColors.overflow:d.legendScale(Math.min(a.v,e.legend[e.legend.length-1]))})}function c(a){"function"==typeof e.subDomainTextFormat&&a.text(function(a){return e.subDomainTextFormat(a.t,a.v)})}var d=this,e=d.options;0===arguments.length&&(a=d.root.selectAll(".graph-domain"));var f=a.selectAll("svg").selectAll("g").data(function(a){return d._domains.get(a)});f.transition().duration(e.animationDuration).select("rect").attr("class",function(a){var b=d.getHighlightClassName(a.t).trim().split(" "),c=d.dateIsLessThan(a.t,new Date),f=d.dateIsEqual(a.t,new Date);return(null===d.legendScale||null===a.v&&e.hasOwnProperty("considerMissingDataAsZero")&&!e.considerMissingDataAsZero&&!e.legendColors.hasOwnProperty("base"))&&b.push("graph-rect"),f?b.push("now"):c||b.push("future"),null!==a.v?b.push(d.Legend.getClass(a.v,null===d.legendScale)):e.considerMissingDataAsZero&&c&&b.push(d.Legend.getClass(0,null===d.legendScale)),null!==e.onClick&&b.push("hover_cursor"),b.join(" ")}).call(b),f.transition().duration(e.animationDuration).select("title").text(function(a){return d.getSubDomainTitle(a)}),f.transition().duration(e.animationDuration).select("text").attr("class",function(a){return"subdomain-text"+d.getHighlightClassName(a.t)}).call(c)},triggerEvent:function(a,b,c){"use strict";return!!(3===arguments.length&&c||null===this.options[a])||("function"==typeof this.options[a]?("function"==typeof b&&(b=b()),this.options[a].apply(this,b)):(console.log("Provided callback for "+a+" is not a function."),!1))},onClick:function(a,b){"use strict";return this.triggerEvent("onClick",[a,b])},afterLoad:function(){"use strict";return this.triggerEvent("afterLoad")},onComplete:function(){"use strict";var a=this.triggerEvent("onComplete",[],this._completed);return this._completed=!0,a},afterLoadPreviousDomain:function(a){"use strict";var b=this;return this.triggerEvent("afterLoadPreviousDomain",function(){var c=b.getSubDomain(a);return[c.shift(),c.pop()]})},afterLoadNextDomain:function(a){"use strict";var b=this;return this.triggerEvent("afterLoadNextDomain",function(){var c=b.getSubDomain(a);return[c.shift(),c.pop()]})},onMinDomainReached:function(a){"use strict";return this._minDomainReached=a,this.triggerEvent("onMinDomainReached",[a])},onMaxDomainReached:function(a){"use strict";return this._maxDomainReached=a,this.triggerEvent("onMaxDomainReached",[a])},checkIfMinDomainIsReached:function(a,b){"use strict";this.minDomainIsReached(a)&&this.onMinDomainReached(!0),2===arguments.length&&this._maxDomainReached&&!this.maxDomainIsReached(b)&&this.onMaxDomainReached(!1)},checkIfMaxDomainIsReached:function(a,b){"use strict";this.maxDomainIsReached(a)&&this.onMaxDomainReached(!0),2===arguments.length&&this._minDomainReached&&!this.minDomainIsReached(b)&&this.onMinDomainReached(!1)},formatNumber:d3.format(",g"),formatDate:function(a,b){"use strict";if(arguments.length<2&&(b="title"),"function"==typeof b)return b(a);var c=d3.time.format(b);return c(a)},getSubDomainTitle:function(a){"use strict";if(null!==a.v||this.options.considerMissingDataAsZero){var b=a.v;return null===b&&this.options.considerMissingDataAsZero&&(b=0),this.options.subDomainTitleFormat.filled.format({count:this.formatNumber(b),name:this.options.itemName[1!==b?1:0],connector:this._domainType[this.options.subDomain].format.connector,date:this.formatDate(new Date(a.t),this.options.subDomainDateFormat)})}return this.options.subDomainTitleFormat.empty.format({date:this.formatDate(new Date(a.t),this.options.subDomainDateFormat)})},loadNextDomain:function(a){"use strict";if(this._maxDomainReached||0===a)return!1;var b=this.loadNewDomains(this.NAVIGATE_RIGHT,this.getDomain(this.getNextDomain(),a));return this.afterLoadNextDomain(b.end),this.checkIfMaxDomainIsReached(this.getNextDomain().getTime(),b.start),!0},loadPreviousDomain:function(a){"use strict";if(this._minDomainReached||0===a)return!1;var b=this.loadNewDomains(this.NAVIGATE_LEFT,this.getDomain(this.getDomainKeys()[0],-a).reverse());return this.afterLoadPreviousDomain(b.start),this.checkIfMinDomainIsReached(b.start,b.end),!0},loadNewDomains:function(a,b){"use strict";function c(a){return{t:d._domainType[d.options.subDomain].extractUnit(a),v:null}}for(var d=this,e=a===this.NAVIGATE_LEFT,f=-1,g=b.length,h=this.getDomainKeys();++f<g;){if(e&&this.minDomainIsReached(b[f])){b=b.slice(0,f+1);break}if(!e&&this.maxDomainIsReached(b[f])){b=b.slice(0,f);break}}for(b=b.slice(-this.options.range),f=0,g=b.length;f<g;f++)this._domains.set(b[f].getTime(),this.getSubDomain(b[f]).map(c)),this._domains.remove(e?h.pop():h.shift());return h=this.getDomainKeys(),e&&(b=b.reverse()),this.paint(a),this.getDatas(this.options.data,b[0],this.getSubDomain(b[b.length-1]).pop(),function(){d.fill(d.lastInsertedSvg)}),{start:b[e?0:1],end:h[h.length-1]}},maxDomainIsReached:function(a){"use strict";return null!==this.options.maxDate&&this.options.maxDate.getTime()<a},minDomainIsReached:function(a){"use strict";return null!==this.options.minDate&&this.options.minDate.getTime()>=a},getDomainKeys:function(){"use strict";return this._domains.keys().map(function(a){return parseInt(a,10)}).sort(function(a,b){return a-b})},positionSubDomainX:function(a){"use strict";var b=this._domainType[this.options.subDomain].position.x(new Date(a));return b*this.options.cellSize+b*this.options.cellPadding},positionSubDomainY:function(a){"use strict";var b=this._domainType[this.options.subDomain].position.y(new Date(a));return b*this.options.cellSize+b*this.options.cellPadding},getSubDomainColumnNumber:function(a){"use strict";if(this.options.rowLimit>0){var b=this._domainType[this.options.subDomain].maxItemNumber;return"function"==typeof b&&(b=b(a)),Math.ceil(b/this.options.rowLimit)}var c=this._domainType[this.options.subDomain].defaultColumnNumber;return"function"==typeof c&&(c=c(a)),this.options.colLimit||c},getSubDomainRowNumber:function(a){"use strict";if(this.options.colLimit>0){var b=this._domainType[this.options.subDomain].maxItemNumber;return"function"==typeof b&&(b=b(a)),Math.ceil(b/this.options.colLimit)}var c=this._domainType[this.options.subDomain].defaultRowNumber;return"function"==typeof c&&(c=c(a)),this.options.rowLimit||c},getHighlightClassName:function(a){"use strict";if(a=new Date(a),this.options.highlight.length>0)for(var b in this.options.highlight)if(this.dateIsEqual(this.options.highlight[b],a))return this.isNow(this.options.highlight[b])?" highlight-now":" highlight";return""},isNow:function(a){"use strict";return this.dateIsEqual(a,new Date)},dateIsEqual:function(a,b){"use strict";switch(a instanceof Date||(a=new Date(a)),b instanceof Date||(b=new Date(b)),this.options.subDomain){case"x_min":case"min":return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()&&a.getHours()===b.getHours()&&a.getMinutes()===b.getMinutes();case"x_hour":case"hour":return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()&&a.getHours()===b.getHours();case"x_day":case"day":return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();case"x_week":case"week":return a.getFullYear()===b.getFullYear()&&this.getWeekNumber(a)===this.getWeekNumber(b);case"x_month":case"month":return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth();default:return!1}},dateIsLessThan:function(a,b){"use strict";function c(a,b){switch(b){case"x_min":case"min":return new Date(a.getFullYear(),a.getMonth(),a.getDate(),a.getHours(),a.getMinutes()).getTime();case"x_hour":case"hour":return new Date(a.getFullYear(),a.getMonth(),a.getDate(),a.getHours()).getTime();case"x_day":case"day":return new Date(a.getFullYear(),a.getMonth(),a.getDate()).getTime();case"x_week":case"week":case"x_month":case"month":return new Date(a.getFullYear(),a.getMonth()).getTime();default:return a.getTime()}}return a instanceof Date||(a=new Date(a)),b instanceof Date||(b=new Date(b)),c(a,this.options.subDomain)<c(b,this.options.subDomain)},getDayOfYear:d3.time.format("%j"),getWeekNumber:function(a){"use strict";var b=this.options.weekStartOnMonday===!0?d3.time.format("%W"):d3.time.format("%U");return b(a)},getMonthWeekNumber:function(a){"use strict";"number"==typeof a&&(a=new Date(a));var b=this.getWeekNumber(new Date(a.getFullYear(),a.getMonth()));return this.getWeekNumber(a)-b-1},getWeekNumberInYear:function(a){"use strict";"number"==typeof a&&(a=new Date(a))},getDayCountInMonth:function(a){"use strict";return this.getEndOfMonth(a).getDate()},getDayCountInYear:function(a){"use strict";return"number"==typeof a&&(a=new Date(a)),1===new Date(a.getFullYear(),1,29).getMonth()?366:365},getWeekDay:function(a){"use strict";return this.options.weekStartOnMonday===!1?a.getDay():0===a.getDay()?6:a.getDay()-1},getEndOfMonth:function(a){"use strict";return"number"==typeof a&&(a=new Date(a)),new Date(a.getFullYear(),a.getMonth()+1,0)},jumpDate:function(a,b,c){"use strict";var d=new Date(a);switch(c){case"hour":d.setHours(d.getHours()+b);break;case"day":d.setHours(d.getHours()+24*b);break;case"week":d.setHours(d.getHours()+24*b*7);break;case"month":d.setMonth(d.getMonth()+b);break;case"year":d.setFullYear(d.getFullYear()+b)}return new Date(d)},getMinuteDomain:function(a,b){"use strict";var c=new Date(a.getFullYear(),a.getMonth(),a.getDate(),a.getHours()),d=null;return d=b instanceof Date?new Date(b.getFullYear(),b.getMonth(),b.getDate(),b.getHours()):new Date(+c+1e3*b*60),d3.time.minutes(Math.min(c,d),Math.max(c,d))},getHourDomain:function(a,b){"use strict";var c=new Date(a.getFullYear(),a.getMonth(),a.getDate(),a.getHours()),d=null;b instanceof Date?d=new Date(b.getFullYear(),b.getMonth(),b.getDate(),b.getHours()):(d=new Date(c),d.setHours(d.getHours()+b));var e=d3.time.hours(Math.min(c,d),Math.max(c,d)),f=0,g=e.length;for(f=0;f<g;f++)if(f>0&&e[f].getHours()===e[f-1].getHours()){this.DSTDomain.push(e[f].getTime()),e.splice(f,1);break}return"number"==typeof b&&e.length>Math.abs(b)&&e.splice(e.length-1,1),e},getDayDomain:function(a,b){"use strict";var c=new Date(a.getFullYear(),a.getMonth(),a.getDate()),d=null;return b instanceof Date?d=new Date(b.getFullYear(),b.getMonth(),b.getDate()):(d=new Date(c),d=new Date(d.setDate(d.getDate()+parseInt(b,10)))),d3.time.days(Math.min(c,d),Math.max(c,d))},getWeekDomain:function(a,b){"use strict";var c;this.options.weekStartOnMonday===!1?c=new Date(a.getFullYear(),a.getMonth(),a.getDate()-a.getDay()):1===a.getDay()?c=new Date(a.getFullYear(),a.getMonth(),a.getDate()):0===a.getDay()?(c=new Date(a.getFullYear(),a.getMonth(),a.getDate()),c.setDate(c.getDate()-6)):c=new Date(a.getFullYear(),a.getMonth(),a.getDate()-a.getDay()+1);var d=new Date(c),e=b;return"object"!=typeof b&&(e=new Date(d.setDate(d.getDate()+7*b))),this.options.weekStartOnMonday===!0?d3.time.mondays(Math.min(c,e),Math.max(c,e)):d3.time.sundays(Math.min(c,e),Math.max(c,e))},getMonthDomain:function(a,b){"use strict";var c=new Date(a.getFullYear(),a.getMonth()),d=null;return b instanceof Date?d=new Date(b.getFullYear(),b.getMonth()):(d=new Date(c),d=d.setMonth(d.getMonth()+b)),d3.time.months(Math.min(c,d),Math.max(c,d))},getYearDomain:function(a,b){
+	"use strict";var c=new Date(a.getFullYear(),0),d=null;return d=b instanceof Date?new Date(b.getFullYear(),0):new Date(a.getFullYear()+b,0),d3.time.years(Math.min(c,d),Math.max(c,d))},getDomain:function(a,b){"use strict";switch("number"==typeof a&&(a=new Date(a)),arguments.length<2&&(b=this.options.range),this.options.domain){case"hour":var c=this.getHourDomain(a,b);return"number"==typeof b&&c.length<b&&(b>0?c.push(this.getHourDomain(c[c.length-1],2)[1]):c.shift(this.getHourDomain(c[0],-2)[0])),c;case"day":return this.getDayDomain(a,b);case"week":return this.getWeekDomain(a,b);case"month":return this.getMonthDomain(a,b);case"year":return this.getYearDomain(a,b)}},getSubDomain:function(a){"use strict";"number"==typeof a&&(a=new Date(a));var b=this,c=function(a,c){switch(c){case"year":return b.getDayCountInYear(a);case"month":return b.getDayCountInMonth(a);case"week":return 7}},d=function(a,b){switch(b){case"hour":return 60;case"day":return 1440;case"week":return 10080}},e=function(a,c){switch(c){case"day":return 24;case"week":return 168;case"month":return 24*b.getDayCountInMonth(a)}},f=function(a,c){if("month"===c){var d=new Date(a.getFullYear(),a.getMonth()+1,0),e=b.getWeekNumber(d),f=b.getWeekNumber(new Date(a.getFullYear(),a.getMonth()));return f>e&&(f=0,e++),e-f+1}if("year"===c)return b.getWeekNumber(new Date(a.getFullYear(),11,31))};switch(this.options.subDomain){case"x_min":case"min":return this.getMinuteDomain(a,d(a,this.options.domain));case"x_hour":case"hour":return this.getHourDomain(a,e(a,this.options.domain));case"x_day":case"day":return this.getDayDomain(a,c(a,this.options.domain));case"x_week":case"week":return this.getWeekDomain(a,f(a,this.options.domain));case"x_month":case"month":return this.getMonthDomain(a,12)}},getNextDomain:function(a){"use strict";return 0===arguments.length&&(a=1),this.getDomain(this.jumpDate(this.getDomainKeys().pop(),a,this.options.domain),1)[0]},getPreviousDomain:function(a){"use strict";return 0===arguments.length&&(a=1),this.getDomain(this.jumpDate(this.getDomainKeys().shift(),-a,this.options.domain),1)[0]},getDatas:function(a,b,c,d,e,f){"use strict";var g=this;arguments.length<5&&(e=!0),arguments.length<6&&(f=this.APPEND_ON_UPDATE);var h=function(a){e!==!1?"function"==typeof e?a=e(a):"function"==typeof g.options.afterLoadData?a=g.options.afterLoadData(a):console.log("Provided callback for afterLoadData is not a function."):"csv"!==g.options.dataType&&"tsv"!==g.options.dataType||(a=this.interpretCSV(a)),g.parseDatas(a,f,b,c),"function"==typeof d&&d()};switch(typeof a){case"string":if(""===a)return h({}),!0;var i=this.parseURI(a,b,c),j="GET";null!==g.options.dataPostPayload&&(j="POST");var k=null;switch(null!==g.options.dataPostPayload&&(k=this.parseURI(g.options.dataPostPayload,b,c)),this.options.dataType){case"json":d3.json(i,h).send(j,k);break;case"csv":d3.csv(i,h).send(j,k);break;case"tsv":d3.tsv(i,h).send(j,k);break;case"txt":d3.text(i,"text/plain",h).send(j,k)}return!1;case"object":if(a===Object(a))return h(a),!1;default:return h({}),!0}},parseDatas:function(a,b,c,d){"use strict";b===this.RESET_ALL_ON_UPDATE&&this._domains.forEach(function(a,b){b.forEach(function(a,b,c){c[b].v=null})});var e={},f=function(a){return a.t};for(var g in a){var h=new Date(1e3*g),i=this.getDomain(h)[0].getTime();if(this.DSTDomain.indexOf(i)>=0&&this._domains.has(i-36e5)&&(i-=36e5),!isNaN(g)&&a.hasOwnProperty(g)&&this._domains.has(i)&&i>=+c&&i<+d){var j=this._domains.get(i);e.hasOwnProperty(i)||(e[i]=j.map(f));var k=e[i].indexOf(this._domainType[this.options.subDomain].extractUnit(h));b===this.RESET_SINGLE_ON_UPDATE?j[k].v=a[g]:isNaN(j[k].v)?j[k].v=a[g]:j[k].v+=a[g]}}},parseURI:function(a,b,c){"use strict";return a=a.replace(/\{\{t:start\}\}/g,b.getTime()/1e3),a=a.replace(/\{\{t:end\}\}/g,c.getTime()/1e3),a=a.replace(/\{\{d:start\}\}/g,b.toISOString()),a=a.replace(/\{\{d:end\}\}/g,c.toISOString())},interpretCSV:function(a){"use strict";var b,c,d={},e=Object.keys(a[0]);for(b=0,c=a.length;b<c;b++)d[a[b][e[0]]]=+a[b][e[1]];return d},resize:function(){"use strict";var a=this,b=a.options,c=b.displayLegend?a.Legend.getDim("width")+b.legendMargin[1]+b.legendMargin[3]:0,d=b.displayLegend?a.Legend.getDim("height")+b.legendMargin[0]+b.legendMargin[2]:0,e=a.graphDim.width-b.domainGutter-b.cellPadding,f=a.graphDim.height-b.domainGutter-b.cellPadding;this.root.transition().duration(b.animationDuration).attr("width",function(){return"middle"===b.legendVerticalPosition||"center"===b.legendVerticalPosition?e+c:Math.max(e,c)}).attr("height",function(){return"middle"===b.legendVerticalPosition||"center"===b.legendVerticalPosition?Math.max(f,d):f+d}),this.root.select(".graph").transition().duration(b.animationDuration).attr("y",function(){return"top"===b.legendVerticalPosition?d:0}).attr("x",function(){return"middle"!==b.legendVerticalPosition&&"center"!==b.legendVerticalPosition||"left"!==b.legendHorizontalPosition?0:c})},next:function(a){"use strict";return 0===arguments.length&&(a=1),this.loadNextDomain(a)},previous:function(a){"use strict";return 0===arguments.length&&(a=1),this.loadPreviousDomain(a)},jumpTo:function(a,b){"use strict";arguments.length<2&&(b=!1);var c=this.getDomainKeys(),d=c[0],e=c[c.length-1];return a<d?this.loadPreviousDomain(this.getDomain(d,a).length):b?this.loadNextDomain(this.getDomain(d,a).length):a>e&&this.loadNextDomain(this.getDomain(e,a).length)},rewind:function(){"use strict";this.jumpTo(this.options.start,!0)},update:function(a,b,c){"use strict";arguments.length<2&&(b=!0),arguments.length<3&&(c=this.RESET_ALL_ON_UPDATE);var d=this.getDomainKeys(),e=this;this.getDatas(a,new Date(d[0]),this.getSubDomain(d[d.length-1]).pop(),function(){e.fill()},b,c)},setLegend:function(){"use strict";var a=this.options.legend.slice(0);arguments.length>=1&&Array.isArray(arguments[0])&&(this.options.legend=arguments[0]),arguments.length>=2&&(Array.isArray(arguments[1])&&arguments[1].length>=2?this.options.legendColors=[arguments[1][0],arguments[1][1]]:this.options.legendColors=arguments[1]),(arguments.length>0&&!arrayEquals(a,this.options.legend)||arguments.length>=2)&&(this.Legend.buildColors(),this.fill()),this.Legend.redraw(this.graphDim.width-this.options.domainGutter-this.options.cellPadding)},removeLegend:function(){"use strict";return!!this.options.displayLegend&&(this.options.displayLegend=!1,this.Legend.remove(),!0)},showLegend:function(){"use strict";return!this.options.displayLegend&&(this.options.displayLegend=!0,this.Legend.redraw(this.graphDim.width-this.options.domainGutter-this.options.cellPadding),!0)},highlight:function(a){"use strict";return(this.options.highlight=this.expandDateSetting(a)).length>0&&(this.fill(),!0)},destroy:function(a){"use strict";return this.root.transition().duration(this.options.animationDuration).attr("width",0).attr("height",0).remove().each("end",function(){"function"==typeof a?a():"undefined"!=typeof a&&console.log("Provided callback for destroy() is not a function.")}),null},getSVG:function(){"use strict";for(var a={".cal-heatmap-container":{},".graph":{},".graph-rect":{},"rect.highlight":{},"rect.now":{},"rect.highlight-now":{},"text.highlight":{},"text.now":{},"text.highlight-now":{},".domain-background":{},".graph-label":{},".subdomain-text":{},".q0":{},".qi":{}},b=1,c=this.options.legend.length+1;b<=c;b++)a[".q"+b]={};var d=this.root,e=["stroke","stroke-width","stroke-opacity","stroke-dasharray","stroke-dashoffset","stroke-linecap","stroke-miterlimit","fill","fill-opacity","fill-rule","marker","marker-start","marker-mid","marker-end","alignement-baseline","baseline-shift","dominant-baseline","glyph-orientation-horizontal","glyph-orientation-vertical","kerning","text-anchor","shape-rendering","text-transform","font-family","font","font-size","font-weight"],f=function(b,c,d){e.indexOf(c)!==-1&&(a[b][c]=d)},g=function(a){return d.select(a)[0][0]};for(var h in a)if(a.hasOwnProperty(h)){var i=g(h);if(null!==i)if("getComputedStyle"in window){var j=getComputedStyle(i,null);if(0!==j.length)for(var k=0;k<j.length;k++)f(h,j.item(k),j.getPropertyValue(j.item(k)));else for(var l in j)j.hasOwnProperty(l)&&f(h,l,j[l])}else if("currentStyle"in i){var m=i.currentStyle;for(var n in m)f(h,n,m[n])}}var o='<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><style type="text/css"><![CDATA[ ';for(var p in a){o+=p+" {\n";for(var q in a[p])o+="\t"+q+":"+a[p][q]+";\n";o+="}\n"}return o+="]]></style>",o+=(new XMLSerializer).serializeToString(this.root[0][0]),o+="</svg>"}};var DomainPosition=function(){"use strict";this.positions=d3.map()};DomainPosition.prototype.getPosition=function(a){"use strict";return this.positions.get(a)},DomainPosition.prototype.getPositionFromIndex=function(a){"use strict";var b=this.getKeys();return this.positions.get(b[a])},DomainPosition.prototype.getLast=function(){"use strict";var a=this.getKeys();return this.positions.get(a[a.length-1])},DomainPosition.prototype.setPosition=function(a,b){"use strict";this.positions.set(a,b)},DomainPosition.prototype.shiftRightBy=function(a){"use strict";this.positions.forEach(function(b,c){this.set(b,c-a)});var b=this.getKeys();this.positions.remove(b[0])},DomainPosition.prototype.shiftLeftBy=function(a){"use strict";this.positions.forEach(function(b,c){this.set(b,c+a)});var b=this.getKeys();this.positions.remove(b[b.length-1])},DomainPosition.prototype.getKeys=function(){"use strict";return this.positions.keys().sort(function(a,b){return parseInt(a,10)-parseInt(b,10)})};var Legend=function(a){"use strict";this.calendar=a,this.computeDim(),null!==a.options.legendColors&&this.buildColors()};Legend.prototype.computeDim=function(){"use strict";var a=this.calendar.options;this.dim={width:a.legendCellSize*(a.legend.length+1)+a.legendCellPadding*a.legend.length,height:a.legendCellSize}},Legend.prototype.remove=function(){"use strict";this.calendar.root.select(".graph-legend").remove(),this.calendar.resize()},Legend.prototype.redraw=function(a){"use strict";function b(a){a.attr("width",i.legendCellSize).attr("height",i.legendCellSize).attr("x",function(a,b){return b*(i.legendCellSize+i.legendCellPadding)})}function c(){switch(i.legendHorizontalPosition){case"right":return"center"===i.legendVerticalPosition||"middle"===i.legendVerticalPosition?a+i.legendMargin[3]:a-f.getDim("width")-i.legendMargin[1];case"middle":case"center":return Math.round(a/2-f.getDim("width")/2);default:return i.legendMargin[3]}}function d(){return"bottom"===i.legendVerticalPosition?g.graphDim.height+i.legendMargin[0]-i.domainGutter-i.cellPadding:i.legendMargin[0]}if(!this.calendar.options.displayLegend)return!1;var e,f=this,g=this.calendar,h=g.root,i=g.options;this.computeDim();var j=i.legend.slice(0);j.push(j[j.length-1]+1);var k=g.root.select(".graph-legend");null!==k[0][0]?(h=k,e=h.select("g").selectAll("rect").data(j)):(h="top"===i.legendVerticalPosition?h.insert("svg",".graph"):h.append("svg"),h.attr("x",c()).attr("y",d()),e=h.attr("class","graph-legend").attr("height",f.getDim("height")).attr("width",f.getDim("width")).append("g").selectAll().data(j)),e.enter().append("rect").call(b).attr("class",function(a){return g.Legend.getClass(a,null===g.legendScale)}).attr("fill-opacity",0).call(function(a){null!==g.legendScale&&null!==i.legendColors&&i.legendColors.hasOwnProperty("base")&&a.attr("fill",i.legendColors.base)}).append("title"),e.exit().transition().duration(i.animationDuration).attr("fill-opacity",0).remove(),e.transition().delay(function(a,b){return i.animationDuration*b/10}).call(b).attr("fill-opacity",1).call(function(a){a.attr("fill",function(a,b){return null===g.legendScale?"":0===b?g.legendScale(a-1):g.legendScale(i.legend[b-1])}),a.attr("class",function(a){return g.Legend.getClass(a,null===g.legendScale)})}),e.select("title").text(function(a,b){return 0===b?i.legendTitleFormat.lower.format({min:i.legend[b],name:i.itemName[1]}):b===j.length-1?i.legendTitleFormat.upper.format({max:i.legend[b-1],name:i.itemName[1]}):i.legendTitleFormat.inner.format({down:i.legend[b-1],up:i.legend[b],name:i.itemName[1]})}),h.transition().duration(i.animationDuration).attr("x",c()).attr("y",d()).attr("width",f.getDim("width")).attr("height",f.getDim("height")),h.select("g").transition().duration(i.animationDuration).attr("transform",function(){return"vertical"===i.legendOrientation?"rotate(90 "+i.legendCellSize/2+" "+i.legendCellSize/2+")":""}),g.resize()},Legend.prototype.getDim=function(a){"use strict";var b="horizontal"===this.calendar.options.legendOrientation;switch(a){case"width":return this.dim[b?"width":"height"];case"height":return this.dim[b?"height":"width"]}},Legend.prototype.buildColors=function(){"use strict";var a=this.calendar.options;if(null===a.legendColors)return this.calendar.legendScale=null,!1;var b=[];if(Array.isArray(a.legendColors))b=a.legendColors;else{if(!a.legendColors.hasOwnProperty("min")||!a.legendColors.hasOwnProperty("max"))return a.legendColors=null,!1;b=[a.legendColors.min,a.legendColors.max]}var c=a.legend.slice(0);c[0]>0?c.unshift(0):c[0]<0&&c.unshift(c[0]-(c[c.length-1]-c[0])/c.length);var d=d3.scale.linear().range(b).interpolate(d3.interpolateHcl).domain([d3.min(c),d3.max(c)]),e=c.map(function(a){return d(a)});return this.calendar.legendScale=d3.scale.threshold().domain(a.legend).range(e),!0},Legend.prototype.getClass=function(a,b){"use strict";if(null===a||isNaN(a))return"";for(var c=[this.calendar.options.legend.length+1],d=0,e=this.calendar.options.legend.length-1;d<=e;d++){if(this.calendar.options.legend[0]>0&&a<0){c=["1","i"];break}if(a<=this.calendar.options.legend[d]){c=[d+1];break}}return 0===a&&c.push(0),c.unshift(""),(c.join(" r")+(b?c.join(" q"):"")).trim()},String.prototype.format=function(){"use strict";var a=this;for(var b in arguments[0])if(arguments[0].hasOwnProperty(b)){var c=new RegExp("\\{"+b+"\\}","gi");a=a.replace(c,arguments[0][b])}return a}, true?!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(6)], __WEBPACK_AMD_DEFINE_RESULT__ = function(){"use strict";return CalHeatMap}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__)):"object"==typeof module&&module.exports?module.exports=CalHeatMap:window.CalHeatMap=CalHeatMap;
 
-/***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(module) {//! moment.js
-	//! version : 2.13.0
-	//! authors : Tim Wood, Iskren Chernev, Moment.js contributors
-	//! license : MIT
-	//! momentjs.com
+	var require;/* WEBPACK VAR INJECTION */(function(module) {//! moment.js
 
 	;(function (global, factory) {
 	     true ? module.exports = factory() :
 	    typeof define === 'function' && define.amd ? define(factory) :
 	    global.moment = factory()
-	}(this, function () { 'use strict';
+	}(this, (function () { 'use strict';
 
 	    var hookCallback;
 
-	    function utils_hooks__hooks () {
+	    function hooks () {
 	        return hookCallback.apply(null, arguments);
 	    }
 
@@ -21522,6 +21654,34 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    function isArray(input) {
 	        return input instanceof Array || Object.prototype.toString.call(input) === '[object Array]';
+	    }
+
+	    function isObject(input) {
+	        // IE8 will treat undefined and null as object if it wasn't for
+	        // input != null
+	        return input != null && Object.prototype.toString.call(input) === '[object Object]';
+	    }
+
+	    function isObjectEmpty(obj) {
+	        if (Object.getOwnPropertyNames) {
+	            return (Object.getOwnPropertyNames(obj).length === 0);
+	        } else {
+	            var k;
+	            for (k in obj) {
+	                if (obj.hasOwnProperty(k)) {
+	                    return false;
+	                }
+	            }
+	            return true;
+	        }
+	    }
+
+	    function isUndefined(input) {
+	        return input === void 0;
+	    }
+
+	    function isNumber(input) {
+	        return typeof input === 'number' || Object.prototype.toString.call(input) === '[object Number]';
 	    }
 
 	    function isDate(input) {
@@ -21558,7 +21718,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return a;
 	    }
 
-	    function create_utc__createUTC (input, format, locale, strict) {
+	    function createUTC (input, format, locale, strict) {
 	        return createLocalOrUTC(input, format, locale, strict, true).utc();
 	    }
 
@@ -21576,7 +21736,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            userInvalidated : false,
 	            iso             : false,
 	            parsedDateParts : [],
-	            meridiem        : null
+	            meridiem        : null,
+	            rfc2822         : false,
+	            weekdayMismatch : false
 	        };
 	    }
 
@@ -21605,34 +21767,42 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        };
 	    }
 
-	    function valid__isValid(m) {
+	    function isValid(m) {
 	        if (m._isValid == null) {
 	            var flags = getParsingFlags(m);
 	            var parsedParts = some.call(flags.parsedDateParts, function (i) {
 	                return i != null;
 	            });
-	            m._isValid = !isNaN(m._d.getTime()) &&
+	            var isNowValid = !isNaN(m._d.getTime()) &&
 	                flags.overflow < 0 &&
 	                !flags.empty &&
 	                !flags.invalidMonth &&
 	                !flags.invalidWeekday &&
+	                !flags.weekdayMismatch &&
 	                !flags.nullInput &&
 	                !flags.invalidFormat &&
 	                !flags.userInvalidated &&
 	                (!flags.meridiem || (flags.meridiem && parsedParts));
 
 	            if (m._strict) {
-	                m._isValid = m._isValid &&
+	                isNowValid = isNowValid &&
 	                    flags.charsLeftOver === 0 &&
 	                    flags.unusedTokens.length === 0 &&
 	                    flags.bigHour === undefined;
+	            }
+
+	            if (Object.isFrozen == null || !Object.isFrozen(m)) {
+	                m._isValid = isNowValid;
+	            }
+	            else {
+	                return isNowValid;
 	            }
 	        }
 	        return m._isValid;
 	    }
 
-	    function valid__createInvalid (flags) {
-	        var m = create_utc__createUTC(NaN);
+	    function createInvalid (flags) {
+	        var m = createUTC(NaN);
 	        if (flags != null) {
 	            extend(getParsingFlags(m), flags);
 	        }
@@ -21643,13 +21813,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return m;
 	    }
 
-	    function isUndefined(input) {
-	        return input === void 0;
-	    }
-
 	    // Plugins that add properties should also add the key here (null value),
 	    // so we can properly clone ourselves.
-	    var momentProperties = utils_hooks__hooks.momentProperties = [];
+	    var momentProperties = hooks.momentProperties = [];
 
 	    function copyConfig(to, from) {
 	        var i, prop, val;
@@ -21686,7 +21852,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 
 	        if (momentProperties.length > 0) {
-	            for (i in momentProperties) {
+	            for (i = 0; i < momentProperties.length; i++) {
 	                prop = momentProperties[i];
 	                val = from[prop];
 	                if (!isUndefined(val)) {
@@ -21704,11 +21870,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    function Moment(config) {
 	        copyConfig(this, config);
 	        this._d = new Date(config._d != null ? config._d.getTime() : NaN);
+	        if (!this.isValid()) {
+	            this._d = new Date(NaN);
+	        }
 	        // Prevent infinite loop in case updateOffset creates new moment
 	        // objects.
 	        if (updateInProgress === false) {
 	            updateInProgress = true;
-	            utils_hooks__hooks.updateOffset(this);
+	            hooks.updateOffset(this);
 	            updateInProgress = false;
 	        }
 	    }
@@ -21719,7 +21888,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    function absFloor (number) {
 	        if (number < 0) {
-	            return Math.ceil(number);
+	            // -0 -> 0
+	            return Math.ceil(number) || 0;
 	        } else {
 	            return Math.floor(number);
 	        }
@@ -21752,7 +21922,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 
 	    function warn(msg) {
-	        if (utils_hooks__hooks.suppressDeprecationWarnings === false &&
+	        if (hooks.suppressDeprecationWarnings === false &&
 	                (typeof console !==  'undefined') && console.warn) {
 	            console.warn('Deprecation warning: ' + msg);
 	        }
@@ -21762,11 +21932,26 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        var firstTime = true;
 
 	        return extend(function () {
-	            if (utils_hooks__hooks.deprecationHandler != null) {
-	                utils_hooks__hooks.deprecationHandler(null, msg);
+	            if (hooks.deprecationHandler != null) {
+	                hooks.deprecationHandler(null, msg);
 	            }
 	            if (firstTime) {
-	                warn(msg + '\nArguments: ' + Array.prototype.slice.call(arguments).join(', ') + '\n' + (new Error()).stack);
+	                var args = [];
+	                var arg;
+	                for (var i = 0; i < arguments.length; i++) {
+	                    arg = '';
+	                    if (typeof arguments[i] === 'object') {
+	                        arg += '\n[' + i + '] ';
+	                        for (var key in arguments[0]) {
+	                            arg += key + ': ' + arguments[0][key] + ', ';
+	                        }
+	                        arg = arg.slice(0, -2); // Remove trailing comma and space
+	                    } else {
+	                        arg = arguments[i];
+	                    }
+	                    args.push(arg);
+	                }
+	                warn(msg + '\nArguments: ' + Array.prototype.slice.call(args).join('') + '\n' + (new Error()).stack);
 	                firstTime = false;
 	            }
 	            return fn.apply(this, arguments);
@@ -21776,8 +21961,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    var deprecations = {};
 
 	    function deprecateSimple(name, msg) {
-	        if (utils_hooks__hooks.deprecationHandler != null) {
-	            utils_hooks__hooks.deprecationHandler(name, msg);
+	        if (hooks.deprecationHandler != null) {
+	            hooks.deprecationHandler(name, msg);
 	        }
 	        if (!deprecations[name]) {
 	            warn(msg);
@@ -21785,18 +21970,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	    }
 
-	    utils_hooks__hooks.suppressDeprecationWarnings = false;
-	    utils_hooks__hooks.deprecationHandler = null;
+	    hooks.suppressDeprecationWarnings = false;
+	    hooks.deprecationHandler = null;
 
 	    function isFunction(input) {
 	        return input instanceof Function || Object.prototype.toString.call(input) === '[object Function]';
 	    }
 
-	    function isObject(input) {
-	        return Object.prototype.toString.call(input) === '[object Object]';
-	    }
-
-	    function locale_set__set (config) {
+	    function set (config) {
 	        var prop, i;
 	        for (i in config) {
 	            prop = config[i];
@@ -21808,8 +21989,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	        this._config = config;
 	        // Lenient ordinal parsing accepts just a number in addition to
-	        // number + (possibly) stuff coming from _ordinalParseLenient.
-	        this._ordinalParseLenient = new RegExp(this._ordinalParse.source + '|' + (/\d{1,2}/).source);
+	        // number + (possibly) stuff coming from _dayOfMonthOrdinalParse.
+	        // TODO: Remove "ordinalParse" fallback in next major release.
+	        this._dayOfMonthOrdinalParseLenient = new RegExp(
+	            (this._dayOfMonthOrdinalParse.source || this._ordinalParse.source) +
+	                '|' + (/\d{1,2}/).source);
 	    }
 
 	    function mergeConfigs(parentConfig, childConfig) {
@@ -21825,6 +22009,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                } else {
 	                    delete res[prop];
 	                }
+	            }
+	        }
+	        for (prop in parentConfig) {
+	            if (hasOwnProp(parentConfig, prop) &&
+	                    !hasOwnProp(childConfig, prop) &&
+	                    isObject(parentConfig[prop])) {
+	                // make sure changes to properties don't modify parent config
+	                res[prop] = extend({}, res[prop]);
 	            }
 	        }
 	        return res;
@@ -21852,161 +22044,84 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        };
 	    }
 
-	    // internal storage for locale config files
-	    var locales = {};
-	    var globalLocale;
+	    var defaultCalendar = {
+	        sameDay : '[Today at] LT',
+	        nextDay : '[Tomorrow at] LT',
+	        nextWeek : 'dddd [at] LT',
+	        lastDay : '[Yesterday at] LT',
+	        lastWeek : '[Last] dddd [at] LT',
+	        sameElse : 'L'
+	    };
 
-	    function normalizeLocale(key) {
-	        return key ? key.toLowerCase().replace('_', '-') : key;
+	    function calendar (key, mom, now) {
+	        var output = this._calendar[key] || this._calendar['sameElse'];
+	        return isFunction(output) ? output.call(mom, now) : output;
 	    }
 
-	    // pick the locale from the array
-	    // try ['en-au', 'en-gb'] as 'en-au', 'en-gb', 'en', as in move through the list trying each
-	    // substring from most specific to least, but move to the next array item if it's a more specific variant than the current root
-	    function chooseLocale(names) {
-	        var i = 0, j, next, locale, split;
+	    var defaultLongDateFormat = {
+	        LTS  : 'h:mm:ss A',
+	        LT   : 'h:mm A',
+	        L    : 'MM/DD/YYYY',
+	        LL   : 'MMMM D, YYYY',
+	        LLL  : 'MMMM D, YYYY h:mm A',
+	        LLLL : 'dddd, MMMM D, YYYY h:mm A'
+	    };
 
-	        while (i < names.length) {
-	            split = normalizeLocale(names[i]).split('-');
-	            j = split.length;
-	            next = normalizeLocale(names[i + 1]);
-	            next = next ? next.split('-') : null;
-	            while (j > 0) {
-	                locale = loadLocale(split.slice(0, j).join('-'));
-	                if (locale) {
-	                    return locale;
-	                }
-	                if (next && next.length >= j && compareArrays(split, next, true) >= j - 1) {
-	                    //the next array item is better than a shallower substring of this one
-	                    break;
-	                }
-	                j--;
-	            }
-	            i++;
+	    function longDateFormat (key) {
+	        var format = this._longDateFormat[key],
+	            formatUpper = this._longDateFormat[key.toUpperCase()];
+
+	        if (format || !formatUpper) {
+	            return format;
 	        }
-	        return null;
+
+	        this._longDateFormat[key] = formatUpper.replace(/MMMM|MM|DD|dddd/g, function (val) {
+	            return val.slice(1);
+	        });
+
+	        return this._longDateFormat[key];
 	    }
 
-	    function loadLocale(name) {
-	        var oldLocale = null;
-	        // TODO: Find a better way to register and load all the locales in Node
-	        if (!locales[name] && (typeof module !== 'undefined') &&
-	                module && module.exports) {
-	            try {
-	                oldLocale = globalLocale._abbr;
-	                __webpack_require__(9)("./" + name);
-	                // because defineLocale currently also sets the global locale, we
-	                // want to undo that for lazy loaded locales
-	                locale_locales__getSetGlobalLocale(oldLocale);
-	            } catch (e) { }
-	        }
-	        return locales[name];
+	    var defaultInvalidDate = 'Invalid date';
+
+	    function invalidDate () {
+	        return this._invalidDate;
 	    }
 
-	    // This function will load locale and then set the global locale.  If
-	    // no arguments are passed in, it will simply return the current global
-	    // locale key.
-	    function locale_locales__getSetGlobalLocale (key, values) {
-	        var data;
-	        if (key) {
-	            if (isUndefined(values)) {
-	                data = locale_locales__getLocale(key);
-	            }
-	            else {
-	                data = defineLocale(key, values);
-	            }
+	    var defaultOrdinal = '%d';
+	    var defaultDayOfMonthOrdinalParse = /\d{1,2}/;
 
-	            if (data) {
-	                // moment.duration._locale = moment._locale = data;
-	                globalLocale = data;
-	            }
-	        }
-
-	        return globalLocale._abbr;
+	    function ordinal (number) {
+	        return this._ordinal.replace('%d', number);
 	    }
 
-	    function defineLocale (name, config) {
-	        if (config !== null) {
-	            config.abbr = name;
-	            if (locales[name] != null) {
-	                deprecateSimple('defineLocaleOverride',
-	                        'use moment.updateLocale(localeName, config) to change ' +
-	                        'an existing locale. moment.defineLocale(localeName, ' +
-	                        'config) should only be used for creating a new locale');
-	                config = mergeConfigs(locales[name]._config, config);
-	            } else if (config.parentLocale != null) {
-	                if (locales[config.parentLocale] != null) {
-	                    config = mergeConfigs(locales[config.parentLocale]._config, config);
-	                } else {
-	                    // treat as if there is no base config
-	                    deprecateSimple('parentLocaleUndefined',
-	                            'specified parentLocale is not defined yet');
-	                }
-	            }
-	            locales[name] = new Locale(config);
+	    var defaultRelativeTime = {
+	        future : 'in %s',
+	        past   : '%s ago',
+	        s  : 'a few seconds',
+	        ss : '%d seconds',
+	        m  : 'a minute',
+	        mm : '%d minutes',
+	        h  : 'an hour',
+	        hh : '%d hours',
+	        d  : 'a day',
+	        dd : '%d days',
+	        M  : 'a month',
+	        MM : '%d months',
+	        y  : 'a year',
+	        yy : '%d years'
+	    };
 
-	            // backwards compat for now: also set the locale
-	            locale_locales__getSetGlobalLocale(name);
-
-	            return locales[name];
-	        } else {
-	            // useful for testing
-	            delete locales[name];
-	            return null;
-	        }
+	    function relativeTime (number, withoutSuffix, string, isFuture) {
+	        var output = this._relativeTime[string];
+	        return (isFunction(output)) ?
+	            output(number, withoutSuffix, string, isFuture) :
+	            output.replace(/%d/i, number);
 	    }
 
-	    function updateLocale(name, config) {
-	        if (config != null) {
-	            var locale;
-	            if (locales[name] != null) {
-	                config = mergeConfigs(locales[name]._config, config);
-	            }
-	            locale = new Locale(config);
-	            locale.parentLocale = locales[name];
-	            locales[name] = locale;
-
-	            // backwards compat for now: also set the locale
-	            locale_locales__getSetGlobalLocale(name);
-	        } else {
-	            // pass null for config to unupdate, useful for tests
-	            if (locales[name] != null) {
-	                if (locales[name].parentLocale != null) {
-	                    locales[name] = locales[name].parentLocale;
-	                } else if (locales[name] != null) {
-	                    delete locales[name];
-	                }
-	            }
-	        }
-	        return locales[name];
-	    }
-
-	    // returns locale data
-	    function locale_locales__getLocale (key) {
-	        var locale;
-
-	        if (key && key._locale && key._locale._abbr) {
-	            key = key._locale._abbr;
-	        }
-
-	        if (!key) {
-	            return globalLocale;
-	        }
-
-	        if (!isArray(key)) {
-	            //short-circuit everything else
-	            locale = loadLocale(key);
-	            if (locale) {
-	                return locale;
-	            }
-	            key = [key];
-	        }
-
-	        return chooseLocale(key);
-	    }
-
-	    function locale_locales__listLocales() {
-	        return keys(locales);
+	    function pastFuture (diff, output) {
+	        var format = this._relativeTime[diff > 0 ? 'future' : 'past'];
+	        return isFunction(format) ? format(output) : format.replace(/%s/i, output);
 	    }
 
 	    var aliases = {};
@@ -22037,44 +22152,21 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return normalizedInput;
 	    }
 
-	    function makeGetSet (unit, keepTime) {
-	        return function (value) {
-	            if (value != null) {
-	                get_set__set(this, unit, value);
-	                utils_hooks__hooks.updateOffset(this, keepTime);
-	                return this;
-	            } else {
-	                return get_set__get(this, unit);
-	            }
-	        };
+	    var priorities = {};
+
+	    function addUnitPriority(unit, priority) {
+	        priorities[unit] = priority;
 	    }
 
-	    function get_set__get (mom, unit) {
-	        return mom.isValid() ?
-	            mom._d['get' + (mom._isUTC ? 'UTC' : '') + unit]() : NaN;
-	    }
-
-	    function get_set__set (mom, unit, value) {
-	        if (mom.isValid()) {
-	            mom._d['set' + (mom._isUTC ? 'UTC' : '') + unit](value);
+	    function getPrioritizedUnits(unitsObj) {
+	        var units = [];
+	        for (var u in unitsObj) {
+	            units.push({unit: u, priority: priorities[u]});
 	        }
-	    }
-
-	    // MOMENTS
-
-	    function getSet (units, value) {
-	        var unit;
-	        if (typeof units === 'object') {
-	            for (unit in units) {
-	                this.set(unit, units[unit]);
-	            }
-	        } else {
-	            units = normalizeUnits(units);
-	            if (isFunction(this[units])) {
-	                return this[units](value);
-	            }
-	        }
-	        return this;
+	        units.sort(function (a, b) {
+	            return a.priority - b.priority;
+	        });
+	        return units;
 	    }
 
 	    function zeroFill(number, targetLength, forceSign) {
@@ -22140,7 +22232,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return function (mom) {
 	            var output = '', i;
 	            for (i = 0; i < length; i++) {
-	                output += array[i] instanceof Function ? array[i].call(mom, format) : array[i];
+	                output += isFunction(array[i]) ? array[i].call(mom, format) : array[i];
 	            }
 	            return output;
 	        };
@@ -22197,8 +22289,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    // any word (or two) characters or numbers including two/three word month in arabic.
 	    // includes scottish gaelic two word and hyphenated months
-	    var matchWord = /[0-9]*['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+|[\u0600-\u06FF\/]+(\s*?[\u0600-\u06FF]+){1,2}/i;
-
+	    var matchWord = /[0-9]{0,256}['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFF07\uFF10-\uFFEF]{1,256}|[\u0600-\u06FF\/]{1,256}(\s*?[\u0600-\u06FF]{1,256}){1,2}/i;
 
 	    var regexes = {};
 
@@ -22234,7 +22325,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        if (typeof token === 'string') {
 	            token = [token];
 	        }
-	        if (typeof callback === 'number') {
+	        if (isNumber(callback)) {
 	            func = function (input, array) {
 	                array[callback] = toInt(input);
 	            };
@@ -22267,6 +22358,131 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    var WEEK = 7;
 	    var WEEKDAY = 8;
 
+	    // FORMATTING
+
+	    addFormatToken('Y', 0, 0, function () {
+	        var y = this.year();
+	        return y <= 9999 ? '' + y : '+' + y;
+	    });
+
+	    addFormatToken(0, ['YY', 2], 0, function () {
+	        return this.year() % 100;
+	    });
+
+	    addFormatToken(0, ['YYYY',   4],       0, 'year');
+	    addFormatToken(0, ['YYYYY',  5],       0, 'year');
+	    addFormatToken(0, ['YYYYYY', 6, true], 0, 'year');
+
+	    // ALIASES
+
+	    addUnitAlias('year', 'y');
+
+	    // PRIORITIES
+
+	    addUnitPriority('year', 1);
+
+	    // PARSING
+
+	    addRegexToken('Y',      matchSigned);
+	    addRegexToken('YY',     match1to2, match2);
+	    addRegexToken('YYYY',   match1to4, match4);
+	    addRegexToken('YYYYY',  match1to6, match6);
+	    addRegexToken('YYYYYY', match1to6, match6);
+
+	    addParseToken(['YYYYY', 'YYYYYY'], YEAR);
+	    addParseToken('YYYY', function (input, array) {
+	        array[YEAR] = input.length === 2 ? hooks.parseTwoDigitYear(input) : toInt(input);
+	    });
+	    addParseToken('YY', function (input, array) {
+	        array[YEAR] = hooks.parseTwoDigitYear(input);
+	    });
+	    addParseToken('Y', function (input, array) {
+	        array[YEAR] = parseInt(input, 10);
+	    });
+
+	    // HELPERS
+
+	    function daysInYear(year) {
+	        return isLeapYear(year) ? 366 : 365;
+	    }
+
+	    function isLeapYear(year) {
+	        return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+	    }
+
+	    // HOOKS
+
+	    hooks.parseTwoDigitYear = function (input) {
+	        return toInt(input) + (toInt(input) > 68 ? 1900 : 2000);
+	    };
+
+	    // MOMENTS
+
+	    var getSetYear = makeGetSet('FullYear', true);
+
+	    function getIsLeapYear () {
+	        return isLeapYear(this.year());
+	    }
+
+	    function makeGetSet (unit, keepTime) {
+	        return function (value) {
+	            if (value != null) {
+	                set$1(this, unit, value);
+	                hooks.updateOffset(this, keepTime);
+	                return this;
+	            } else {
+	                return get(this, unit);
+	            }
+	        };
+	    }
+
+	    function get (mom, unit) {
+	        return mom.isValid() ?
+	            mom._d['get' + (mom._isUTC ? 'UTC' : '') + unit]() : NaN;
+	    }
+
+	    function set$1 (mom, unit, value) {
+	        if (mom.isValid() && !isNaN(value)) {
+	            if (unit === 'FullYear' && isLeapYear(mom.year()) && mom.month() === 1 && mom.date() === 29) {
+	                mom._d['set' + (mom._isUTC ? 'UTC' : '') + unit](value, mom.month(), daysInMonth(value, mom.month()));
+	            }
+	            else {
+	                mom._d['set' + (mom._isUTC ? 'UTC' : '') + unit](value);
+	            }
+	        }
+	    }
+
+	    // MOMENTS
+
+	    function stringGet (units) {
+	        units = normalizeUnits(units);
+	        if (isFunction(this[units])) {
+	            return this[units]();
+	        }
+	        return this;
+	    }
+
+
+	    function stringSet (units, value) {
+	        if (typeof units === 'object') {
+	            units = normalizeObjectUnits(units);
+	            var prioritized = getPrioritizedUnits(units);
+	            for (var i = 0; i < prioritized.length; i++) {
+	                this[prioritized[i].unit](units[prioritized[i].unit]);
+	            }
+	        } else {
+	            units = normalizeUnits(units);
+	            if (isFunction(this[units])) {
+	                return this[units](value);
+	            }
+	        }
+	        return this;
+	    }
+
+	    function mod(n, x) {
+	        return ((n % x) + x) % x;
+	    }
+
 	    var indexOf;
 
 	    if (Array.prototype.indexOf) {
@@ -22285,7 +22501,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 
 	    function daysInMonth(year, month) {
-	        return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+	        if (isNaN(year) || isNaN(month)) {
+	            return NaN;
+	        }
+	        var modMonth = mod(month, 12);
+	        year += (month - modMonth) / 12;
+	        return modMonth === 1 ? (isLeapYear(year) ? 29 : 28) : (31 - modMonth % 7 % 2);
 	    }
 
 	    // FORMATTING
@@ -22305,6 +22526,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    // ALIASES
 
 	    addUnitAlias('month', 'M');
+
+	    // PRIORITY
+
+	    addUnitPriority('month', 8);
 
 	    // PARSING
 
@@ -22333,20 +22558,28 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    // LOCALES
 
-	    var MONTHS_IN_FORMAT = /D[oD]?(\[[^\[\]]*\]|\s+)+MMMM?/;
+	    var MONTHS_IN_FORMAT = /D[oD]?(\[[^\[\]]*\]|\s)+MMMM?/;
 	    var defaultLocaleMonths = 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_');
 	    function localeMonths (m, format) {
+	        if (!m) {
+	            return isArray(this._months) ? this._months :
+	                this._months['standalone'];
+	        }
 	        return isArray(this._months) ? this._months[m.month()] :
-	            this._months[MONTHS_IN_FORMAT.test(format) ? 'format' : 'standalone'][m.month()];
+	            this._months[(this._months.isFormat || MONTHS_IN_FORMAT).test(format) ? 'format' : 'standalone'][m.month()];
 	    }
 
 	    var defaultLocaleMonthsShort = 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_');
 	    function localeMonthsShort (m, format) {
+	        if (!m) {
+	            return isArray(this._monthsShort) ? this._monthsShort :
+	                this._monthsShort['standalone'];
+	        }
 	        return isArray(this._monthsShort) ? this._monthsShort[m.month()] :
 	            this._monthsShort[MONTHS_IN_FORMAT.test(format) ? 'format' : 'standalone'][m.month()];
 	    }
 
-	    function units_month__handleStrictParse(monthName, format, strict) {
+	    function handleStrictParse(monthName, format, strict) {
 	        var i, ii, mom, llc = monthName.toLocaleLowerCase();
 	        if (!this._monthsParse) {
 	            // this is not used
@@ -22354,7 +22587,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            this._longMonthsParse = [];
 	            this._shortMonthsParse = [];
 	            for (i = 0; i < 12; ++i) {
-	                mom = create_utc__createUTC([2000, i]);
+	                mom = createUTC([2000, i]);
 	                this._shortMonthsParse[i] = this.monthsShort(mom, '').toLocaleLowerCase();
 	                this._longMonthsParse[i] = this.months(mom, '').toLocaleLowerCase();
 	            }
@@ -22391,7 +22624,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        var i, mom, regex;
 
 	        if (this._monthsParseExact) {
-	            return units_month__handleStrictParse.call(this, monthName, format, strict);
+	            return handleStrictParse.call(this, monthName, format, strict);
 	        }
 
 	        if (!this._monthsParse) {
@@ -22405,7 +22638,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        // see sorting in computeMonthsParse
 	        for (i = 0; i < 12; i++) {
 	            // make the regex if we don't have it already
-	            mom = create_utc__createUTC([2000, i]);
+	            mom = createUTC([2000, i]);
 	            if (strict && !this._longMonthsParse[i]) {
 	                this._longMonthsParse[i] = new RegExp('^' + this.months(mom, '').replace('.', '') + '$', 'i');
 	                this._shortMonthsParse[i] = new RegExp('^' + this.monthsShort(mom, '').replace('.', '') + '$', 'i');
@@ -22441,7 +22674,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            } else {
 	                value = mom.localeData().monthsParse(value);
 	                // TODO: Another silent failure?
-	                if (typeof value !== 'number') {
+	                if (!isNumber(value)) {
 	                    return mom;
 	                }
 	            }
@@ -22455,10 +22688,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    function getSetMonth (value) {
 	        if (value != null) {
 	            setMonth(this, value);
-	            utils_hooks__hooks.updateOffset(this, true);
+	            hooks.updateOffset(this, true);
 	            return this;
 	        } else {
-	            return get_set__get(this, 'Month');
+	            return get(this, 'Month');
 	        }
 	    }
 
@@ -22478,6 +22711,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                return this._monthsShortRegex;
 	            }
 	        } else {
+	            if (!hasOwnProp(this, '_monthsShortRegex')) {
+	                this._monthsShortRegex = defaultMonthsShortRegex;
+	            }
 	            return this._monthsShortStrictRegex && isStrict ?
 	                this._monthsShortStrictRegex : this._monthsShortRegex;
 	        }
@@ -22495,6 +22731,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                return this._monthsRegex;
 	            }
 	        } else {
+	            if (!hasOwnProp(this, '_monthsRegex')) {
+	                this._monthsRegex = defaultMonthsRegex;
+	            }
 	            return this._monthsStrictRegex && isStrict ?
 	                this._monthsStrictRegex : this._monthsRegex;
 	        }
@@ -22509,7 +22748,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            i, mom;
 	        for (i = 0; i < 12; i++) {
 	            // make the regex if we don't have it already
-	            mom = create_utc__createUTC([2000, i]);
+	            mom = createUTC([2000, i]);
 	            shortPieces.push(this.monthsShort(mom, ''));
 	            longPieces.push(this.months(mom, ''));
 	            mixedPieces.push(this.months(mom, ''));
@@ -22523,6 +22762,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        for (i = 0; i < 12; i++) {
 	            shortPieces[i] = regexEscape(shortPieces[i]);
 	            longPieces[i] = regexEscape(longPieces[i]);
+	        }
+	        for (i = 0; i < 24; i++) {
 	            mixedPieces[i] = regexEscape(mixedPieces[i]);
 	        }
 
@@ -22530,6 +22771,843 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        this._monthsShortRegex = this._monthsRegex;
 	        this._monthsStrictRegex = new RegExp('^(' + longPieces.join('|') + ')', 'i');
 	        this._monthsShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')', 'i');
+	    }
+
+	    function createDate (y, m, d, h, M, s, ms) {
+	        // can't just apply() to create a date:
+	        // https://stackoverflow.com/q/181348
+	        var date = new Date(y, m, d, h, M, s, ms);
+
+	        // the date constructor remaps years 0-99 to 1900-1999
+	        if (y < 100 && y >= 0 && isFinite(date.getFullYear())) {
+	            date.setFullYear(y);
+	        }
+	        return date;
+	    }
+
+	    function createUTCDate (y) {
+	        var date = new Date(Date.UTC.apply(null, arguments));
+
+	        // the Date.UTC function remaps years 0-99 to 1900-1999
+	        if (y < 100 && y >= 0 && isFinite(date.getUTCFullYear())) {
+	            date.setUTCFullYear(y);
+	        }
+	        return date;
+	    }
+
+	    // start-of-first-week - start-of-year
+	    function firstWeekOffset(year, dow, doy) {
+	        var // first-week day -- which january is always in the first week (4 for iso, 1 for other)
+	            fwd = 7 + dow - doy,
+	            // first-week day local weekday -- which local weekday is fwd
+	            fwdlw = (7 + createUTCDate(year, 0, fwd).getUTCDay() - dow) % 7;
+
+	        return -fwdlw + fwd - 1;
+	    }
+
+	    // https://en.wikipedia.org/wiki/ISO_week_date#Calculating_a_date_given_the_year.2C_week_number_and_weekday
+	    function dayOfYearFromWeeks(year, week, weekday, dow, doy) {
+	        var localWeekday = (7 + weekday - dow) % 7,
+	            weekOffset = firstWeekOffset(year, dow, doy),
+	            dayOfYear = 1 + 7 * (week - 1) + localWeekday + weekOffset,
+	            resYear, resDayOfYear;
+
+	        if (dayOfYear <= 0) {
+	            resYear = year - 1;
+	            resDayOfYear = daysInYear(resYear) + dayOfYear;
+	        } else if (dayOfYear > daysInYear(year)) {
+	            resYear = year + 1;
+	            resDayOfYear = dayOfYear - daysInYear(year);
+	        } else {
+	            resYear = year;
+	            resDayOfYear = dayOfYear;
+	        }
+
+	        return {
+	            year: resYear,
+	            dayOfYear: resDayOfYear
+	        };
+	    }
+
+	    function weekOfYear(mom, dow, doy) {
+	        var weekOffset = firstWeekOffset(mom.year(), dow, doy),
+	            week = Math.floor((mom.dayOfYear() - weekOffset - 1) / 7) + 1,
+	            resWeek, resYear;
+
+	        if (week < 1) {
+	            resYear = mom.year() - 1;
+	            resWeek = week + weeksInYear(resYear, dow, doy);
+	        } else if (week > weeksInYear(mom.year(), dow, doy)) {
+	            resWeek = week - weeksInYear(mom.year(), dow, doy);
+	            resYear = mom.year() + 1;
+	        } else {
+	            resYear = mom.year();
+	            resWeek = week;
+	        }
+
+	        return {
+	            week: resWeek,
+	            year: resYear
+	        };
+	    }
+
+	    function weeksInYear(year, dow, doy) {
+	        var weekOffset = firstWeekOffset(year, dow, doy),
+	            weekOffsetNext = firstWeekOffset(year + 1, dow, doy);
+	        return (daysInYear(year) - weekOffset + weekOffsetNext) / 7;
+	    }
+
+	    // FORMATTING
+
+	    addFormatToken('w', ['ww', 2], 'wo', 'week');
+	    addFormatToken('W', ['WW', 2], 'Wo', 'isoWeek');
+
+	    // ALIASES
+
+	    addUnitAlias('week', 'w');
+	    addUnitAlias('isoWeek', 'W');
+
+	    // PRIORITIES
+
+	    addUnitPriority('week', 5);
+	    addUnitPriority('isoWeek', 5);
+
+	    // PARSING
+
+	    addRegexToken('w',  match1to2);
+	    addRegexToken('ww', match1to2, match2);
+	    addRegexToken('W',  match1to2);
+	    addRegexToken('WW', match1to2, match2);
+
+	    addWeekParseToken(['w', 'ww', 'W', 'WW'], function (input, week, config, token) {
+	        week[token.substr(0, 1)] = toInt(input);
+	    });
+
+	    // HELPERS
+
+	    // LOCALES
+
+	    function localeWeek (mom) {
+	        return weekOfYear(mom, this._week.dow, this._week.doy).week;
+	    }
+
+	    var defaultLocaleWeek = {
+	        dow : 0, // Sunday is the first day of the week.
+	        doy : 6  // The week that contains Jan 1st is the first week of the year.
+	    };
+
+	    function localeFirstDayOfWeek () {
+	        return this._week.dow;
+	    }
+
+	    function localeFirstDayOfYear () {
+	        return this._week.doy;
+	    }
+
+	    // MOMENTS
+
+	    function getSetWeek (input) {
+	        var week = this.localeData().week(this);
+	        return input == null ? week : this.add((input - week) * 7, 'd');
+	    }
+
+	    function getSetISOWeek (input) {
+	        var week = weekOfYear(this, 1, 4).week;
+	        return input == null ? week : this.add((input - week) * 7, 'd');
+	    }
+
+	    // FORMATTING
+
+	    addFormatToken('d', 0, 'do', 'day');
+
+	    addFormatToken('dd', 0, 0, function (format) {
+	        return this.localeData().weekdaysMin(this, format);
+	    });
+
+	    addFormatToken('ddd', 0, 0, function (format) {
+	        return this.localeData().weekdaysShort(this, format);
+	    });
+
+	    addFormatToken('dddd', 0, 0, function (format) {
+	        return this.localeData().weekdays(this, format);
+	    });
+
+	    addFormatToken('e', 0, 0, 'weekday');
+	    addFormatToken('E', 0, 0, 'isoWeekday');
+
+	    // ALIASES
+
+	    addUnitAlias('day', 'd');
+	    addUnitAlias('weekday', 'e');
+	    addUnitAlias('isoWeekday', 'E');
+
+	    // PRIORITY
+	    addUnitPriority('day', 11);
+	    addUnitPriority('weekday', 11);
+	    addUnitPriority('isoWeekday', 11);
+
+	    // PARSING
+
+	    addRegexToken('d',    match1to2);
+	    addRegexToken('e',    match1to2);
+	    addRegexToken('E',    match1to2);
+	    addRegexToken('dd',   function (isStrict, locale) {
+	        return locale.weekdaysMinRegex(isStrict);
+	    });
+	    addRegexToken('ddd',   function (isStrict, locale) {
+	        return locale.weekdaysShortRegex(isStrict);
+	    });
+	    addRegexToken('dddd',   function (isStrict, locale) {
+	        return locale.weekdaysRegex(isStrict);
+	    });
+
+	    addWeekParseToken(['dd', 'ddd', 'dddd'], function (input, week, config, token) {
+	        var weekday = config._locale.weekdaysParse(input, token, config._strict);
+	        // if we didn't get a weekday name, mark the date as invalid
+	        if (weekday != null) {
+	            week.d = weekday;
+	        } else {
+	            getParsingFlags(config).invalidWeekday = input;
+	        }
+	    });
+
+	    addWeekParseToken(['d', 'e', 'E'], function (input, week, config, token) {
+	        week[token] = toInt(input);
+	    });
+
+	    // HELPERS
+
+	    function parseWeekday(input, locale) {
+	        if (typeof input !== 'string') {
+	            return input;
+	        }
+
+	        if (!isNaN(input)) {
+	            return parseInt(input, 10);
+	        }
+
+	        input = locale.weekdaysParse(input);
+	        if (typeof input === 'number') {
+	            return input;
+	        }
+
+	        return null;
+	    }
+
+	    function parseIsoWeekday(input, locale) {
+	        if (typeof input === 'string') {
+	            return locale.weekdaysParse(input) % 7 || 7;
+	        }
+	        return isNaN(input) ? null : input;
+	    }
+
+	    // LOCALES
+
+	    var defaultLocaleWeekdays = 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_');
+	    function localeWeekdays (m, format) {
+	        if (!m) {
+	            return isArray(this._weekdays) ? this._weekdays :
+	                this._weekdays['standalone'];
+	        }
+	        return isArray(this._weekdays) ? this._weekdays[m.day()] :
+	            this._weekdays[this._weekdays.isFormat.test(format) ? 'format' : 'standalone'][m.day()];
+	    }
+
+	    var defaultLocaleWeekdaysShort = 'Sun_Mon_Tue_Wed_Thu_Fri_Sat'.split('_');
+	    function localeWeekdaysShort (m) {
+	        return (m) ? this._weekdaysShort[m.day()] : this._weekdaysShort;
+	    }
+
+	    var defaultLocaleWeekdaysMin = 'Su_Mo_Tu_We_Th_Fr_Sa'.split('_');
+	    function localeWeekdaysMin (m) {
+	        return (m) ? this._weekdaysMin[m.day()] : this._weekdaysMin;
+	    }
+
+	    function handleStrictParse$1(weekdayName, format, strict) {
+	        var i, ii, mom, llc = weekdayName.toLocaleLowerCase();
+	        if (!this._weekdaysParse) {
+	            this._weekdaysParse = [];
+	            this._shortWeekdaysParse = [];
+	            this._minWeekdaysParse = [];
+
+	            for (i = 0; i < 7; ++i) {
+	                mom = createUTC([2000, 1]).day(i);
+	                this._minWeekdaysParse[i] = this.weekdaysMin(mom, '').toLocaleLowerCase();
+	                this._shortWeekdaysParse[i] = this.weekdaysShort(mom, '').toLocaleLowerCase();
+	                this._weekdaysParse[i] = this.weekdays(mom, '').toLocaleLowerCase();
+	            }
+	        }
+
+	        if (strict) {
+	            if (format === 'dddd') {
+	                ii = indexOf.call(this._weekdaysParse, llc);
+	                return ii !== -1 ? ii : null;
+	            } else if (format === 'ddd') {
+	                ii = indexOf.call(this._shortWeekdaysParse, llc);
+	                return ii !== -1 ? ii : null;
+	            } else {
+	                ii = indexOf.call(this._minWeekdaysParse, llc);
+	                return ii !== -1 ? ii : null;
+	            }
+	        } else {
+	            if (format === 'dddd') {
+	                ii = indexOf.call(this._weekdaysParse, llc);
+	                if (ii !== -1) {
+	                    return ii;
+	                }
+	                ii = indexOf.call(this._shortWeekdaysParse, llc);
+	                if (ii !== -1) {
+	                    return ii;
+	                }
+	                ii = indexOf.call(this._minWeekdaysParse, llc);
+	                return ii !== -1 ? ii : null;
+	            } else if (format === 'ddd') {
+	                ii = indexOf.call(this._shortWeekdaysParse, llc);
+	                if (ii !== -1) {
+	                    return ii;
+	                }
+	                ii = indexOf.call(this._weekdaysParse, llc);
+	                if (ii !== -1) {
+	                    return ii;
+	                }
+	                ii = indexOf.call(this._minWeekdaysParse, llc);
+	                return ii !== -1 ? ii : null;
+	            } else {
+	                ii = indexOf.call(this._minWeekdaysParse, llc);
+	                if (ii !== -1) {
+	                    return ii;
+	                }
+	                ii = indexOf.call(this._weekdaysParse, llc);
+	                if (ii !== -1) {
+	                    return ii;
+	                }
+	                ii = indexOf.call(this._shortWeekdaysParse, llc);
+	                return ii !== -1 ? ii : null;
+	            }
+	        }
+	    }
+
+	    function localeWeekdaysParse (weekdayName, format, strict) {
+	        var i, mom, regex;
+
+	        if (this._weekdaysParseExact) {
+	            return handleStrictParse$1.call(this, weekdayName, format, strict);
+	        }
+
+	        if (!this._weekdaysParse) {
+	            this._weekdaysParse = [];
+	            this._minWeekdaysParse = [];
+	            this._shortWeekdaysParse = [];
+	            this._fullWeekdaysParse = [];
+	        }
+
+	        for (i = 0; i < 7; i++) {
+	            // make the regex if we don't have it already
+
+	            mom = createUTC([2000, 1]).day(i);
+	            if (strict && !this._fullWeekdaysParse[i]) {
+	                this._fullWeekdaysParse[i] = new RegExp('^' + this.weekdays(mom, '').replace('.', '\\.?') + '$', 'i');
+	                this._shortWeekdaysParse[i] = new RegExp('^' + this.weekdaysShort(mom, '').replace('.', '\\.?') + '$', 'i');
+	                this._minWeekdaysParse[i] = new RegExp('^' + this.weekdaysMin(mom, '').replace('.', '\\.?') + '$', 'i');
+	            }
+	            if (!this._weekdaysParse[i]) {
+	                regex = '^' + this.weekdays(mom, '') + '|^' + this.weekdaysShort(mom, '') + '|^' + this.weekdaysMin(mom, '');
+	                this._weekdaysParse[i] = new RegExp(regex.replace('.', ''), 'i');
+	            }
+	            // test the regex
+	            if (strict && format === 'dddd' && this._fullWeekdaysParse[i].test(weekdayName)) {
+	                return i;
+	            } else if (strict && format === 'ddd' && this._shortWeekdaysParse[i].test(weekdayName)) {
+	                return i;
+	            } else if (strict && format === 'dd' && this._minWeekdaysParse[i].test(weekdayName)) {
+	                return i;
+	            } else if (!strict && this._weekdaysParse[i].test(weekdayName)) {
+	                return i;
+	            }
+	        }
+	    }
+
+	    // MOMENTS
+
+	    function getSetDayOfWeek (input) {
+	        if (!this.isValid()) {
+	            return input != null ? this : NaN;
+	        }
+	        var day = this._isUTC ? this._d.getUTCDay() : this._d.getDay();
+	        if (input != null) {
+	            input = parseWeekday(input, this.localeData());
+	            return this.add(input - day, 'd');
+	        } else {
+	            return day;
+	        }
+	    }
+
+	    function getSetLocaleDayOfWeek (input) {
+	        if (!this.isValid()) {
+	            return input != null ? this : NaN;
+	        }
+	        var weekday = (this.day() + 7 - this.localeData()._week.dow) % 7;
+	        return input == null ? weekday : this.add(input - weekday, 'd');
+	    }
+
+	    function getSetISODayOfWeek (input) {
+	        if (!this.isValid()) {
+	            return input != null ? this : NaN;
+	        }
+
+	        // behaves the same as moment#day except
+	        // as a getter, returns 7 instead of 0 (1-7 range instead of 0-6)
+	        // as a setter, sunday should belong to the previous week.
+
+	        if (input != null) {
+	            var weekday = parseIsoWeekday(input, this.localeData());
+	            return this.day(this.day() % 7 ? weekday : weekday - 7);
+	        } else {
+	            return this.day() || 7;
+	        }
+	    }
+
+	    var defaultWeekdaysRegex = matchWord;
+	    function weekdaysRegex (isStrict) {
+	        if (this._weekdaysParseExact) {
+	            if (!hasOwnProp(this, '_weekdaysRegex')) {
+	                computeWeekdaysParse.call(this);
+	            }
+	            if (isStrict) {
+	                return this._weekdaysStrictRegex;
+	            } else {
+	                return this._weekdaysRegex;
+	            }
+	        } else {
+	            if (!hasOwnProp(this, '_weekdaysRegex')) {
+	                this._weekdaysRegex = defaultWeekdaysRegex;
+	            }
+	            return this._weekdaysStrictRegex && isStrict ?
+	                this._weekdaysStrictRegex : this._weekdaysRegex;
+	        }
+	    }
+
+	    var defaultWeekdaysShortRegex = matchWord;
+	    function weekdaysShortRegex (isStrict) {
+	        if (this._weekdaysParseExact) {
+	            if (!hasOwnProp(this, '_weekdaysRegex')) {
+	                computeWeekdaysParse.call(this);
+	            }
+	            if (isStrict) {
+	                return this._weekdaysShortStrictRegex;
+	            } else {
+	                return this._weekdaysShortRegex;
+	            }
+	        } else {
+	            if (!hasOwnProp(this, '_weekdaysShortRegex')) {
+	                this._weekdaysShortRegex = defaultWeekdaysShortRegex;
+	            }
+	            return this._weekdaysShortStrictRegex && isStrict ?
+	                this._weekdaysShortStrictRegex : this._weekdaysShortRegex;
+	        }
+	    }
+
+	    var defaultWeekdaysMinRegex = matchWord;
+	    function weekdaysMinRegex (isStrict) {
+	        if (this._weekdaysParseExact) {
+	            if (!hasOwnProp(this, '_weekdaysRegex')) {
+	                computeWeekdaysParse.call(this);
+	            }
+	            if (isStrict) {
+	                return this._weekdaysMinStrictRegex;
+	            } else {
+	                return this._weekdaysMinRegex;
+	            }
+	        } else {
+	            if (!hasOwnProp(this, '_weekdaysMinRegex')) {
+	                this._weekdaysMinRegex = defaultWeekdaysMinRegex;
+	            }
+	            return this._weekdaysMinStrictRegex && isStrict ?
+	                this._weekdaysMinStrictRegex : this._weekdaysMinRegex;
+	        }
+	    }
+
+
+	    function computeWeekdaysParse () {
+	        function cmpLenRev(a, b) {
+	            return b.length - a.length;
+	        }
+
+	        var minPieces = [], shortPieces = [], longPieces = [], mixedPieces = [],
+	            i, mom, minp, shortp, longp;
+	        for (i = 0; i < 7; i++) {
+	            // make the regex if we don't have it already
+	            mom = createUTC([2000, 1]).day(i);
+	            minp = this.weekdaysMin(mom, '');
+	            shortp = this.weekdaysShort(mom, '');
+	            longp = this.weekdays(mom, '');
+	            minPieces.push(minp);
+	            shortPieces.push(shortp);
+	            longPieces.push(longp);
+	            mixedPieces.push(minp);
+	            mixedPieces.push(shortp);
+	            mixedPieces.push(longp);
+	        }
+	        // Sorting makes sure if one weekday (or abbr) is a prefix of another it
+	        // will match the longer piece.
+	        minPieces.sort(cmpLenRev);
+	        shortPieces.sort(cmpLenRev);
+	        longPieces.sort(cmpLenRev);
+	        mixedPieces.sort(cmpLenRev);
+	        for (i = 0; i < 7; i++) {
+	            shortPieces[i] = regexEscape(shortPieces[i]);
+	            longPieces[i] = regexEscape(longPieces[i]);
+	            mixedPieces[i] = regexEscape(mixedPieces[i]);
+	        }
+
+	        this._weekdaysRegex = new RegExp('^(' + mixedPieces.join('|') + ')', 'i');
+	        this._weekdaysShortRegex = this._weekdaysRegex;
+	        this._weekdaysMinRegex = this._weekdaysRegex;
+
+	        this._weekdaysStrictRegex = new RegExp('^(' + longPieces.join('|') + ')', 'i');
+	        this._weekdaysShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')', 'i');
+	        this._weekdaysMinStrictRegex = new RegExp('^(' + minPieces.join('|') + ')', 'i');
+	    }
+
+	    // FORMATTING
+
+	    function hFormat() {
+	        return this.hours() % 12 || 12;
+	    }
+
+	    function kFormat() {
+	        return this.hours() || 24;
+	    }
+
+	    addFormatToken('H', ['HH', 2], 0, 'hour');
+	    addFormatToken('h', ['hh', 2], 0, hFormat);
+	    addFormatToken('k', ['kk', 2], 0, kFormat);
+
+	    addFormatToken('hmm', 0, 0, function () {
+	        return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2);
+	    });
+
+	    addFormatToken('hmmss', 0, 0, function () {
+	        return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2) +
+	            zeroFill(this.seconds(), 2);
+	    });
+
+	    addFormatToken('Hmm', 0, 0, function () {
+	        return '' + this.hours() + zeroFill(this.minutes(), 2);
+	    });
+
+	    addFormatToken('Hmmss', 0, 0, function () {
+	        return '' + this.hours() + zeroFill(this.minutes(), 2) +
+	            zeroFill(this.seconds(), 2);
+	    });
+
+	    function meridiem (token, lowercase) {
+	        addFormatToken(token, 0, 0, function () {
+	            return this.localeData().meridiem(this.hours(), this.minutes(), lowercase);
+	        });
+	    }
+
+	    meridiem('a', true);
+	    meridiem('A', false);
+
+	    // ALIASES
+
+	    addUnitAlias('hour', 'h');
+
+	    // PRIORITY
+	    addUnitPriority('hour', 13);
+
+	    // PARSING
+
+	    function matchMeridiem (isStrict, locale) {
+	        return locale._meridiemParse;
+	    }
+
+	    addRegexToken('a',  matchMeridiem);
+	    addRegexToken('A',  matchMeridiem);
+	    addRegexToken('H',  match1to2);
+	    addRegexToken('h',  match1to2);
+	    addRegexToken('k',  match1to2);
+	    addRegexToken('HH', match1to2, match2);
+	    addRegexToken('hh', match1to2, match2);
+	    addRegexToken('kk', match1to2, match2);
+
+	    addRegexToken('hmm', match3to4);
+	    addRegexToken('hmmss', match5to6);
+	    addRegexToken('Hmm', match3to4);
+	    addRegexToken('Hmmss', match5to6);
+
+	    addParseToken(['H', 'HH'], HOUR);
+	    addParseToken(['k', 'kk'], function (input, array, config) {
+	        var kInput = toInt(input);
+	        array[HOUR] = kInput === 24 ? 0 : kInput;
+	    });
+	    addParseToken(['a', 'A'], function (input, array, config) {
+	        config._isPm = config._locale.isPM(input);
+	        config._meridiem = input;
+	    });
+	    addParseToken(['h', 'hh'], function (input, array, config) {
+	        array[HOUR] = toInt(input);
+	        getParsingFlags(config).bigHour = true;
+	    });
+	    addParseToken('hmm', function (input, array, config) {
+	        var pos = input.length - 2;
+	        array[HOUR] = toInt(input.substr(0, pos));
+	        array[MINUTE] = toInt(input.substr(pos));
+	        getParsingFlags(config).bigHour = true;
+	    });
+	    addParseToken('hmmss', function (input, array, config) {
+	        var pos1 = input.length - 4;
+	        var pos2 = input.length - 2;
+	        array[HOUR] = toInt(input.substr(0, pos1));
+	        array[MINUTE] = toInt(input.substr(pos1, 2));
+	        array[SECOND] = toInt(input.substr(pos2));
+	        getParsingFlags(config).bigHour = true;
+	    });
+	    addParseToken('Hmm', function (input, array, config) {
+	        var pos = input.length - 2;
+	        array[HOUR] = toInt(input.substr(0, pos));
+	        array[MINUTE] = toInt(input.substr(pos));
+	    });
+	    addParseToken('Hmmss', function (input, array, config) {
+	        var pos1 = input.length - 4;
+	        var pos2 = input.length - 2;
+	        array[HOUR] = toInt(input.substr(0, pos1));
+	        array[MINUTE] = toInt(input.substr(pos1, 2));
+	        array[SECOND] = toInt(input.substr(pos2));
+	    });
+
+	    // LOCALES
+
+	    function localeIsPM (input) {
+	        // IE8 Quirks Mode & IE7 Standards Mode do not allow accessing strings like arrays
+	        // Using charAt should be more compatible.
+	        return ((input + '').toLowerCase().charAt(0) === 'p');
+	    }
+
+	    var defaultLocaleMeridiemParse = /[ap]\.?m?\.?/i;
+	    function localeMeridiem (hours, minutes, isLower) {
+	        if (hours > 11) {
+	            return isLower ? 'pm' : 'PM';
+	        } else {
+	            return isLower ? 'am' : 'AM';
+	        }
+	    }
+
+
+	    // MOMENTS
+
+	    // Setting the hour should keep the time, because the user explicitly
+	    // specified which hour they want. So trying to maintain the same hour (in
+	    // a new timezone) makes sense. Adding/subtracting hours does not follow
+	    // this rule.
+	    var getSetHour = makeGetSet('Hours', true);
+
+	    var baseConfig = {
+	        calendar: defaultCalendar,
+	        longDateFormat: defaultLongDateFormat,
+	        invalidDate: defaultInvalidDate,
+	        ordinal: defaultOrdinal,
+	        dayOfMonthOrdinalParse: defaultDayOfMonthOrdinalParse,
+	        relativeTime: defaultRelativeTime,
+
+	        months: defaultLocaleMonths,
+	        monthsShort: defaultLocaleMonthsShort,
+
+	        week: defaultLocaleWeek,
+
+	        weekdays: defaultLocaleWeekdays,
+	        weekdaysMin: defaultLocaleWeekdaysMin,
+	        weekdaysShort: defaultLocaleWeekdaysShort,
+
+	        meridiemParse: defaultLocaleMeridiemParse
+	    };
+
+	    // internal storage for locale config files
+	    var locales = {};
+	    var localeFamilies = {};
+	    var globalLocale;
+
+	    function normalizeLocale(key) {
+	        return key ? key.toLowerCase().replace('_', '-') : key;
+	    }
+
+	    // pick the locale from the array
+	    // try ['en-au', 'en-gb'] as 'en-au', 'en-gb', 'en', as in move through the list trying each
+	    // substring from most specific to least, but move to the next array item if it's a more specific variant than the current root
+	    function chooseLocale(names) {
+	        var i = 0, j, next, locale, split;
+
+	        while (i < names.length) {
+	            split = normalizeLocale(names[i]).split('-');
+	            j = split.length;
+	            next = normalizeLocale(names[i + 1]);
+	            next = next ? next.split('-') : null;
+	            while (j > 0) {
+	                locale = loadLocale(split.slice(0, j).join('-'));
+	                if (locale) {
+	                    return locale;
+	                }
+	                if (next && next.length >= j && compareArrays(split, next, true) >= j - 1) {
+	                    //the next array item is better than a shallower substring of this one
+	                    break;
+	                }
+	                j--;
+	            }
+	            i++;
+	        }
+	        return globalLocale;
+	    }
+
+	    function loadLocale(name) {
+	        var oldLocale = null;
+	        // TODO: Find a better way to register and load all the locales in Node
+	        if (!locales[name] && (typeof module !== 'undefined') &&
+	                module && module.exports) {
+	            try {
+	                oldLocale = globalLocale._abbr;
+	                var aliasedRequire = require;
+	                __webpack_require__(9)("./" + name);
+	                getSetGlobalLocale(oldLocale);
+	            } catch (e) {}
+	        }
+	        return locales[name];
+	    }
+
+	    // This function will load locale and then set the global locale.  If
+	    // no arguments are passed in, it will simply return the current global
+	    // locale key.
+	    function getSetGlobalLocale (key, values) {
+	        var data;
+	        if (key) {
+	            if (isUndefined(values)) {
+	                data = getLocale(key);
+	            }
+	            else {
+	                data = defineLocale(key, values);
+	            }
+
+	            if (data) {
+	                // moment.duration._locale = moment._locale = data;
+	                globalLocale = data;
+	            }
+	            else {
+	                if ((typeof console !==  'undefined') && console.warn) {
+	                    //warn user if arguments are passed but the locale could not be set
+	                    console.warn('Locale ' + key +  ' not found. Did you forget to load it?');
+	                }
+	            }
+	        }
+
+	        return globalLocale._abbr;
+	    }
+
+	    function defineLocale (name, config) {
+	        if (config !== null) {
+	            var locale, parentConfig = baseConfig;
+	            config.abbr = name;
+	            if (locales[name] != null) {
+	                deprecateSimple('defineLocaleOverride',
+	                        'use moment.updateLocale(localeName, config) to change ' +
+	                        'an existing locale. moment.defineLocale(localeName, ' +
+	                        'config) should only be used for creating a new locale ' +
+	                        'See http://momentjs.com/guides/#/warnings/define-locale/ for more info.');
+	                parentConfig = locales[name]._config;
+	            } else if (config.parentLocale != null) {
+	                if (locales[config.parentLocale] != null) {
+	                    parentConfig = locales[config.parentLocale]._config;
+	                } else {
+	                    locale = loadLocale(config.parentLocale);
+	                    if (locale != null) {
+	                        parentConfig = locale._config;
+	                    } else {
+	                        if (!localeFamilies[config.parentLocale]) {
+	                            localeFamilies[config.parentLocale] = [];
+	                        }
+	                        localeFamilies[config.parentLocale].push({
+	                            name: name,
+	                            config: config
+	                        });
+	                        return null;
+	                    }
+	                }
+	            }
+	            locales[name] = new Locale(mergeConfigs(parentConfig, config));
+
+	            if (localeFamilies[name]) {
+	                localeFamilies[name].forEach(function (x) {
+	                    defineLocale(x.name, x.config);
+	                });
+	            }
+
+	            // backwards compat for now: also set the locale
+	            // make sure we set the locale AFTER all child locales have been
+	            // created, so we won't end up with the child locale set.
+	            getSetGlobalLocale(name);
+
+
+	            return locales[name];
+	        } else {
+	            // useful for testing
+	            delete locales[name];
+	            return null;
+	        }
+	    }
+
+	    function updateLocale(name, config) {
+	        if (config != null) {
+	            var locale, tmpLocale, parentConfig = baseConfig;
+	            // MERGE
+	            tmpLocale = loadLocale(name);
+	            if (tmpLocale != null) {
+	                parentConfig = tmpLocale._config;
+	            }
+	            config = mergeConfigs(parentConfig, config);
+	            locale = new Locale(config);
+	            locale.parentLocale = locales[name];
+	            locales[name] = locale;
+
+	            // backwards compat for now: also set the locale
+	            getSetGlobalLocale(name);
+	        } else {
+	            // pass null for config to unupdate, useful for tests
+	            if (locales[name] != null) {
+	                if (locales[name].parentLocale != null) {
+	                    locales[name] = locales[name].parentLocale;
+	                } else if (locales[name] != null) {
+	                    delete locales[name];
+	                }
+	            }
+	        }
+	        return locales[name];
+	    }
+
+	    // returns locale data
+	    function getLocale (key) {
+	        var locale;
+
+	        if (key && key._locale && key._locale._abbr) {
+	            key = key._locale._abbr;
+	        }
+
+	        if (!key) {
+	            return globalLocale;
+	        }
+
+	        if (!isArray(key)) {
+	            //short-circuit everything else
+	            locale = loadLocale(key);
+	            if (locale) {
+	                return locale;
+	            }
+	            key = [key];
+	        }
+
+	        return chooseLocale(key);
+	    }
+
+	    function listLocales() {
+	        return keys(locales);
 	    }
 
 	    function checkOverflow (m) {
@@ -22562,10 +23640,160 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return m;
 	    }
 
+	    // Pick the first defined of two or three arguments.
+	    function defaults(a, b, c) {
+	        if (a != null) {
+	            return a;
+	        }
+	        if (b != null) {
+	            return b;
+	        }
+	        return c;
+	    }
+
+	    function currentDateArray(config) {
+	        // hooks is actually the exported moment object
+	        var nowValue = new Date(hooks.now());
+	        if (config._useUTC) {
+	            return [nowValue.getUTCFullYear(), nowValue.getUTCMonth(), nowValue.getUTCDate()];
+	        }
+	        return [nowValue.getFullYear(), nowValue.getMonth(), nowValue.getDate()];
+	    }
+
+	    // convert an array to a date.
+	    // the array should mirror the parameters below
+	    // note: all values past the year are optional and will default to the lowest possible value.
+	    // [year, month, day , hour, minute, second, millisecond]
+	    function configFromArray (config) {
+	        var i, date, input = [], currentDate, expectedWeekday, yearToUse;
+
+	        if (config._d) {
+	            return;
+	        }
+
+	        currentDate = currentDateArray(config);
+
+	        //compute day of the year from weeks and weekdays
+	        if (config._w && config._a[DATE] == null && config._a[MONTH] == null) {
+	            dayOfYearFromWeekInfo(config);
+	        }
+
+	        //if the day of the year is set, figure out what it is
+	        if (config._dayOfYear != null) {
+	            yearToUse = defaults(config._a[YEAR], currentDate[YEAR]);
+
+	            if (config._dayOfYear > daysInYear(yearToUse) || config._dayOfYear === 0) {
+	                getParsingFlags(config)._overflowDayOfYear = true;
+	            }
+
+	            date = createUTCDate(yearToUse, 0, config._dayOfYear);
+	            config._a[MONTH] = date.getUTCMonth();
+	            config._a[DATE] = date.getUTCDate();
+	        }
+
+	        // Default to current date.
+	        // * if no year, month, day of month are given, default to today
+	        // * if day of month is given, default month and year
+	        // * if month is given, default only year
+	        // * if year is given, don't default anything
+	        for (i = 0; i < 3 && config._a[i] == null; ++i) {
+	            config._a[i] = input[i] = currentDate[i];
+	        }
+
+	        // Zero out whatever was not defaulted, including time
+	        for (; i < 7; i++) {
+	            config._a[i] = input[i] = (config._a[i] == null) ? (i === 2 ? 1 : 0) : config._a[i];
+	        }
+
+	        // Check for 24:00:00.000
+	        if (config._a[HOUR] === 24 &&
+	                config._a[MINUTE] === 0 &&
+	                config._a[SECOND] === 0 &&
+	                config._a[MILLISECOND] === 0) {
+	            config._nextDay = true;
+	            config._a[HOUR] = 0;
+	        }
+
+	        config._d = (config._useUTC ? createUTCDate : createDate).apply(null, input);
+	        expectedWeekday = config._useUTC ? config._d.getUTCDay() : config._d.getDay();
+
+	        // Apply timezone offset from input. The actual utcOffset can be changed
+	        // with parseZone.
+	        if (config._tzm != null) {
+	            config._d.setUTCMinutes(config._d.getUTCMinutes() - config._tzm);
+	        }
+
+	        if (config._nextDay) {
+	            config._a[HOUR] = 24;
+	        }
+
+	        // check for mismatching day of week
+	        if (config._w && typeof config._w.d !== 'undefined' && config._w.d !== expectedWeekday) {
+	            getParsingFlags(config).weekdayMismatch = true;
+	        }
+	    }
+
+	    function dayOfYearFromWeekInfo(config) {
+	        var w, weekYear, week, weekday, dow, doy, temp, weekdayOverflow;
+
+	        w = config._w;
+	        if (w.GG != null || w.W != null || w.E != null) {
+	            dow = 1;
+	            doy = 4;
+
+	            // TODO: We need to take the current isoWeekYear, but that depends on
+	            // how we interpret now (local, utc, fixed offset). So create
+	            // a now version of current config (take local/utc/offset flags, and
+	            // create now).
+	            weekYear = defaults(w.GG, config._a[YEAR], weekOfYear(createLocal(), 1, 4).year);
+	            week = defaults(w.W, 1);
+	            weekday = defaults(w.E, 1);
+	            if (weekday < 1 || weekday > 7) {
+	                weekdayOverflow = true;
+	            }
+	        } else {
+	            dow = config._locale._week.dow;
+	            doy = config._locale._week.doy;
+
+	            var curWeek = weekOfYear(createLocal(), dow, doy);
+
+	            weekYear = defaults(w.gg, config._a[YEAR], curWeek.year);
+
+	            // Default to current week.
+	            week = defaults(w.w, curWeek.week);
+
+	            if (w.d != null) {
+	                // weekday -- low day numbers are considered next week
+	                weekday = w.d;
+	                if (weekday < 0 || weekday > 6) {
+	                    weekdayOverflow = true;
+	                }
+	            } else if (w.e != null) {
+	                // local weekday -- counting starts from begining of week
+	                weekday = w.e + dow;
+	                if (w.e < 0 || w.e > 6) {
+	                    weekdayOverflow = true;
+	                }
+	            } else {
+	                // default to begining of week
+	                weekday = dow;
+	            }
+	        }
+	        if (week < 1 || week > weeksInYear(weekYear, dow, doy)) {
+	            getParsingFlags(config)._overflowWeeks = true;
+	        } else if (weekdayOverflow != null) {
+	            getParsingFlags(config)._overflowWeekday = true;
+	        } else {
+	            temp = dayOfYearFromWeeks(weekYear, week, weekday, dow, doy);
+	            config._a[YEAR] = temp.year;
+	            config._dayOfYear = temp.dayOfYear;
+	        }
+	    }
+
 	    // iso 8601 regex
 	    // 0000-00-00 0000-W00 or 0000-W00-0 + T + 00 or 00:00 or 00:00:00 or 00:00:00.000 + +00:00 or +0000 or +00)
-	    var extendedIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
-	    var basicIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+	    var extendedIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?$/;
+	    var basicIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?$/;
 
 	    var tzRegex = /Z|[+-]\d\d(?::?\d\d)?/;
 
@@ -22652,6 +23880,101 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	    }
 
+	    // RFC 2822 regex: For details see https://tools.ietf.org/html/rfc2822#section-3.3
+	    var rfc2822 = /^(?:(Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s)?(\d{1,2})\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s(\d{2,4})\s(\d\d):(\d\d)(?::(\d\d))?\s(?:(UT|GMT|[ECMP][SD]T)|([Zz])|([+-]\d{4}))$/;
+
+	    function extractFromRFC2822Strings(yearStr, monthStr, dayStr, hourStr, minuteStr, secondStr) {
+	        var result = [
+	            untruncateYear(yearStr),
+	            defaultLocaleMonthsShort.indexOf(monthStr),
+	            parseInt(dayStr, 10),
+	            parseInt(hourStr, 10),
+	            parseInt(minuteStr, 10)
+	        ];
+
+	        if (secondStr) {
+	            result.push(parseInt(secondStr, 10));
+	        }
+
+	        return result;
+	    }
+
+	    function untruncateYear(yearStr) {
+	        var year = parseInt(yearStr, 10);
+	        if (year <= 49) {
+	            return 2000 + year;
+	        } else if (year <= 999) {
+	            return 1900 + year;
+	        }
+	        return year;
+	    }
+
+	    function preprocessRFC2822(s) {
+	        // Remove comments and folding whitespace and replace multiple-spaces with a single space
+	        return s.replace(/\([^)]*\)|[\n\t]/g, ' ').replace(/(\s\s+)/g, ' ').replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+	    }
+
+	    function checkWeekday(weekdayStr, parsedInput, config) {
+	        if (weekdayStr) {
+	            // TODO: Replace the vanilla JS Date object with an indepentent day-of-week check.
+	            var weekdayProvided = defaultLocaleWeekdaysShort.indexOf(weekdayStr),
+	                weekdayActual = new Date(parsedInput[0], parsedInput[1], parsedInput[2]).getDay();
+	            if (weekdayProvided !== weekdayActual) {
+	                getParsingFlags(config).weekdayMismatch = true;
+	                config._isValid = false;
+	                return false;
+	            }
+	        }
+	        return true;
+	    }
+
+	    var obsOffsets = {
+	        UT: 0,
+	        GMT: 0,
+	        EDT: -4 * 60,
+	        EST: -5 * 60,
+	        CDT: -5 * 60,
+	        CST: -6 * 60,
+	        MDT: -6 * 60,
+	        MST: -7 * 60,
+	        PDT: -7 * 60,
+	        PST: -8 * 60
+	    };
+
+	    function calculateOffset(obsOffset, militaryOffset, numOffset) {
+	        if (obsOffset) {
+	            return obsOffsets[obsOffset];
+	        } else if (militaryOffset) {
+	            // the only allowed military tz is Z
+	            return 0;
+	        } else {
+	            var hm = parseInt(numOffset, 10);
+	            var m = hm % 100, h = (hm - m) / 100;
+	            return h * 60 + m;
+	        }
+	    }
+
+	    // date and time from ref 2822 format
+	    function configFromRFC2822(config) {
+	        var match = rfc2822.exec(preprocessRFC2822(config._i));
+	        if (match) {
+	            var parsedArray = extractFromRFC2822Strings(match[4], match[3], match[2], match[5], match[6], match[7]);
+	            if (!checkWeekday(match[1], parsedArray, config)) {
+	                return;
+	            }
+
+	            config._a = parsedArray;
+	            config._tzm = calculateOffset(match[8], match[9], match[10]);
+
+	            config._d = createUTCDate.apply(null, config._a);
+	            config._d.setUTCMinutes(config._d.getUTCMinutes() - config._tzm);
+
+	            getParsingFlags(config).rfc2822 = true;
+	        } else {
+	            config._isValid = false;
+	        }
+	    }
+
 	    // date from iso format or fallback
 	    function configFromString(config) {
 	        var matched = aspNetJsonRegex.exec(config._i);
@@ -22664,316 +23987,48 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        configFromISO(config);
 	        if (config._isValid === false) {
 	            delete config._isValid;
-	            utils_hooks__hooks.createFromInputFallback(config);
+	        } else {
+	            return;
 	        }
+
+	        configFromRFC2822(config);
+	        if (config._isValid === false) {
+	            delete config._isValid;
+	        } else {
+	            return;
+	        }
+
+	        // Final attempt, use Input Fallback
+	        hooks.createFromInputFallback(config);
 	    }
 
-	    utils_hooks__hooks.createFromInputFallback = deprecate(
-	        'moment construction falls back to js Date. This is ' +
-	        'discouraged and will be removed in upcoming major ' +
-	        'release. Please refer to ' +
-	        'https://github.com/moment/moment/issues/1407 for more info.',
+	    hooks.createFromInputFallback = deprecate(
+	        'value provided is not in a recognized RFC2822 or ISO format. moment construction falls back to js Date(), ' +
+	        'which is not reliable across all browsers and versions. Non RFC2822/ISO date formats are ' +
+	        'discouraged and will be removed in an upcoming major release. Please refer to ' +
+	        'http://momentjs.com/guides/#/warnings/js-date/ for more info.',
 	        function (config) {
 	            config._d = new Date(config._i + (config._useUTC ? ' UTC' : ''));
 	        }
 	    );
 
-	    function createDate (y, m, d, h, M, s, ms) {
-	        //can't just apply() to create a date:
-	        //http://stackoverflow.com/questions/181348/instantiating-a-javascript-object-by-calling-prototype-constructor-apply
-	        var date = new Date(y, m, d, h, M, s, ms);
-
-	        //the date constructor remaps years 0-99 to 1900-1999
-	        if (y < 100 && y >= 0 && isFinite(date.getFullYear())) {
-	            date.setFullYear(y);
-	        }
-	        return date;
-	    }
-
-	    function createUTCDate (y) {
-	        var date = new Date(Date.UTC.apply(null, arguments));
-
-	        //the Date.UTC function remaps years 0-99 to 1900-1999
-	        if (y < 100 && y >= 0 && isFinite(date.getUTCFullYear())) {
-	            date.setUTCFullYear(y);
-	        }
-	        return date;
-	    }
-
-	    // FORMATTING
-
-	    addFormatToken('Y', 0, 0, function () {
-	        var y = this.year();
-	        return y <= 9999 ? '' + y : '+' + y;
-	    });
-
-	    addFormatToken(0, ['YY', 2], 0, function () {
-	        return this.year() % 100;
-	    });
-
-	    addFormatToken(0, ['YYYY',   4],       0, 'year');
-	    addFormatToken(0, ['YYYYY',  5],       0, 'year');
-	    addFormatToken(0, ['YYYYYY', 6, true], 0, 'year');
-
-	    // ALIASES
-
-	    addUnitAlias('year', 'y');
-
-	    // PARSING
-
-	    addRegexToken('Y',      matchSigned);
-	    addRegexToken('YY',     match1to2, match2);
-	    addRegexToken('YYYY',   match1to4, match4);
-	    addRegexToken('YYYYY',  match1to6, match6);
-	    addRegexToken('YYYYYY', match1to6, match6);
-
-	    addParseToken(['YYYYY', 'YYYYYY'], YEAR);
-	    addParseToken('YYYY', function (input, array) {
-	        array[YEAR] = input.length === 2 ? utils_hooks__hooks.parseTwoDigitYear(input) : toInt(input);
-	    });
-	    addParseToken('YY', function (input, array) {
-	        array[YEAR] = utils_hooks__hooks.parseTwoDigitYear(input);
-	    });
-	    addParseToken('Y', function (input, array) {
-	        array[YEAR] = parseInt(input, 10);
-	    });
-
-	    // HELPERS
-
-	    function daysInYear(year) {
-	        return isLeapYear(year) ? 366 : 365;
-	    }
-
-	    function isLeapYear(year) {
-	        return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-	    }
-
-	    // HOOKS
-
-	    utils_hooks__hooks.parseTwoDigitYear = function (input) {
-	        return toInt(input) + (toInt(input) > 68 ? 1900 : 2000);
-	    };
-
-	    // MOMENTS
-
-	    var getSetYear = makeGetSet('FullYear', true);
-
-	    function getIsLeapYear () {
-	        return isLeapYear(this.year());
-	    }
-
-	    // start-of-first-week - start-of-year
-	    function firstWeekOffset(year, dow, doy) {
-	        var // first-week day -- which january is always in the first week (4 for iso, 1 for other)
-	            fwd = 7 + dow - doy,
-	            // first-week day local weekday -- which local weekday is fwd
-	            fwdlw = (7 + createUTCDate(year, 0, fwd).getUTCDay() - dow) % 7;
-
-	        return -fwdlw + fwd - 1;
-	    }
-
-	    //http://en.wikipedia.org/wiki/ISO_week_date#Calculating_a_date_given_the_year.2C_week_number_and_weekday
-	    function dayOfYearFromWeeks(year, week, weekday, dow, doy) {
-	        var localWeekday = (7 + weekday - dow) % 7,
-	            weekOffset = firstWeekOffset(year, dow, doy),
-	            dayOfYear = 1 + 7 * (week - 1) + localWeekday + weekOffset,
-	            resYear, resDayOfYear;
-
-	        if (dayOfYear <= 0) {
-	            resYear = year - 1;
-	            resDayOfYear = daysInYear(resYear) + dayOfYear;
-	        } else if (dayOfYear > daysInYear(year)) {
-	            resYear = year + 1;
-	            resDayOfYear = dayOfYear - daysInYear(year);
-	        } else {
-	            resYear = year;
-	            resDayOfYear = dayOfYear;
-	        }
-
-	        return {
-	            year: resYear,
-	            dayOfYear: resDayOfYear
-	        };
-	    }
-
-	    function weekOfYear(mom, dow, doy) {
-	        var weekOffset = firstWeekOffset(mom.year(), dow, doy),
-	            week = Math.floor((mom.dayOfYear() - weekOffset - 1) / 7) + 1,
-	            resWeek, resYear;
-
-	        if (week < 1) {
-	            resYear = mom.year() - 1;
-	            resWeek = week + weeksInYear(resYear, dow, doy);
-	        } else if (week > weeksInYear(mom.year(), dow, doy)) {
-	            resWeek = week - weeksInYear(mom.year(), dow, doy);
-	            resYear = mom.year() + 1;
-	        } else {
-	            resYear = mom.year();
-	            resWeek = week;
-	        }
-
-	        return {
-	            week: resWeek,
-	            year: resYear
-	        };
-	    }
-
-	    function weeksInYear(year, dow, doy) {
-	        var weekOffset = firstWeekOffset(year, dow, doy),
-	            weekOffsetNext = firstWeekOffset(year + 1, dow, doy);
-	        return (daysInYear(year) - weekOffset + weekOffsetNext) / 7;
-	    }
-
-	    // Pick the first defined of two or three arguments.
-	    function defaults(a, b, c) {
-	        if (a != null) {
-	            return a;
-	        }
-	        if (b != null) {
-	            return b;
-	        }
-	        return c;
-	    }
-
-	    function currentDateArray(config) {
-	        // hooks is actually the exported moment object
-	        var nowValue = new Date(utils_hooks__hooks.now());
-	        if (config._useUTC) {
-	            return [nowValue.getUTCFullYear(), nowValue.getUTCMonth(), nowValue.getUTCDate()];
-	        }
-	        return [nowValue.getFullYear(), nowValue.getMonth(), nowValue.getDate()];
-	    }
-
-	    // convert an array to a date.
-	    // the array should mirror the parameters below
-	    // note: all values past the year are optional and will default to the lowest possible value.
-	    // [year, month, day , hour, minute, second, millisecond]
-	    function configFromArray (config) {
-	        var i, date, input = [], currentDate, yearToUse;
-
-	        if (config._d) {
-	            return;
-	        }
-
-	        currentDate = currentDateArray(config);
-
-	        //compute day of the year from weeks and weekdays
-	        if (config._w && config._a[DATE] == null && config._a[MONTH] == null) {
-	            dayOfYearFromWeekInfo(config);
-	        }
-
-	        //if the day of the year is set, figure out what it is
-	        if (config._dayOfYear) {
-	            yearToUse = defaults(config._a[YEAR], currentDate[YEAR]);
-
-	            if (config._dayOfYear > daysInYear(yearToUse)) {
-	                getParsingFlags(config)._overflowDayOfYear = true;
-	            }
-
-	            date = createUTCDate(yearToUse, 0, config._dayOfYear);
-	            config._a[MONTH] = date.getUTCMonth();
-	            config._a[DATE] = date.getUTCDate();
-	        }
-
-	        // Default to current date.
-	        // * if no year, month, day of month are given, default to today
-	        // * if day of month is given, default month and year
-	        // * if month is given, default only year
-	        // * if year is given, don't default anything
-	        for (i = 0; i < 3 && config._a[i] == null; ++i) {
-	            config._a[i] = input[i] = currentDate[i];
-	        }
-
-	        // Zero out whatever was not defaulted, including time
-	        for (; i < 7; i++) {
-	            config._a[i] = input[i] = (config._a[i] == null) ? (i === 2 ? 1 : 0) : config._a[i];
-	        }
-
-	        // Check for 24:00:00.000
-	        if (config._a[HOUR] === 24 &&
-	                config._a[MINUTE] === 0 &&
-	                config._a[SECOND] === 0 &&
-	                config._a[MILLISECOND] === 0) {
-	            config._nextDay = true;
-	            config._a[HOUR] = 0;
-	        }
-
-	        config._d = (config._useUTC ? createUTCDate : createDate).apply(null, input);
-	        // Apply timezone offset from input. The actual utcOffset can be changed
-	        // with parseZone.
-	        if (config._tzm != null) {
-	            config._d.setUTCMinutes(config._d.getUTCMinutes() - config._tzm);
-	        }
-
-	        if (config._nextDay) {
-	            config._a[HOUR] = 24;
-	        }
-	    }
-
-	    function dayOfYearFromWeekInfo(config) {
-	        var w, weekYear, week, weekday, dow, doy, temp, weekdayOverflow;
-
-	        w = config._w;
-	        if (w.GG != null || w.W != null || w.E != null) {
-	            dow = 1;
-	            doy = 4;
-
-	            // TODO: We need to take the current isoWeekYear, but that depends on
-	            // how we interpret now (local, utc, fixed offset). So create
-	            // a now version of current config (take local/utc/offset flags, and
-	            // create now).
-	            weekYear = defaults(w.GG, config._a[YEAR], weekOfYear(local__createLocal(), 1, 4).year);
-	            week = defaults(w.W, 1);
-	            weekday = defaults(w.E, 1);
-	            if (weekday < 1 || weekday > 7) {
-	                weekdayOverflow = true;
-	            }
-	        } else {
-	            dow = config._locale._week.dow;
-	            doy = config._locale._week.doy;
-
-	            weekYear = defaults(w.gg, config._a[YEAR], weekOfYear(local__createLocal(), dow, doy).year);
-	            week = defaults(w.w, 1);
-
-	            if (w.d != null) {
-	                // weekday -- low day numbers are considered next week
-	                weekday = w.d;
-	                if (weekday < 0 || weekday > 6) {
-	                    weekdayOverflow = true;
-	                }
-	            } else if (w.e != null) {
-	                // local weekday -- counting starts from begining of week
-	                weekday = w.e + dow;
-	                if (w.e < 0 || w.e > 6) {
-	                    weekdayOverflow = true;
-	                }
-	            } else {
-	                // default to begining of week
-	                weekday = dow;
-	            }
-	        }
-	        if (week < 1 || week > weeksInYear(weekYear, dow, doy)) {
-	            getParsingFlags(config)._overflowWeeks = true;
-	        } else if (weekdayOverflow != null) {
-	            getParsingFlags(config)._overflowWeekday = true;
-	        } else {
-	            temp = dayOfYearFromWeeks(weekYear, week, weekday, dow, doy);
-	            config._a[YEAR] = temp.year;
-	            config._dayOfYear = temp.dayOfYear;
-	        }
-	    }
-
 	    // constant that refers to the ISO standard
-	    utils_hooks__hooks.ISO_8601 = function () {};
+	    hooks.ISO_8601 = function () {};
+
+	    // constant that refers to the RFC 2822 form
+	    hooks.RFC_2822 = function () {};
 
 	    // date from string and format string
 	    function configFromStringAndFormat(config) {
 	        // TODO: Move this to another part of the creation flow to prevent circular deps
-	        if (config._f === utils_hooks__hooks.ISO_8601) {
+	        if (config._f === hooks.ISO_8601) {
 	            configFromISO(config);
 	            return;
 	        }
-
+	        if (config._f === hooks.RFC_2822) {
+	            configFromRFC2822(config);
+	            return;
+	        }
 	        config._a = [];
 	        getParsingFlags(config).empty = true;
 
@@ -23020,9 +24075,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 
 	        // clear _12h flag if hour is <= 12
-	        if (getParsingFlags(config).bigHour === true &&
-	                config._a[HOUR] <= 12 &&
-	                config._a[HOUR] > 0) {
+	        if (config._a[HOUR] <= 12 &&
+	            getParsingFlags(config).bigHour === true &&
+	            config._a[HOUR] > 0) {
 	            getParsingFlags(config).bigHour = undefined;
 	        }
 
@@ -23085,7 +24140,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            tempConfig._f = config._f[i];
 	            configFromStringAndFormat(tempConfig);
 
-	            if (!valid__isValid(tempConfig)) {
+	            if (!isValid(tempConfig)) {
 	                continue;
 	            }
 
@@ -23134,10 +24189,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        var input = config._i,
 	            format = config._f;
 
-	        config._locale = config._locale || locale_locales__getLocale(config._l);
+	        config._locale = config._locale || getLocale(config._l);
 
 	        if (input === null || (format === undefined && input === '')) {
-	            return valid__createInvalid({nullInput: true});
+	            return createInvalid({nullInput: true});
 	        }
 
 	        if (typeof input === 'string') {
@@ -23146,17 +24201,17 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	        if (isMoment(input)) {
 	            return new Moment(checkOverflow(input));
+	        } else if (isDate(input)) {
+	            config._d = input;
 	        } else if (isArray(format)) {
 	            configFromStringAndArray(config);
 	        } else if (format) {
 	            configFromStringAndFormat(config);
-	        } else if (isDate(input)) {
-	            config._d = input;
-	        } else {
+	        }  else {
 	            configFromInput(config);
 	        }
 
-	        if (!valid__isValid(config)) {
+	        if (!isValid(config)) {
 	            config._d = null;
 	        }
 
@@ -23165,8 +24220,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    function configFromInput(config) {
 	        var input = config._i;
-	        if (input === undefined) {
-	            config._d = new Date(utils_hooks__hooks.now());
+	        if (isUndefined(input)) {
+	            config._d = new Date(hooks.now());
 	        } else if (isDate(input)) {
 	            config._d = new Date(input.valueOf());
 	        } else if (typeof input === 'string') {
@@ -23176,22 +24231,27 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                return parseInt(obj, 10);
 	            });
 	            configFromArray(config);
-	        } else if (typeof(input) === 'object') {
+	        } else if (isObject(input)) {
 	            configFromObject(config);
-	        } else if (typeof(input) === 'number') {
+	        } else if (isNumber(input)) {
 	            // from milliseconds
 	            config._d = new Date(input);
 	        } else {
-	            utils_hooks__hooks.createFromInputFallback(config);
+	            hooks.createFromInputFallback(config);
 	        }
 	    }
 
 	    function createLocalOrUTC (input, format, locale, strict, isUTC) {
 	        var c = {};
 
-	        if (typeof(locale) === 'boolean') {
+	        if (locale === true || locale === false) {
 	            strict = locale;
 	            locale = undefined;
+	        }
+
+	        if ((isObject(input) && isObjectEmpty(input)) ||
+	                (isArray(input) && input.length === 0)) {
+	            input = undefined;
 	        }
 	        // object construction must be done this way.
 	        // https://github.com/moment/moment/issues/1423
@@ -23205,30 +24265,30 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return createFromConfig(c);
 	    }
 
-	    function local__createLocal (input, format, locale, strict) {
+	    function createLocal (input, format, locale, strict) {
 	        return createLocalOrUTC(input, format, locale, strict, false);
 	    }
 
 	    var prototypeMin = deprecate(
-	         'moment().min is deprecated, use moment.max instead. https://github.com/moment/moment/issues/1548',
-	         function () {
-	             var other = local__createLocal.apply(null, arguments);
-	             if (this.isValid() && other.isValid()) {
-	                 return other < this ? this : other;
-	             } else {
-	                 return valid__createInvalid();
-	             }
-	         }
-	     );
+	        'moment().min is deprecated, use moment.max instead. http://momentjs.com/guides/#/warnings/min-max/',
+	        function () {
+	            var other = createLocal.apply(null, arguments);
+	            if (this.isValid() && other.isValid()) {
+	                return other < this ? this : other;
+	            } else {
+	                return createInvalid();
+	            }
+	        }
+	    );
 
 	    var prototypeMax = deprecate(
-	        'moment().max is deprecated, use moment.min instead. https://github.com/moment/moment/issues/1548',
+	        'moment().max is deprecated, use moment.min instead. http://momentjs.com/guides/#/warnings/min-max/',
 	        function () {
-	            var other = local__createLocal.apply(null, arguments);
+	            var other = createLocal.apply(null, arguments);
 	            if (this.isValid() && other.isValid()) {
 	                return other > this ? this : other;
 	            } else {
-	                return valid__createInvalid();
+	                return createInvalid();
 	            }
 	        }
 	    );
@@ -23244,7 +24304,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            moments = moments[0];
 	        }
 	        if (!moments.length) {
-	            return local__createLocal();
+	            return createLocal();
 	        }
 	        res = moments[0];
 	        for (i = 1; i < moments.length; ++i) {
@@ -23272,6 +24332,38 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return Date.now ? Date.now() : +(new Date());
 	    };
 
+	    var ordering = ['year', 'quarter', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond'];
+
+	    function isDurationValid(m) {
+	        for (var key in m) {
+	            if (!(indexOf.call(ordering, key) !== -1 && (m[key] == null || !isNaN(m[key])))) {
+	                return false;
+	            }
+	        }
+
+	        var unitHasDecimal = false;
+	        for (var i = 0; i < ordering.length; ++i) {
+	            if (m[ordering[i]]) {
+	                if (unitHasDecimal) {
+	                    return false; // only allow non-integers for smallest unit
+	                }
+	                if (parseFloat(m[ordering[i]]) !== toInt(m[ordering[i]])) {
+	                    unitHasDecimal = true;
+	                }
+	            }
+	        }
+
+	        return true;
+	    }
+
+	    function isValid$1() {
+	        return this._isValid;
+	    }
+
+	    function createInvalid$1() {
+	        return createDuration(NaN);
+	    }
+
 	    function Duration (duration) {
 	        var normalizedInput = normalizeObjectUnits(duration),
 	            years = normalizedInput.year || 0,
@@ -23284,6 +24376,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            seconds = normalizedInput.second || 0,
 	            milliseconds = normalizedInput.millisecond || 0;
 
+	        this._isValid = isDurationValid(normalizedInput);
+
 	        // representation for dateAddRemove
 	        this._milliseconds = +milliseconds +
 	            seconds * 1e3 + // 1000
@@ -23293,7 +24387,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        // day when working around DST, we need to store them separately
 	        this._days = +days +
 	            weeks * 7;
-	        // It is impossible translate months into days without knowing
+	        // It is impossible to translate months into days without knowing
 	        // which months you are are talking about, so we have to store
 	        // it separately.
 	        this._months = +months +
@@ -23302,13 +24396,21 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	        this._data = {};
 
-	        this._locale = locale_locales__getLocale();
+	        this._locale = getLocale();
 
 	        this._bubble();
 	    }
 
 	    function isDuration (obj) {
 	        return obj instanceof Duration;
+	    }
+
+	    function absRound (number) {
+	        if (number < 0) {
+	            return Math.round(-1 * number) * -1;
+	        } else {
+	            return Math.round(number);
+	        }
 	    }
 
 	    // FORMATTING
@@ -23345,12 +24447,19 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    var chunkOffset = /([\+\-]|\d\d)/gi;
 
 	    function offsetFromString(matcher, string) {
-	        var matches = ((string || '').match(matcher) || []);
+	        var matches = (string || '').match(matcher);
+
+	        if (matches === null) {
+	            return null;
+	        }
+
 	        var chunk   = matches[matches.length - 1] || [];
 	        var parts   = (chunk + '').match(chunkOffset) || ['-', 0, 0];
 	        var minutes = +(parts[1] * 60) + toInt(parts[2]);
 
-	        return parts[0] === '+' ? minutes : -minutes;
+	        return minutes === 0 ?
+	          0 :
+	          parts[0] === '+' ? minutes : -minutes;
 	    }
 
 	    // Return a moment from input, that is local/utc/zone equivalent to model.
@@ -23358,13 +24467,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        var res, diff;
 	        if (model._isUTC) {
 	            res = model.clone();
-	            diff = (isMoment(input) || isDate(input) ? input.valueOf() : local__createLocal(input).valueOf()) - res.valueOf();
+	            diff = (isMoment(input) || isDate(input) ? input.valueOf() : createLocal(input).valueOf()) - res.valueOf();
 	            // Use low-level api, because this fn is low-level api.
 	            res._d.setTime(res._d.valueOf() + diff);
-	            utils_hooks__hooks.updateOffset(res, false);
+	            hooks.updateOffset(res, false);
 	            return res;
 	        } else {
-	            return local__createLocal(input).local();
+	            return createLocal(input).local();
 	        }
 	    }
 
@@ -23378,7 +24487,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    // This function will be called whenever a moment is mutated.
 	    // It is intended to keep the offset in sync with the timezone.
-	    utils_hooks__hooks.updateOffset = function () {};
+	    hooks.updateOffset = function () {};
 
 	    // MOMENTS
 
@@ -23392,7 +24501,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    // a second time. In case it wants us to change the offset again
 	    // _changeInProgress == true case, then we have to adjust, because
 	    // there is no such time in the given timezone.
-	    function getSetOffset (input, keepLocalTime) {
+	    function getSetOffset (input, keepLocalTime, keepMinutes) {
 	        var offset = this._offset || 0,
 	            localAdjust;
 	        if (!this.isValid()) {
@@ -23401,7 +24510,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        if (input != null) {
 	            if (typeof input === 'string') {
 	                input = offsetFromString(matchShortOffset, input);
-	            } else if (Math.abs(input) < 16) {
+	                if (input === null) {
+	                    return this;
+	                }
+	            } else if (Math.abs(input) < 16 && !keepMinutes) {
 	                input = input * 60;
 	            }
 	            if (!this._isUTC && keepLocalTime) {
@@ -23414,10 +24526,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            }
 	            if (offset !== input) {
 	                if (!keepLocalTime || this._changeInProgress) {
-	                    add_subtract__addSubtract(this, create__createDuration(input - offset, 'm'), 1, false);
+	                    addSubtract(this, createDuration(input - offset, 'm'), 1, false);
 	                } else if (!this._changeInProgress) {
 	                    this._changeInProgress = true;
-	                    utils_hooks__hooks.updateOffset(this, true);
+	                    hooks.updateOffset(this, true);
 	                    this._changeInProgress = null;
 	                }
 	            }
@@ -23458,10 +24570,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 
 	    function setOffsetToParsedOffset () {
-	        if (this._tzm) {
-	            this.utcOffset(this._tzm);
+	        if (this._tzm != null) {
+	            this.utcOffset(this._tzm, false, true);
 	        } else if (typeof this._i === 'string') {
-	            this.utcOffset(offsetFromString(matchOffset, this._i));
+	            var tZone = offsetFromString(matchOffset, this._i);
+	            if (tZone != null) {
+	                this.utcOffset(tZone);
+	            }
+	            else {
+	                this.utcOffset(0, true);
+	            }
 	        }
 	        return this;
 	    }
@@ -23470,7 +24588,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        if (!this.isValid()) {
 	            return false;
 	        }
-	        input = input ? local__createLocal(input).utcOffset() : 0;
+	        input = input ? createLocal(input).utcOffset() : 0;
 
 	        return (this.utcOffset() - input) % 60 === 0;
 	    }
@@ -23493,7 +24611,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        c = prepareConfig(c);
 
 	        if (c._a) {
-	            var other = c._isUTC ? create_utc__createUTC(c._a) : local__createLocal(c._a);
+	            var other = c._isUTC ? createUTC(c._a) : createLocal(c._a);
 	            this._isDSTShifted = this.isValid() &&
 	                compareArrays(c._a, other.toArray()) > 0;
 	        } else {
@@ -23516,14 +24634,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 
 	    // ASP.NET json date format regex
-	    var aspNetRegex = /^(\-)?(?:(\d*)[. ])?(\d+)\:(\d+)(?:\:(\d+)\.?(\d{3})?\d*)?$/;
+	    var aspNetRegex = /^(\-|\+)?(?:(\d*)[. ])?(\d+)\:(\d+)(?:\:(\d+)(\.\d*)?)?$/;
 
 	    // from http://docs.closure-library.googlecode.com/git/closure_goog_date_date.js.source.html
 	    // somewhat more in line with 4.4.3.2 2004 spec, but allows decimal anywhere
 	    // and further modified to allow for strings containing both week and day
-	    var isoRegex = /^(-)?P(?:(-?[0-9,.]*)Y)?(?:(-?[0-9,.]*)M)?(?:(-?[0-9,.]*)W)?(?:(-?[0-9,.]*)D)?(?:T(?:(-?[0-9,.]*)H)?(?:(-?[0-9,.]*)M)?(?:(-?[0-9,.]*)S)?)?$/;
+	    var isoRegex = /^(-|\+)?P(?:([-+]?[0-9,.]*)Y)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)W)?(?:([-+]?[0-9,.]*)D)?(?:T(?:([-+]?[0-9,.]*)H)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)S)?)?$/;
 
-	    function create__createDuration (input, key) {
+	    function createDuration (input, key) {
 	        var duration = input,
 	            // matching against regexp is expensive, do it on demand
 	            match = null,
@@ -23537,7 +24655,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                d  : input._days,
 	                M  : input._months
 	            };
-	        } else if (typeof input === 'number') {
+	        } else if (isNumber(input)) {
 	            duration = {};
 	            if (key) {
 	                duration[key] = input;
@@ -23548,14 +24666,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            sign = (match[1] === '-') ? -1 : 1;
 	            duration = {
 	                y  : 0,
-	                d  : toInt(match[DATE])        * sign,
-	                h  : toInt(match[HOUR])        * sign,
-	                m  : toInt(match[MINUTE])      * sign,
-	                s  : toInt(match[SECOND])      * sign,
-	                ms : toInt(match[MILLISECOND]) * sign
+	                d  : toInt(match[DATE])                         * sign,
+	                h  : toInt(match[HOUR])                         * sign,
+	                m  : toInt(match[MINUTE])                       * sign,
+	                s  : toInt(match[SECOND])                       * sign,
+	                ms : toInt(absRound(match[MILLISECOND] * 1000)) * sign // the millisecond decimal point is included in the match
 	            };
 	        } else if (!!(match = isoRegex.exec(input))) {
-	            sign = (match[1] === '-') ? -1 : 1;
+	            sign = (match[1] === '-') ? -1 : (match[1] === '+') ? 1 : 1;
 	            duration = {
 	                y : parseIso(match[2], sign),
 	                M : parseIso(match[3], sign),
@@ -23568,7 +24686,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        } else if (duration == null) {// checks for null or undefined
 	            duration = {};
 	        } else if (typeof duration === 'object' && ('from' in duration || 'to' in duration)) {
-	            diffRes = momentsDifference(local__createLocal(duration.from), local__createLocal(duration.to));
+	            diffRes = momentsDifference(createLocal(duration.from), createLocal(duration.to));
 
 	            duration = {};
 	            duration.ms = diffRes.milliseconds;
@@ -23584,7 +24702,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return ret;
 	    }
 
-	    create__createDuration.fn = Duration.prototype;
+	    createDuration.fn = Duration.prototype;
+	    createDuration.invalid = createInvalid$1;
 
 	    function parseIso (inp, sign) {
 	        // We'd normally use ~~inp for this, but unfortunately it also
@@ -23627,32 +24746,25 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return res;
 	    }
 
-	    function absRound (number) {
-	        if (number < 0) {
-	            return Math.round(-1 * number) * -1;
-	        } else {
-	            return Math.round(number);
-	        }
-	    }
-
 	    // TODO: remove 'name' arg after deprecation is removed
 	    function createAdder(direction, name) {
 	        return function (val, period) {
 	            var dur, tmp;
 	            //invert the arguments, but complain about it
 	            if (period !== null && !isNaN(+period)) {
-	                deprecateSimple(name, 'moment().' + name  + '(period, number) is deprecated. Please use moment().' + name + '(number, period).');
+	                deprecateSimple(name, 'moment().' + name  + '(period, number) is deprecated. Please use moment().' + name + '(number, period). ' +
+	                'See http://momentjs.com/guides/#/warnings/add-inverted-param/ for more info.');
 	                tmp = val; val = period; period = tmp;
 	            }
 
 	            val = typeof val === 'string' ? +val : val;
-	            dur = create__createDuration(val, period);
-	            add_subtract__addSubtract(this, dur, direction);
+	            dur = createDuration(val, period);
+	            addSubtract(this, dur, direction);
 	            return this;
 	        };
 	    }
 
-	    function add_subtract__addSubtract (mom, duration, isAdding, updateOffset) {
+	    function addSubtract (mom, duration, isAdding, updateOffset) {
 	        var milliseconds = duration._milliseconds,
 	            days = absRound(duration._days),
 	            months = absRound(duration._months);
@@ -23664,39 +24776,43 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	        updateOffset = updateOffset == null ? true : updateOffset;
 
+	        if (months) {
+	            setMonth(mom, get(mom, 'Month') + months * isAdding);
+	        }
+	        if (days) {
+	            set$1(mom, 'Date', get(mom, 'Date') + days * isAdding);
+	        }
 	        if (milliseconds) {
 	            mom._d.setTime(mom._d.valueOf() + milliseconds * isAdding);
 	        }
-	        if (days) {
-	            get_set__set(mom, 'Date', get_set__get(mom, 'Date') + days * isAdding);
-	        }
-	        if (months) {
-	            setMonth(mom, get_set__get(mom, 'Month') + months * isAdding);
-	        }
 	        if (updateOffset) {
-	            utils_hooks__hooks.updateOffset(mom, days || months);
+	            hooks.updateOffset(mom, days || months);
 	        }
 	    }
 
-	    var add_subtract__add      = createAdder(1, 'add');
-	    var add_subtract__subtract = createAdder(-1, 'subtract');
+	    var add      = createAdder(1, 'add');
+	    var subtract = createAdder(-1, 'subtract');
 
-	    function moment_calendar__calendar (time, formats) {
-	        // We want to compare the start of today, vs this.
-	        // Getting start-of-today depends on whether we're local/utc/offset or not.
-	        var now = time || local__createLocal(),
-	            sod = cloneWithOffset(now, this).startOf('day'),
-	            diff = this.diff(sod, 'days', true),
-	            format = diff < -6 ? 'sameElse' :
+	    function getCalendarFormat(myMoment, now) {
+	        var diff = myMoment.diff(now, 'days', true);
+	        return diff < -6 ? 'sameElse' :
 	                diff < -1 ? 'lastWeek' :
 	                diff < 0 ? 'lastDay' :
 	                diff < 1 ? 'sameDay' :
 	                diff < 2 ? 'nextDay' :
 	                diff < 7 ? 'nextWeek' : 'sameElse';
+	    }
 
-	        var output = formats && (isFunction(formats[format]) ? formats[format]() : formats[format]);
+	    function calendar$1 (time, formats) {
+	        // We want to compare the start of today, vs this.
+	        // Getting start-of-today depends on whether we're local/utc/offset or not.
+	        var now = time || createLocal(),
+	            sod = cloneWithOffset(now, this).startOf('day'),
+	            format = hooks.calendarFormat(this, sod) || 'sameElse';
 
-	        return this.format(output || this.localeData().calendar(format, this, local__createLocal(now)));
+	        var output = formats && (isFunction(formats[format]) ? formats[format].call(this, now) : formats[format]);
+
+	        return this.format(output || this.localeData().calendar(format, this, createLocal(now)));
 	    }
 
 	    function clone () {
@@ -23704,7 +24820,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 
 	    function isAfter (input, units) {
-	        var localInput = isMoment(input) ? input : local__createLocal(input);
+	        var localInput = isMoment(input) ? input : createLocal(input);
 	        if (!(this.isValid() && localInput.isValid())) {
 	            return false;
 	        }
@@ -23717,7 +24833,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 
 	    function isBefore (input, units) {
-	        var localInput = isMoment(input) ? input : local__createLocal(input);
+	        var localInput = isMoment(input) ? input : createLocal(input);
 	        if (!(this.isValid() && localInput.isValid())) {
 	            return false;
 	        }
@@ -23736,7 +24852,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 
 	    function isSame (input, units) {
-	        var localInput = isMoment(input) ? input : local__createLocal(input),
+	        var localInput = isMoment(input) ? input : createLocal(input),
 	            inputMs;
 	        if (!(this.isValid() && localInput.isValid())) {
 	            return false;
@@ -23761,7 +24877,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    function diff (input, units, asFloat) {
 	        var that,
 	            zoneDelta,
-	            delta, output;
+	            output;
 
 	        if (!this.isValid()) {
 	            return NaN;
@@ -23777,22 +24893,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	        units = normalizeUnits(units);
 
-	        if (units === 'year' || units === 'month' || units === 'quarter') {
-	            output = monthDiff(this, that);
-	            if (units === 'quarter') {
-	                output = output / 3;
-	            } else if (units === 'year') {
-	                output = output / 12;
-	            }
-	        } else {
-	            delta = this - that;
-	            output = units === 'second' ? delta / 1e3 : // 1000
-	                units === 'minute' ? delta / 6e4 : // 1000 * 60
-	                units === 'hour' ? delta / 36e5 : // 1000 * 60 * 60
-	                units === 'day' ? (delta - zoneDelta) / 864e5 : // 1000 * 60 * 60 * 24, negate dst
-	                units === 'week' ? (delta - zoneDelta) / 6048e5 : // 1000 * 60 * 60 * 24 * 7, negate dst
-	                delta;
+	        switch (units) {
+	            case 'year': output = monthDiff(this, that) / 12; break;
+	            case 'month': output = monthDiff(this, that); break;
+	            case 'quarter': output = monthDiff(this, that) / 3; break;
+	            case 'second': output = (this - that) / 1e3; break; // 1000
+	            case 'minute': output = (this - that) / 6e4; break; // 1000 * 60
+	            case 'hour': output = (this - that) / 36e5; break; // 1000 * 60 * 60
+	            case 'day': output = (this - that - zoneDelta) / 864e5; break; // 1000 * 60 * 60 * 24, negate dst
+	            case 'week': output = (this - that - zoneDelta) / 6048e5; break; // 1000 * 60 * 60 * 24 * 7, negate dst
+	            default: output = this - that;
 	        }
+
 	        return asFloat ? output : absFloor(output);
 	    }
 
@@ -23817,30 +24929,60 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return -(wholeMonthDiff + adjust) || 0;
 	    }
 
-	    utils_hooks__hooks.defaultFormat = 'YYYY-MM-DDTHH:mm:ssZ';
-	    utils_hooks__hooks.defaultFormatUtc = 'YYYY-MM-DDTHH:mm:ss[Z]';
+	    hooks.defaultFormat = 'YYYY-MM-DDTHH:mm:ssZ';
+	    hooks.defaultFormatUtc = 'YYYY-MM-DDTHH:mm:ss[Z]';
 
 	    function toString () {
 	        return this.clone().locale('en').format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ');
 	    }
 
-	    function moment_format__toISOString () {
-	        var m = this.clone().utc();
-	        if (0 < m.year() && m.year() <= 9999) {
-	            if (isFunction(Date.prototype.toISOString)) {
-	                // native implementation is ~50x faster, use it when we can
+	    function toISOString(keepOffset) {
+	        if (!this.isValid()) {
+	            return null;
+	        }
+	        var utc = keepOffset !== true;
+	        var m = utc ? this.clone().utc() : this;
+	        if (m.year() < 0 || m.year() > 9999) {
+	            return formatMoment(m, utc ? 'YYYYYY-MM-DD[T]HH:mm:ss.SSS[Z]' : 'YYYYYY-MM-DD[T]HH:mm:ss.SSSZ');
+	        }
+	        if (isFunction(Date.prototype.toISOString)) {
+	            // native implementation is ~50x faster, use it when we can
+	            if (utc) {
 	                return this.toDate().toISOString();
 	            } else {
-	                return formatMoment(m, 'YYYY-MM-DD[T]HH:mm:ss.SSS[Z]');
+	                return new Date(this.valueOf() + this.utcOffset() * 60 * 1000).toISOString().replace('Z', formatMoment(m, 'Z'));
 	            }
-	        } else {
-	            return formatMoment(m, 'YYYYYY-MM-DD[T]HH:mm:ss.SSS[Z]');
 	        }
+	        return formatMoment(m, utc ? 'YYYY-MM-DD[T]HH:mm:ss.SSS[Z]' : 'YYYY-MM-DD[T]HH:mm:ss.SSSZ');
+	    }
+
+	    /**
+	     * Return a human readable representation of a moment that can
+	     * also be evaluated to get a new moment which is the same
+	     *
+	     * @link https://nodejs.org/dist/latest/docs/api/util.html#util_custom_inspect_function_on_objects
+	     */
+	    function inspect () {
+	        if (!this.isValid()) {
+	            return 'moment.invalid(/* ' + this._i + ' */)';
+	        }
+	        var func = 'moment';
+	        var zone = '';
+	        if (!this.isLocal()) {
+	            func = this.utcOffset() === 0 ? 'moment.utc' : 'moment.parseZone';
+	            zone = 'Z';
+	        }
+	        var prefix = '[' + func + '("]';
+	        var year = (0 <= this.year() && this.year() <= 9999) ? 'YYYY' : 'YYYYYY';
+	        var datetime = '-MM-DD[T]HH:mm:ss.SSS';
+	        var suffix = zone + '[")]';
+
+	        return this.format(prefix + year + datetime + suffix);
 	    }
 
 	    function format (inputString) {
 	        if (!inputString) {
-	            inputString = this.isUtc() ? utils_hooks__hooks.defaultFormatUtc : utils_hooks__hooks.defaultFormat;
+	            inputString = this.isUtc() ? hooks.defaultFormatUtc : hooks.defaultFormat;
 	        }
 	        var output = formatMoment(this, inputString);
 	        return this.localeData().postformat(output);
@@ -23849,29 +24991,29 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    function from (time, withoutSuffix) {
 	        if (this.isValid() &&
 	                ((isMoment(time) && time.isValid()) ||
-	                 local__createLocal(time).isValid())) {
-	            return create__createDuration({to: this, from: time}).locale(this.locale()).humanize(!withoutSuffix);
+	                 createLocal(time).isValid())) {
+	            return createDuration({to: this, from: time}).locale(this.locale()).humanize(!withoutSuffix);
 	        } else {
 	            return this.localeData().invalidDate();
 	        }
 	    }
 
 	    function fromNow (withoutSuffix) {
-	        return this.from(local__createLocal(), withoutSuffix);
+	        return this.from(createLocal(), withoutSuffix);
 	    }
 
 	    function to (time, withoutSuffix) {
 	        if (this.isValid() &&
 	                ((isMoment(time) && time.isValid()) ||
-	                 local__createLocal(time).isValid())) {
-	            return create__createDuration({from: this, to: time}).locale(this.locale()).humanize(!withoutSuffix);
+	                 createLocal(time).isValid())) {
+	            return createDuration({from: this, to: time}).locale(this.locale()).humanize(!withoutSuffix);
 	        } else {
 	            return this.localeData().invalidDate();
 	        }
 	    }
 
 	    function toNow (withoutSuffix) {
-	        return this.to(local__createLocal(), withoutSuffix);
+	        return this.to(createLocal(), withoutSuffix);
 	    }
 
 	    // If passed a locale key, it will set the locale for this
@@ -23883,7 +25025,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        if (key === undefined) {
 	            return this._locale._abbr;
 	        } else {
-	            newLocaleData = locale_locales__getLocale(key);
+	            newLocaleData = getLocale(key);
 	            if (newLocaleData != null) {
 	                this._locale = newLocaleData;
 	            }
@@ -23911,27 +25053,27 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        // the following switch intentionally omits break keywords
 	        // to utilize falling through the cases.
 	        switch (units) {
-	        case 'year':
-	            this.month(0);
-	            /* falls through */
-	        case 'quarter':
-	        case 'month':
-	            this.date(1);
-	            /* falls through */
-	        case 'week':
-	        case 'isoWeek':
-	        case 'day':
-	        case 'date':
-	            this.hours(0);
-	            /* falls through */
-	        case 'hour':
-	            this.minutes(0);
-	            /* falls through */
-	        case 'minute':
-	            this.seconds(0);
-	            /* falls through */
-	        case 'second':
-	            this.milliseconds(0);
+	            case 'year':
+	                this.month(0);
+	                /* falls through */
+	            case 'quarter':
+	            case 'month':
+	                this.date(1);
+	                /* falls through */
+	            case 'week':
+	            case 'isoWeek':
+	            case 'day':
+	            case 'date':
+	                this.hours(0);
+	                /* falls through */
+	            case 'hour':
+	                this.minutes(0);
+	                /* falls through */
+	            case 'minute':
+	                this.seconds(0);
+	                /* falls through */
+	            case 'second':
+	                this.milliseconds(0);
 	        }
 
 	        // weeks are a special case
@@ -23964,7 +25106,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return this.startOf(units).add(1, (units === 'isoWeek' ? 'week' : units)).subtract(1, 'ms');
 	    }
 
-	    function to_type__valueOf () {
+	    function valueOf () {
 	        return this._d.valueOf() - ((this._offset || 0) * 60000);
 	    }
 
@@ -23973,7 +25115,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 
 	    function toDate () {
-	        return this._offset ? new Date(this.valueOf()) : this._d;
+	        return new Date(this.valueOf());
 	    }
 
 	    function toArray () {
@@ -23999,8 +25141,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return this.isValid() ? this.toISOString() : null;
 	    }
 
-	    function moment_valid__isValid () {
-	        return valid__isValid(this);
+	    function isValid$2 () {
+	        return isValid(this);
 	    }
 
 	    function parsingFlags () {
@@ -24045,6 +25187,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    addUnitAlias('weekYear', 'gg');
 	    addUnitAlias('isoWeekYear', 'GG');
 
+	    // PRIORITY
+
+	    addUnitPriority('weekYear', 1);
+	    addUnitPriority('isoWeekYear', 1);
+
+
 	    // PARSING
 
 	    addRegexToken('G',      matchSigned);
@@ -24061,7 +25209,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    });
 
 	    addWeekParseToken(['gg', 'GG'], function (input, week, config, token) {
-	        week[token] = utils_hooks__hooks.parseTwoDigitYear(input);
+	        week[token] = hooks.parseTwoDigitYear(input);
 	    });
 
 	    // MOMENTS
@@ -24120,6 +25268,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    addUnitAlias('quarter', 'Q');
 
+	    // PRIORITY
+
+	    addUnitPriority('quarter', 7);
+
 	    // PARSING
 
 	    addRegexToken('Q', match1);
@@ -24135,77 +25287,29 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    // FORMATTING
 
-	    addFormatToken('w', ['ww', 2], 'wo', 'week');
-	    addFormatToken('W', ['WW', 2], 'Wo', 'isoWeek');
-
-	    // ALIASES
-
-	    addUnitAlias('week', 'w');
-	    addUnitAlias('isoWeek', 'W');
-
-	    // PARSING
-
-	    addRegexToken('w',  match1to2);
-	    addRegexToken('ww', match1to2, match2);
-	    addRegexToken('W',  match1to2);
-	    addRegexToken('WW', match1to2, match2);
-
-	    addWeekParseToken(['w', 'ww', 'W', 'WW'], function (input, week, config, token) {
-	        week[token.substr(0, 1)] = toInt(input);
-	    });
-
-	    // HELPERS
-
-	    // LOCALES
-
-	    function localeWeek (mom) {
-	        return weekOfYear(mom, this._week.dow, this._week.doy).week;
-	    }
-
-	    var defaultLocaleWeek = {
-	        dow : 0, // Sunday is the first day of the week.
-	        doy : 6  // The week that contains Jan 1st is the first week of the year.
-	    };
-
-	    function localeFirstDayOfWeek () {
-	        return this._week.dow;
-	    }
-
-	    function localeFirstDayOfYear () {
-	        return this._week.doy;
-	    }
-
-	    // MOMENTS
-
-	    function getSetWeek (input) {
-	        var week = this.localeData().week(this);
-	        return input == null ? week : this.add((input - week) * 7, 'd');
-	    }
-
-	    function getSetISOWeek (input) {
-	        var week = weekOfYear(this, 1, 4).week;
-	        return input == null ? week : this.add((input - week) * 7, 'd');
-	    }
-
-	    // FORMATTING
-
 	    addFormatToken('D', ['DD', 2], 'Do', 'date');
 
 	    // ALIASES
 
 	    addUnitAlias('date', 'D');
 
+	    // PRIORITY
+	    addUnitPriority('date', 9);
+
 	    // PARSING
 
 	    addRegexToken('D',  match1to2);
 	    addRegexToken('DD', match1to2, match2);
 	    addRegexToken('Do', function (isStrict, locale) {
-	        return isStrict ? locale._ordinalParse : locale._ordinalParseLenient;
+	        // TODO: Remove "ordinalParse" fallback in next major release.
+	        return isStrict ?
+	          (locale._dayOfMonthOrdinalParse || locale._ordinalParse) :
+	          locale._dayOfMonthOrdinalParseLenient;
 	    });
 
 	    addParseToken(['D', 'DD'], DATE);
 	    addParseToken('Do', function (input, array) {
-	        array[DATE] = toInt(input.match(match1to2)[0], 10);
+	        array[DATE] = toInt(input.match(match1to2)[0]);
 	    });
 
 	    // MOMENTS
@@ -24214,332 +25318,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    // FORMATTING
 
-	    addFormatToken('d', 0, 'do', 'day');
-
-	    addFormatToken('dd', 0, 0, function (format) {
-	        return this.localeData().weekdaysMin(this, format);
-	    });
-
-	    addFormatToken('ddd', 0, 0, function (format) {
-	        return this.localeData().weekdaysShort(this, format);
-	    });
-
-	    addFormatToken('dddd', 0, 0, function (format) {
-	        return this.localeData().weekdays(this, format);
-	    });
-
-	    addFormatToken('e', 0, 0, 'weekday');
-	    addFormatToken('E', 0, 0, 'isoWeekday');
-
-	    // ALIASES
-
-	    addUnitAlias('day', 'd');
-	    addUnitAlias('weekday', 'e');
-	    addUnitAlias('isoWeekday', 'E');
-
-	    // PARSING
-
-	    addRegexToken('d',    match1to2);
-	    addRegexToken('e',    match1to2);
-	    addRegexToken('E',    match1to2);
-	    addRegexToken('dd',   function (isStrict, locale) {
-	        return locale.weekdaysMinRegex(isStrict);
-	    });
-	    addRegexToken('ddd',   function (isStrict, locale) {
-	        return locale.weekdaysShortRegex(isStrict);
-	    });
-	    addRegexToken('dddd',   function (isStrict, locale) {
-	        return locale.weekdaysRegex(isStrict);
-	    });
-
-	    addWeekParseToken(['dd', 'ddd', 'dddd'], function (input, week, config, token) {
-	        var weekday = config._locale.weekdaysParse(input, token, config._strict);
-	        // if we didn't get a weekday name, mark the date as invalid
-	        if (weekday != null) {
-	            week.d = weekday;
-	        } else {
-	            getParsingFlags(config).invalidWeekday = input;
-	        }
-	    });
-
-	    addWeekParseToken(['d', 'e', 'E'], function (input, week, config, token) {
-	        week[token] = toInt(input);
-	    });
-
-	    // HELPERS
-
-	    function parseWeekday(input, locale) {
-	        if (typeof input !== 'string') {
-	            return input;
-	        }
-
-	        if (!isNaN(input)) {
-	            return parseInt(input, 10);
-	        }
-
-	        input = locale.weekdaysParse(input);
-	        if (typeof input === 'number') {
-	            return input;
-	        }
-
-	        return null;
-	    }
-
-	    // LOCALES
-
-	    var defaultLocaleWeekdays = 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_');
-	    function localeWeekdays (m, format) {
-	        return isArray(this._weekdays) ? this._weekdays[m.day()] :
-	            this._weekdays[this._weekdays.isFormat.test(format) ? 'format' : 'standalone'][m.day()];
-	    }
-
-	    var defaultLocaleWeekdaysShort = 'Sun_Mon_Tue_Wed_Thu_Fri_Sat'.split('_');
-	    function localeWeekdaysShort (m) {
-	        return this._weekdaysShort[m.day()];
-	    }
-
-	    var defaultLocaleWeekdaysMin = 'Su_Mo_Tu_We_Th_Fr_Sa'.split('_');
-	    function localeWeekdaysMin (m) {
-	        return this._weekdaysMin[m.day()];
-	    }
-
-	    function day_of_week__handleStrictParse(weekdayName, format, strict) {
-	        var i, ii, mom, llc = weekdayName.toLocaleLowerCase();
-	        if (!this._weekdaysParse) {
-	            this._weekdaysParse = [];
-	            this._shortWeekdaysParse = [];
-	            this._minWeekdaysParse = [];
-
-	            for (i = 0; i < 7; ++i) {
-	                mom = create_utc__createUTC([2000, 1]).day(i);
-	                this._minWeekdaysParse[i] = this.weekdaysMin(mom, '').toLocaleLowerCase();
-	                this._shortWeekdaysParse[i] = this.weekdaysShort(mom, '').toLocaleLowerCase();
-	                this._weekdaysParse[i] = this.weekdays(mom, '').toLocaleLowerCase();
-	            }
-	        }
-
-	        if (strict) {
-	            if (format === 'dddd') {
-	                ii = indexOf.call(this._weekdaysParse, llc);
-	                return ii !== -1 ? ii : null;
-	            } else if (format === 'ddd') {
-	                ii = indexOf.call(this._shortWeekdaysParse, llc);
-	                return ii !== -1 ? ii : null;
-	            } else {
-	                ii = indexOf.call(this._minWeekdaysParse, llc);
-	                return ii !== -1 ? ii : null;
-	            }
-	        } else {
-	            if (format === 'dddd') {
-	                ii = indexOf.call(this._weekdaysParse, llc);
-	                if (ii !== -1) {
-	                    return ii;
-	                }
-	                ii = indexOf.call(this._shortWeekdaysParse, llc);
-	                if (ii !== -1) {
-	                    return ii;
-	                }
-	                ii = indexOf.call(this._minWeekdaysParse, llc);
-	                return ii !== -1 ? ii : null;
-	            } else if (format === 'ddd') {
-	                ii = indexOf.call(this._shortWeekdaysParse, llc);
-	                if (ii !== -1) {
-	                    return ii;
-	                }
-	                ii = indexOf.call(this._weekdaysParse, llc);
-	                if (ii !== -1) {
-	                    return ii;
-	                }
-	                ii = indexOf.call(this._minWeekdaysParse, llc);
-	                return ii !== -1 ? ii : null;
-	            } else {
-	                ii = indexOf.call(this._minWeekdaysParse, llc);
-	                if (ii !== -1) {
-	                    return ii;
-	                }
-	                ii = indexOf.call(this._weekdaysParse, llc);
-	                if (ii !== -1) {
-	                    return ii;
-	                }
-	                ii = indexOf.call(this._shortWeekdaysParse, llc);
-	                return ii !== -1 ? ii : null;
-	            }
-	        }
-	    }
-
-	    function localeWeekdaysParse (weekdayName, format, strict) {
-	        var i, mom, regex;
-
-	        if (this._weekdaysParseExact) {
-	            return day_of_week__handleStrictParse.call(this, weekdayName, format, strict);
-	        }
-
-	        if (!this._weekdaysParse) {
-	            this._weekdaysParse = [];
-	            this._minWeekdaysParse = [];
-	            this._shortWeekdaysParse = [];
-	            this._fullWeekdaysParse = [];
-	        }
-
-	        for (i = 0; i < 7; i++) {
-	            // make the regex if we don't have it already
-
-	            mom = create_utc__createUTC([2000, 1]).day(i);
-	            if (strict && !this._fullWeekdaysParse[i]) {
-	                this._fullWeekdaysParse[i] = new RegExp('^' + this.weekdays(mom, '').replace('.', '\.?') + '$', 'i');
-	                this._shortWeekdaysParse[i] = new RegExp('^' + this.weekdaysShort(mom, '').replace('.', '\.?') + '$', 'i');
-	                this._minWeekdaysParse[i] = new RegExp('^' + this.weekdaysMin(mom, '').replace('.', '\.?') + '$', 'i');
-	            }
-	            if (!this._weekdaysParse[i]) {
-	                regex = '^' + this.weekdays(mom, '') + '|^' + this.weekdaysShort(mom, '') + '|^' + this.weekdaysMin(mom, '');
-	                this._weekdaysParse[i] = new RegExp(regex.replace('.', ''), 'i');
-	            }
-	            // test the regex
-	            if (strict && format === 'dddd' && this._fullWeekdaysParse[i].test(weekdayName)) {
-	                return i;
-	            } else if (strict && format === 'ddd' && this._shortWeekdaysParse[i].test(weekdayName)) {
-	                return i;
-	            } else if (strict && format === 'dd' && this._minWeekdaysParse[i].test(weekdayName)) {
-	                return i;
-	            } else if (!strict && this._weekdaysParse[i].test(weekdayName)) {
-	                return i;
-	            }
-	        }
-	    }
-
-	    // MOMENTS
-
-	    function getSetDayOfWeek (input) {
-	        if (!this.isValid()) {
-	            return input != null ? this : NaN;
-	        }
-	        var day = this._isUTC ? this._d.getUTCDay() : this._d.getDay();
-	        if (input != null) {
-	            input = parseWeekday(input, this.localeData());
-	            return this.add(input - day, 'd');
-	        } else {
-	            return day;
-	        }
-	    }
-
-	    function getSetLocaleDayOfWeek (input) {
-	        if (!this.isValid()) {
-	            return input != null ? this : NaN;
-	        }
-	        var weekday = (this.day() + 7 - this.localeData()._week.dow) % 7;
-	        return input == null ? weekday : this.add(input - weekday, 'd');
-	    }
-
-	    function getSetISODayOfWeek (input) {
-	        if (!this.isValid()) {
-	            return input != null ? this : NaN;
-	        }
-	        // behaves the same as moment#day except
-	        // as a getter, returns 7 instead of 0 (1-7 range instead of 0-6)
-	        // as a setter, sunday should belong to the previous week.
-	        return input == null ? this.day() || 7 : this.day(this.day() % 7 ? input : input - 7);
-	    }
-
-	    var defaultWeekdaysRegex = matchWord;
-	    function weekdaysRegex (isStrict) {
-	        if (this._weekdaysParseExact) {
-	            if (!hasOwnProp(this, '_weekdaysRegex')) {
-	                computeWeekdaysParse.call(this);
-	            }
-	            if (isStrict) {
-	                return this._weekdaysStrictRegex;
-	            } else {
-	                return this._weekdaysRegex;
-	            }
-	        } else {
-	            return this._weekdaysStrictRegex && isStrict ?
-	                this._weekdaysStrictRegex : this._weekdaysRegex;
-	        }
-	    }
-
-	    var defaultWeekdaysShortRegex = matchWord;
-	    function weekdaysShortRegex (isStrict) {
-	        if (this._weekdaysParseExact) {
-	            if (!hasOwnProp(this, '_weekdaysRegex')) {
-	                computeWeekdaysParse.call(this);
-	            }
-	            if (isStrict) {
-	                return this._weekdaysShortStrictRegex;
-	            } else {
-	                return this._weekdaysShortRegex;
-	            }
-	        } else {
-	            return this._weekdaysShortStrictRegex && isStrict ?
-	                this._weekdaysShortStrictRegex : this._weekdaysShortRegex;
-	        }
-	    }
-
-	    var defaultWeekdaysMinRegex = matchWord;
-	    function weekdaysMinRegex (isStrict) {
-	        if (this._weekdaysParseExact) {
-	            if (!hasOwnProp(this, '_weekdaysRegex')) {
-	                computeWeekdaysParse.call(this);
-	            }
-	            if (isStrict) {
-	                return this._weekdaysMinStrictRegex;
-	            } else {
-	                return this._weekdaysMinRegex;
-	            }
-	        } else {
-	            return this._weekdaysMinStrictRegex && isStrict ?
-	                this._weekdaysMinStrictRegex : this._weekdaysMinRegex;
-	        }
-	    }
-
-
-	    function computeWeekdaysParse () {
-	        function cmpLenRev(a, b) {
-	            return b.length - a.length;
-	        }
-
-	        var minPieces = [], shortPieces = [], longPieces = [], mixedPieces = [],
-	            i, mom, minp, shortp, longp;
-	        for (i = 0; i < 7; i++) {
-	            // make the regex if we don't have it already
-	            mom = create_utc__createUTC([2000, 1]).day(i);
-	            minp = this.weekdaysMin(mom, '');
-	            shortp = this.weekdaysShort(mom, '');
-	            longp = this.weekdays(mom, '');
-	            minPieces.push(minp);
-	            shortPieces.push(shortp);
-	            longPieces.push(longp);
-	            mixedPieces.push(minp);
-	            mixedPieces.push(shortp);
-	            mixedPieces.push(longp);
-	        }
-	        // Sorting makes sure if one weekday (or abbr) is a prefix of another it
-	        // will match the longer piece.
-	        minPieces.sort(cmpLenRev);
-	        shortPieces.sort(cmpLenRev);
-	        longPieces.sort(cmpLenRev);
-	        mixedPieces.sort(cmpLenRev);
-	        for (i = 0; i < 7; i++) {
-	            shortPieces[i] = regexEscape(shortPieces[i]);
-	            longPieces[i] = regexEscape(longPieces[i]);
-	            mixedPieces[i] = regexEscape(mixedPieces[i]);
-	        }
-
-	        this._weekdaysRegex = new RegExp('^(' + mixedPieces.join('|') + ')', 'i');
-	        this._weekdaysShortRegex = this._weekdaysRegex;
-	        this._weekdaysMinRegex = this._weekdaysRegex;
-
-	        this._weekdaysStrictRegex = new RegExp('^(' + longPieces.join('|') + ')', 'i');
-	        this._weekdaysShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')', 'i');
-	        this._weekdaysMinStrictRegex = new RegExp('^(' + minPieces.join('|') + ')', 'i');
-	    }
-
-	    // FORMATTING
-
 	    addFormatToken('DDD', ['DDDD', 3], 'DDDo', 'dayOfYear');
 
 	    // ALIASES
 
 	    addUnitAlias('dayOfYear', 'DDD');
+
+	    // PRIORITY
+	    addUnitPriority('dayOfYear', 4);
 
 	    // PARSING
 
@@ -24560,136 +25346,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    // FORMATTING
 
-	    function hFormat() {
-	        return this.hours() % 12 || 12;
-	    }
-
-	    function kFormat() {
-	        return this.hours() || 24;
-	    }
-
-	    addFormatToken('H', ['HH', 2], 0, 'hour');
-	    addFormatToken('h', ['hh', 2], 0, hFormat);
-	    addFormatToken('k', ['kk', 2], 0, kFormat);
-
-	    addFormatToken('hmm', 0, 0, function () {
-	        return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2);
-	    });
-
-	    addFormatToken('hmmss', 0, 0, function () {
-	        return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2) +
-	            zeroFill(this.seconds(), 2);
-	    });
-
-	    addFormatToken('Hmm', 0, 0, function () {
-	        return '' + this.hours() + zeroFill(this.minutes(), 2);
-	    });
-
-	    addFormatToken('Hmmss', 0, 0, function () {
-	        return '' + this.hours() + zeroFill(this.minutes(), 2) +
-	            zeroFill(this.seconds(), 2);
-	    });
-
-	    function meridiem (token, lowercase) {
-	        addFormatToken(token, 0, 0, function () {
-	            return this.localeData().meridiem(this.hours(), this.minutes(), lowercase);
-	        });
-	    }
-
-	    meridiem('a', true);
-	    meridiem('A', false);
-
-	    // ALIASES
-
-	    addUnitAlias('hour', 'h');
-
-	    // PARSING
-
-	    function matchMeridiem (isStrict, locale) {
-	        return locale._meridiemParse;
-	    }
-
-	    addRegexToken('a',  matchMeridiem);
-	    addRegexToken('A',  matchMeridiem);
-	    addRegexToken('H',  match1to2);
-	    addRegexToken('h',  match1to2);
-	    addRegexToken('HH', match1to2, match2);
-	    addRegexToken('hh', match1to2, match2);
-
-	    addRegexToken('hmm', match3to4);
-	    addRegexToken('hmmss', match5to6);
-	    addRegexToken('Hmm', match3to4);
-	    addRegexToken('Hmmss', match5to6);
-
-	    addParseToken(['H', 'HH'], HOUR);
-	    addParseToken(['a', 'A'], function (input, array, config) {
-	        config._isPm = config._locale.isPM(input);
-	        config._meridiem = input;
-	    });
-	    addParseToken(['h', 'hh'], function (input, array, config) {
-	        array[HOUR] = toInt(input);
-	        getParsingFlags(config).bigHour = true;
-	    });
-	    addParseToken('hmm', function (input, array, config) {
-	        var pos = input.length - 2;
-	        array[HOUR] = toInt(input.substr(0, pos));
-	        array[MINUTE] = toInt(input.substr(pos));
-	        getParsingFlags(config).bigHour = true;
-	    });
-	    addParseToken('hmmss', function (input, array, config) {
-	        var pos1 = input.length - 4;
-	        var pos2 = input.length - 2;
-	        array[HOUR] = toInt(input.substr(0, pos1));
-	        array[MINUTE] = toInt(input.substr(pos1, 2));
-	        array[SECOND] = toInt(input.substr(pos2));
-	        getParsingFlags(config).bigHour = true;
-	    });
-	    addParseToken('Hmm', function (input, array, config) {
-	        var pos = input.length - 2;
-	        array[HOUR] = toInt(input.substr(0, pos));
-	        array[MINUTE] = toInt(input.substr(pos));
-	    });
-	    addParseToken('Hmmss', function (input, array, config) {
-	        var pos1 = input.length - 4;
-	        var pos2 = input.length - 2;
-	        array[HOUR] = toInt(input.substr(0, pos1));
-	        array[MINUTE] = toInt(input.substr(pos1, 2));
-	        array[SECOND] = toInt(input.substr(pos2));
-	    });
-
-	    // LOCALES
-
-	    function localeIsPM (input) {
-	        // IE8 Quirks Mode & IE7 Standards Mode do not allow accessing strings like arrays
-	        // Using charAt should be more compatible.
-	        return ((input + '').toLowerCase().charAt(0) === 'p');
-	    }
-
-	    var defaultLocaleMeridiemParse = /[ap]\.?m?\.?/i;
-	    function localeMeridiem (hours, minutes, isLower) {
-	        if (hours > 11) {
-	            return isLower ? 'pm' : 'PM';
-	        } else {
-	            return isLower ? 'am' : 'AM';
-	        }
-	    }
-
-
-	    // MOMENTS
-
-	    // Setting the hour should keep the time, because the user explicitly
-	    // specified which hour he wants. So trying to maintain the same hour (in
-	    // a new timezone) makes sense. Adding/subtracting hours does not follow
-	    // this rule.
-	    var getSetHour = makeGetSet('Hours', true);
-
-	    // FORMATTING
-
 	    addFormatToken('m', ['mm', 2], 0, 'minute');
 
 	    // ALIASES
 
 	    addUnitAlias('minute', 'm');
+
+	    // PRIORITY
+
+	    addUnitPriority('minute', 14);
 
 	    // PARSING
 
@@ -24708,6 +25373,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    // ALIASES
 
 	    addUnitAlias('second', 's');
+
+	    // PRIORITY
+
+	    addUnitPriority('second', 15);
 
 	    // PARSING
 
@@ -24754,6 +25423,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    addUnitAlias('millisecond', 'ms');
 
+	    // PRIORITY
+
+	    addUnitPriority('millisecond', 16);
+
 	    // PARSING
 
 	    addRegexToken('S',    match1to3, match1);
@@ -24791,266 +25464,137 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return this._isUTC ? 'Coordinated Universal Time' : '';
 	    }
 
-	    var momentPrototype__proto = Moment.prototype;
+	    var proto = Moment.prototype;
 
-	    momentPrototype__proto.add               = add_subtract__add;
-	    momentPrototype__proto.calendar          = moment_calendar__calendar;
-	    momentPrototype__proto.clone             = clone;
-	    momentPrototype__proto.diff              = diff;
-	    momentPrototype__proto.endOf             = endOf;
-	    momentPrototype__proto.format            = format;
-	    momentPrototype__proto.from              = from;
-	    momentPrototype__proto.fromNow           = fromNow;
-	    momentPrototype__proto.to                = to;
-	    momentPrototype__proto.toNow             = toNow;
-	    momentPrototype__proto.get               = getSet;
-	    momentPrototype__proto.invalidAt         = invalidAt;
-	    momentPrototype__proto.isAfter           = isAfter;
-	    momentPrototype__proto.isBefore          = isBefore;
-	    momentPrototype__proto.isBetween         = isBetween;
-	    momentPrototype__proto.isSame            = isSame;
-	    momentPrototype__proto.isSameOrAfter     = isSameOrAfter;
-	    momentPrototype__proto.isSameOrBefore    = isSameOrBefore;
-	    momentPrototype__proto.isValid           = moment_valid__isValid;
-	    momentPrototype__proto.lang              = lang;
-	    momentPrototype__proto.locale            = locale;
-	    momentPrototype__proto.localeData        = localeData;
-	    momentPrototype__proto.max               = prototypeMax;
-	    momentPrototype__proto.min               = prototypeMin;
-	    momentPrototype__proto.parsingFlags      = parsingFlags;
-	    momentPrototype__proto.set               = getSet;
-	    momentPrototype__proto.startOf           = startOf;
-	    momentPrototype__proto.subtract          = add_subtract__subtract;
-	    momentPrototype__proto.toArray           = toArray;
-	    momentPrototype__proto.toObject          = toObject;
-	    momentPrototype__proto.toDate            = toDate;
-	    momentPrototype__proto.toISOString       = moment_format__toISOString;
-	    momentPrototype__proto.toJSON            = toJSON;
-	    momentPrototype__proto.toString          = toString;
-	    momentPrototype__proto.unix              = unix;
-	    momentPrototype__proto.valueOf           = to_type__valueOf;
-	    momentPrototype__proto.creationData      = creationData;
+	    proto.add               = add;
+	    proto.calendar          = calendar$1;
+	    proto.clone             = clone;
+	    proto.diff              = diff;
+	    proto.endOf             = endOf;
+	    proto.format            = format;
+	    proto.from              = from;
+	    proto.fromNow           = fromNow;
+	    proto.to                = to;
+	    proto.toNow             = toNow;
+	    proto.get               = stringGet;
+	    proto.invalidAt         = invalidAt;
+	    proto.isAfter           = isAfter;
+	    proto.isBefore          = isBefore;
+	    proto.isBetween         = isBetween;
+	    proto.isSame            = isSame;
+	    proto.isSameOrAfter     = isSameOrAfter;
+	    proto.isSameOrBefore    = isSameOrBefore;
+	    proto.isValid           = isValid$2;
+	    proto.lang              = lang;
+	    proto.locale            = locale;
+	    proto.localeData        = localeData;
+	    proto.max               = prototypeMax;
+	    proto.min               = prototypeMin;
+	    proto.parsingFlags      = parsingFlags;
+	    proto.set               = stringSet;
+	    proto.startOf           = startOf;
+	    proto.subtract          = subtract;
+	    proto.toArray           = toArray;
+	    proto.toObject          = toObject;
+	    proto.toDate            = toDate;
+	    proto.toISOString       = toISOString;
+	    proto.inspect           = inspect;
+	    proto.toJSON            = toJSON;
+	    proto.toString          = toString;
+	    proto.unix              = unix;
+	    proto.valueOf           = valueOf;
+	    proto.creationData      = creationData;
+	    proto.year       = getSetYear;
+	    proto.isLeapYear = getIsLeapYear;
+	    proto.weekYear    = getSetWeekYear;
+	    proto.isoWeekYear = getSetISOWeekYear;
+	    proto.quarter = proto.quarters = getSetQuarter;
+	    proto.month       = getSetMonth;
+	    proto.daysInMonth = getDaysInMonth;
+	    proto.week           = proto.weeks        = getSetWeek;
+	    proto.isoWeek        = proto.isoWeeks     = getSetISOWeek;
+	    proto.weeksInYear    = getWeeksInYear;
+	    proto.isoWeeksInYear = getISOWeeksInYear;
+	    proto.date       = getSetDayOfMonth;
+	    proto.day        = proto.days             = getSetDayOfWeek;
+	    proto.weekday    = getSetLocaleDayOfWeek;
+	    proto.isoWeekday = getSetISODayOfWeek;
+	    proto.dayOfYear  = getSetDayOfYear;
+	    proto.hour = proto.hours = getSetHour;
+	    proto.minute = proto.minutes = getSetMinute;
+	    proto.second = proto.seconds = getSetSecond;
+	    proto.millisecond = proto.milliseconds = getSetMillisecond;
+	    proto.utcOffset            = getSetOffset;
+	    proto.utc                  = setOffsetToUTC;
+	    proto.local                = setOffsetToLocal;
+	    proto.parseZone            = setOffsetToParsedOffset;
+	    proto.hasAlignedHourOffset = hasAlignedHourOffset;
+	    proto.isDST                = isDaylightSavingTime;
+	    proto.isLocal              = isLocal;
+	    proto.isUtcOffset          = isUtcOffset;
+	    proto.isUtc                = isUtc;
+	    proto.isUTC                = isUtc;
+	    proto.zoneAbbr = getZoneAbbr;
+	    proto.zoneName = getZoneName;
+	    proto.dates  = deprecate('dates accessor is deprecated. Use date instead.', getSetDayOfMonth);
+	    proto.months = deprecate('months accessor is deprecated. Use month instead', getSetMonth);
+	    proto.years  = deprecate('years accessor is deprecated. Use year instead', getSetYear);
+	    proto.zone   = deprecate('moment().zone is deprecated, use moment().utcOffset instead. http://momentjs.com/guides/#/warnings/zone/', getSetZone);
+	    proto.isDSTShifted = deprecate('isDSTShifted is deprecated. See http://momentjs.com/guides/#/warnings/dst-shifted/ for more information', isDaylightSavingTimeShifted);
 
-	    // Year
-	    momentPrototype__proto.year       = getSetYear;
-	    momentPrototype__proto.isLeapYear = getIsLeapYear;
-
-	    // Week Year
-	    momentPrototype__proto.weekYear    = getSetWeekYear;
-	    momentPrototype__proto.isoWeekYear = getSetISOWeekYear;
-
-	    // Quarter
-	    momentPrototype__proto.quarter = momentPrototype__proto.quarters = getSetQuarter;
-
-	    // Month
-	    momentPrototype__proto.month       = getSetMonth;
-	    momentPrototype__proto.daysInMonth = getDaysInMonth;
-
-	    // Week
-	    momentPrototype__proto.week           = momentPrototype__proto.weeks        = getSetWeek;
-	    momentPrototype__proto.isoWeek        = momentPrototype__proto.isoWeeks     = getSetISOWeek;
-	    momentPrototype__proto.weeksInYear    = getWeeksInYear;
-	    momentPrototype__proto.isoWeeksInYear = getISOWeeksInYear;
-
-	    // Day
-	    momentPrototype__proto.date       = getSetDayOfMonth;
-	    momentPrototype__proto.day        = momentPrototype__proto.days             = getSetDayOfWeek;
-	    momentPrototype__proto.weekday    = getSetLocaleDayOfWeek;
-	    momentPrototype__proto.isoWeekday = getSetISODayOfWeek;
-	    momentPrototype__proto.dayOfYear  = getSetDayOfYear;
-
-	    // Hour
-	    momentPrototype__proto.hour = momentPrototype__proto.hours = getSetHour;
-
-	    // Minute
-	    momentPrototype__proto.minute = momentPrototype__proto.minutes = getSetMinute;
-
-	    // Second
-	    momentPrototype__proto.second = momentPrototype__proto.seconds = getSetSecond;
-
-	    // Millisecond
-	    momentPrototype__proto.millisecond = momentPrototype__proto.milliseconds = getSetMillisecond;
-
-	    // Offset
-	    momentPrototype__proto.utcOffset            = getSetOffset;
-	    momentPrototype__proto.utc                  = setOffsetToUTC;
-	    momentPrototype__proto.local                = setOffsetToLocal;
-	    momentPrototype__proto.parseZone            = setOffsetToParsedOffset;
-	    momentPrototype__proto.hasAlignedHourOffset = hasAlignedHourOffset;
-	    momentPrototype__proto.isDST                = isDaylightSavingTime;
-	    momentPrototype__proto.isDSTShifted         = isDaylightSavingTimeShifted;
-	    momentPrototype__proto.isLocal              = isLocal;
-	    momentPrototype__proto.isUtcOffset          = isUtcOffset;
-	    momentPrototype__proto.isUtc                = isUtc;
-	    momentPrototype__proto.isUTC                = isUtc;
-
-	    // Timezone
-	    momentPrototype__proto.zoneAbbr = getZoneAbbr;
-	    momentPrototype__proto.zoneName = getZoneName;
-
-	    // Deprecations
-	    momentPrototype__proto.dates  = deprecate('dates accessor is deprecated. Use date instead.', getSetDayOfMonth);
-	    momentPrototype__proto.months = deprecate('months accessor is deprecated. Use month instead', getSetMonth);
-	    momentPrototype__proto.years  = deprecate('years accessor is deprecated. Use year instead', getSetYear);
-	    momentPrototype__proto.zone   = deprecate('moment().zone is deprecated, use moment().utcOffset instead. https://github.com/moment/moment/issues/1779', getSetZone);
-
-	    var momentPrototype = momentPrototype__proto;
-
-	    function moment__createUnix (input) {
-	        return local__createLocal(input * 1000);
+	    function createUnix (input) {
+	        return createLocal(input * 1000);
 	    }
 
-	    function moment__createInZone () {
-	        return local__createLocal.apply(null, arguments).parseZone();
-	    }
-
-	    var defaultCalendar = {
-	        sameDay : '[Today at] LT',
-	        nextDay : '[Tomorrow at] LT',
-	        nextWeek : 'dddd [at] LT',
-	        lastDay : '[Yesterday at] LT',
-	        lastWeek : '[Last] dddd [at] LT',
-	        sameElse : 'L'
-	    };
-
-	    function locale_calendar__calendar (key, mom, now) {
-	        var output = this._calendar[key];
-	        return isFunction(output) ? output.call(mom, now) : output;
-	    }
-
-	    var defaultLongDateFormat = {
-	        LTS  : 'h:mm:ss A',
-	        LT   : 'h:mm A',
-	        L    : 'MM/DD/YYYY',
-	        LL   : 'MMMM D, YYYY',
-	        LLL  : 'MMMM D, YYYY h:mm A',
-	        LLLL : 'dddd, MMMM D, YYYY h:mm A'
-	    };
-
-	    function longDateFormat (key) {
-	        var format = this._longDateFormat[key],
-	            formatUpper = this._longDateFormat[key.toUpperCase()];
-
-	        if (format || !formatUpper) {
-	            return format;
-	        }
-
-	        this._longDateFormat[key] = formatUpper.replace(/MMMM|MM|DD|dddd/g, function (val) {
-	            return val.slice(1);
-	        });
-
-	        return this._longDateFormat[key];
-	    }
-
-	    var defaultInvalidDate = 'Invalid date';
-
-	    function invalidDate () {
-	        return this._invalidDate;
-	    }
-
-	    var defaultOrdinal = '%d';
-	    var defaultOrdinalParse = /\d{1,2}/;
-
-	    function ordinal (number) {
-	        return this._ordinal.replace('%d', number);
+	    function createInZone () {
+	        return createLocal.apply(null, arguments).parseZone();
 	    }
 
 	    function preParsePostFormat (string) {
 	        return string;
 	    }
 
-	    var defaultRelativeTime = {
-	        future : 'in %s',
-	        past   : '%s ago',
-	        s  : 'a few seconds',
-	        m  : 'a minute',
-	        mm : '%d minutes',
-	        h  : 'an hour',
-	        hh : '%d hours',
-	        d  : 'a day',
-	        dd : '%d days',
-	        M  : 'a month',
-	        MM : '%d months',
-	        y  : 'a year',
-	        yy : '%d years'
-	    };
+	    var proto$1 = Locale.prototype;
 
-	    function relative__relativeTime (number, withoutSuffix, string, isFuture) {
-	        var output = this._relativeTime[string];
-	        return (isFunction(output)) ?
-	            output(number, withoutSuffix, string, isFuture) :
-	            output.replace(/%d/i, number);
-	    }
+	    proto$1.calendar        = calendar;
+	    proto$1.longDateFormat  = longDateFormat;
+	    proto$1.invalidDate     = invalidDate;
+	    proto$1.ordinal         = ordinal;
+	    proto$1.preparse        = preParsePostFormat;
+	    proto$1.postformat      = preParsePostFormat;
+	    proto$1.relativeTime    = relativeTime;
+	    proto$1.pastFuture      = pastFuture;
+	    proto$1.set             = set;
 
-	    function pastFuture (diff, output) {
-	        var format = this._relativeTime[diff > 0 ? 'future' : 'past'];
-	        return isFunction(format) ? format(output) : format.replace(/%s/i, output);
-	    }
+	    proto$1.months            =        localeMonths;
+	    proto$1.monthsShort       =        localeMonthsShort;
+	    proto$1.monthsParse       =        localeMonthsParse;
+	    proto$1.monthsRegex       = monthsRegex;
+	    proto$1.monthsShortRegex  = monthsShortRegex;
+	    proto$1.week = localeWeek;
+	    proto$1.firstDayOfYear = localeFirstDayOfYear;
+	    proto$1.firstDayOfWeek = localeFirstDayOfWeek;
 
-	    var prototype__proto = Locale.prototype;
+	    proto$1.weekdays       =        localeWeekdays;
+	    proto$1.weekdaysMin    =        localeWeekdaysMin;
+	    proto$1.weekdaysShort  =        localeWeekdaysShort;
+	    proto$1.weekdaysParse  =        localeWeekdaysParse;
 
-	    prototype__proto._calendar       = defaultCalendar;
-	    prototype__proto.calendar        = locale_calendar__calendar;
-	    prototype__proto._longDateFormat = defaultLongDateFormat;
-	    prototype__proto.longDateFormat  = longDateFormat;
-	    prototype__proto._invalidDate    = defaultInvalidDate;
-	    prototype__proto.invalidDate     = invalidDate;
-	    prototype__proto._ordinal        = defaultOrdinal;
-	    prototype__proto.ordinal         = ordinal;
-	    prototype__proto._ordinalParse   = defaultOrdinalParse;
-	    prototype__proto.preparse        = preParsePostFormat;
-	    prototype__proto.postformat      = preParsePostFormat;
-	    prototype__proto._relativeTime   = defaultRelativeTime;
-	    prototype__proto.relativeTime    = relative__relativeTime;
-	    prototype__proto.pastFuture      = pastFuture;
-	    prototype__proto.set             = locale_set__set;
+	    proto$1.weekdaysRegex       =        weekdaysRegex;
+	    proto$1.weekdaysShortRegex  =        weekdaysShortRegex;
+	    proto$1.weekdaysMinRegex    =        weekdaysMinRegex;
 
-	    // Month
-	    prototype__proto.months            =        localeMonths;
-	    prototype__proto._months           = defaultLocaleMonths;
-	    prototype__proto.monthsShort       =        localeMonthsShort;
-	    prototype__proto._monthsShort      = defaultLocaleMonthsShort;
-	    prototype__proto.monthsParse       =        localeMonthsParse;
-	    prototype__proto._monthsRegex      = defaultMonthsRegex;
-	    prototype__proto.monthsRegex       = monthsRegex;
-	    prototype__proto._monthsShortRegex = defaultMonthsShortRegex;
-	    prototype__proto.monthsShortRegex  = monthsShortRegex;
+	    proto$1.isPM = localeIsPM;
+	    proto$1.meridiem = localeMeridiem;
 
-	    // Week
-	    prototype__proto.week = localeWeek;
-	    prototype__proto._week = defaultLocaleWeek;
-	    prototype__proto.firstDayOfYear = localeFirstDayOfYear;
-	    prototype__proto.firstDayOfWeek = localeFirstDayOfWeek;
-
-	    // Day of Week
-	    prototype__proto.weekdays       =        localeWeekdays;
-	    prototype__proto._weekdays      = defaultLocaleWeekdays;
-	    prototype__proto.weekdaysMin    =        localeWeekdaysMin;
-	    prototype__proto._weekdaysMin   = defaultLocaleWeekdaysMin;
-	    prototype__proto.weekdaysShort  =        localeWeekdaysShort;
-	    prototype__proto._weekdaysShort = defaultLocaleWeekdaysShort;
-	    prototype__proto.weekdaysParse  =        localeWeekdaysParse;
-
-	    prototype__proto._weekdaysRegex      = defaultWeekdaysRegex;
-	    prototype__proto.weekdaysRegex       =        weekdaysRegex;
-	    prototype__proto._weekdaysShortRegex = defaultWeekdaysShortRegex;
-	    prototype__proto.weekdaysShortRegex  =        weekdaysShortRegex;
-	    prototype__proto._weekdaysMinRegex   = defaultWeekdaysMinRegex;
-	    prototype__proto.weekdaysMinRegex    =        weekdaysMinRegex;
-
-	    // Hours
-	    prototype__proto.isPM = localeIsPM;
-	    prototype__proto._meridiemParse = defaultLocaleMeridiemParse;
-	    prototype__proto.meridiem = localeMeridiem;
-
-	    function lists__get (format, index, field, setter) {
-	        var locale = locale_locales__getLocale();
-	        var utc = create_utc__createUTC().set(setter, index);
+	    function get$1 (format, index, field, setter) {
+	        var locale = getLocale();
+	        var utc = createUTC().set(setter, index);
 	        return locale[field](utc, format);
 	    }
 
 	    function listMonthsImpl (format, index, field) {
-	        if (typeof format === 'number') {
+	        if (isNumber(format)) {
 	            index = format;
 	            format = undefined;
 	        }
@@ -25058,13 +25602,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        format = format || '';
 
 	        if (index != null) {
-	            return lists__get(format, index, field, 'month');
+	            return get$1(format, index, field, 'month');
 	        }
 
 	        var i;
 	        var out = [];
 	        for (i = 0; i < 12; i++) {
-	            out[i] = lists__get(format, i, field, 'month');
+	            out[i] = get$1(format, i, field, 'month');
 	        }
 	        return out;
 	    }
@@ -25079,7 +25623,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    // (true, fmt)
 	    function listWeekdaysImpl (localeSorted, format, index, field) {
 	        if (typeof localeSorted === 'boolean') {
-	            if (typeof format === 'number') {
+	            if (isNumber(format)) {
 	                index = format;
 	                format = undefined;
 	            }
@@ -25090,7 +25634,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            index = format;
 	            localeSorted = false;
 
-	            if (typeof format === 'number') {
+	            if (isNumber(format)) {
 	                index = format;
 	                format = undefined;
 	            }
@@ -25098,43 +25642,43 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            format = format || '';
 	        }
 
-	        var locale = locale_locales__getLocale(),
+	        var locale = getLocale(),
 	            shift = localeSorted ? locale._week.dow : 0;
 
 	        if (index != null) {
-	            return lists__get(format, (index + shift) % 7, field, 'day');
+	            return get$1(format, (index + shift) % 7, field, 'day');
 	        }
 
 	        var i;
 	        var out = [];
 	        for (i = 0; i < 7; i++) {
-	            out[i] = lists__get(format, (i + shift) % 7, field, 'day');
+	            out[i] = get$1(format, (i + shift) % 7, field, 'day');
 	        }
 	        return out;
 	    }
 
-	    function lists__listMonths (format, index) {
+	    function listMonths (format, index) {
 	        return listMonthsImpl(format, index, 'months');
 	    }
 
-	    function lists__listMonthsShort (format, index) {
+	    function listMonthsShort (format, index) {
 	        return listMonthsImpl(format, index, 'monthsShort');
 	    }
 
-	    function lists__listWeekdays (localeSorted, format, index) {
+	    function listWeekdays (localeSorted, format, index) {
 	        return listWeekdaysImpl(localeSorted, format, index, 'weekdays');
 	    }
 
-	    function lists__listWeekdaysShort (localeSorted, format, index) {
+	    function listWeekdaysShort (localeSorted, format, index) {
 	        return listWeekdaysImpl(localeSorted, format, index, 'weekdaysShort');
 	    }
 
-	    function lists__listWeekdaysMin (localeSorted, format, index) {
+	    function listWeekdaysMin (localeSorted, format, index) {
 	        return listWeekdaysImpl(localeSorted, format, index, 'weekdaysMin');
 	    }
 
-	    locale_locales__getSetGlobalLocale('en', {
-	        ordinalParse: /\d{1,2}(th|st|nd|rd)/,
+	    getSetGlobalLocale('en', {
+	        dayOfMonthOrdinalParse: /\d{1,2}(th|st|nd|rd)/,
 	        ordinal : function (number) {
 	            var b = number % 10,
 	                output = (toInt(number % 100 / 10) === 1) ? 'th' :
@@ -25146,12 +25690,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    });
 
 	    // Side effect imports
-	    utils_hooks__hooks.lang = deprecate('moment.lang is deprecated. Use moment.locale instead.', locale_locales__getSetGlobalLocale);
-	    utils_hooks__hooks.langData = deprecate('moment.langData is deprecated. Use moment.localeData instead.', locale_locales__getLocale);
+
+	    hooks.lang = deprecate('moment.lang is deprecated. Use moment.locale instead.', getSetGlobalLocale);
+	    hooks.langData = deprecate('moment.langData is deprecated. Use moment.localeData instead.', getLocale);
 
 	    var mathAbs = Math.abs;
 
-	    function duration_abs__abs () {
+	    function abs () {
 	        var data           = this._data;
 
 	        this._milliseconds = mathAbs(this._milliseconds);
@@ -25168,8 +25713,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return this;
 	    }
 
-	    function duration_add_subtract__addSubtract (duration, input, value, direction) {
-	        var other = create__createDuration(input, value);
+	    function addSubtract$1 (duration, input, value, direction) {
+	        var other = createDuration(input, value);
 
 	        duration._milliseconds += direction * other._milliseconds;
 	        duration._days         += direction * other._days;
@@ -25179,13 +25724,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 
 	    // supports only 2.0-style add(1, 's') or add(duration)
-	    function duration_add_subtract__add (input, value) {
-	        return duration_add_subtract__addSubtract(this, input, value, 1);
+	    function add$1 (input, value) {
+	        return addSubtract$1(this, input, value, 1);
 	    }
 
 	    // supports only 2.0-style subtract(1, 's') or subtract(duration)
-	    function duration_add_subtract__subtract (input, value) {
-	        return duration_add_subtract__addSubtract(this, input, value, -1);
+	    function subtract$1 (input, value) {
+	        return addSubtract$1(this, input, value, -1);
 	    }
 
 	    function absCeil (number) {
@@ -25255,6 +25800,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 
 	    function as (units) {
+	        if (!this.isValid()) {
+	            return NaN;
+	        }
 	        var days;
 	        var months;
 	        var milliseconds = this._milliseconds;
@@ -25282,7 +25830,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 
 	    // TODO: Use this.as('ms')?
-	    function duration_as__valueOf () {
+	    function valueOf$1 () {
+	        if (!this.isValid()) {
+	            return NaN;
+	        }
 	        return (
 	            this._milliseconds +
 	            this._days * 864e5 +
@@ -25306,14 +25857,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    var asMonths       = makeAs('M');
 	    var asYears        = makeAs('y');
 
-	    function duration_get__get (units) {
+	    function clone$1 () {
+	        return createDuration(this);
+	    }
+
+	    function get$2 (units) {
 	        units = normalizeUnits(units);
-	        return this[units + 's']();
+	        return this.isValid() ? this[units + 's']() : NaN;
 	    }
 
 	    function makeGetter(name) {
 	        return function () {
-	            return this._data[name];
+	            return this.isValid() ? this._data[name] : NaN;
 	        };
 	    }
 
@@ -25331,11 +25886,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    var round = Math.round;
 	    var thresholds = {
-	        s: 45,  // seconds to minute
-	        m: 45,  // minutes to hour
-	        h: 22,  // hours to day
-	        d: 26,  // days to month
-	        M: 11   // months to year
+	        ss: 44,         // a few seconds to seconds
+	        s : 45,         // seconds to minute
+	        m : 45,         // minutes to hour
+	        h : 22,         // hours to day
+	        d : 26,         // days to month
+	        M : 11          // months to year
 	    };
 
 	    // helper function for moment.fn.from, moment.fn.fromNow, and moment.duration.fn.humanize
@@ -25343,8 +25899,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return locale.relativeTime(number || 1, !!withoutSuffix, string, isFuture);
 	    }
 
-	    function duration_humanize__relativeTime (posNegDuration, withoutSuffix, locale) {
-	        var duration = create__createDuration(posNegDuration).abs();
+	    function relativeTime$1 (posNegDuration, withoutSuffix, locale) {
+	        var duration = createDuration(posNegDuration).abs();
 	        var seconds  = round(duration.as('s'));
 	        var minutes  = round(duration.as('m'));
 	        var hours    = round(duration.as('h'));
@@ -25352,16 +25908,17 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        var months   = round(duration.as('M'));
 	        var years    = round(duration.as('y'));
 
-	        var a = seconds < thresholds.s && ['s', seconds]  ||
-	                minutes <= 1           && ['m']           ||
-	                minutes < thresholds.m && ['mm', minutes] ||
-	                hours   <= 1           && ['h']           ||
-	                hours   < thresholds.h && ['hh', hours]   ||
-	                days    <= 1           && ['d']           ||
-	                days    < thresholds.d && ['dd', days]    ||
-	                months  <= 1           && ['M']           ||
-	                months  < thresholds.M && ['MM', months]  ||
-	                years   <= 1           && ['y']           || ['yy', years];
+	        var a = seconds <= thresholds.ss && ['s', seconds]  ||
+	                seconds < thresholds.s   && ['ss', seconds] ||
+	                minutes <= 1             && ['m']           ||
+	                minutes < thresholds.m   && ['mm', minutes] ||
+	                hours   <= 1             && ['h']           ||
+	                hours   < thresholds.h   && ['hh', hours]   ||
+	                days    <= 1             && ['d']           ||
+	                days    < thresholds.d   && ['dd', days]    ||
+	                months  <= 1             && ['M']           ||
+	                months  < thresholds.M   && ['MM', months]  ||
+	                years   <= 1             && ['y']           || ['yy', years];
 
 	        a[2] = withoutSuffix;
 	        a[3] = +posNegDuration > 0;
@@ -25369,8 +25926,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return substituteTimeAgo.apply(null, a);
 	    }
 
+	    // This function allows you to set the rounding function for relative time strings
+	    function getSetRelativeTimeRounding (roundingFunction) {
+	        if (roundingFunction === undefined) {
+	            return round;
+	        }
+	        if (typeof(roundingFunction) === 'function') {
+	            round = roundingFunction;
+	            return true;
+	        }
+	        return false;
+	    }
+
 	    // This function allows you to set a threshold for relative time strings
-	    function duration_humanize__getSetRelativeTimeThreshold (threshold, limit) {
+	    function getSetRelativeTimeThreshold (threshold, limit) {
 	        if (thresholds[threshold] === undefined) {
 	            return false;
 	        }
@@ -25378,12 +25947,19 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            return thresholds[threshold];
 	        }
 	        thresholds[threshold] = limit;
+	        if (threshold === 's') {
+	            thresholds.ss = limit - 1;
+	        }
 	        return true;
 	    }
 
 	    function humanize (withSuffix) {
+	        if (!this.isValid()) {
+	            return this.localeData().invalidDate();
+	        }
+
 	        var locale = this.localeData();
-	        var output = duration_humanize__relativeTime(this, !withSuffix, locale);
+	        var output = relativeTime$1(this, !withSuffix, locale);
 
 	        if (withSuffix) {
 	            output = locale.pastFuture(+this, output);
@@ -25392,9 +25968,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return locale.postformat(output);
 	    }
 
-	    var iso_string__abs = Math.abs;
+	    var abs$1 = Math.abs;
 
-	    function iso_string__toISOString() {
+	    function sign(x) {
+	        return ((x > 0) - (x < 0)) || +x;
+	    }
+
+	    function toISOString$1() {
 	        // for ISO strings we do not use the normal bubbling rules:
 	        //  * milliseconds bubble up until they become hours
 	        //  * days do not bubble at all
@@ -25402,9 +25982,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        // This is because there is no context-free conversion between hours and days
 	        // (think of clock changes)
 	        // and also not between days and months (28-31 days per month)
-	        var seconds = iso_string__abs(this._milliseconds) / 1000;
-	        var days         = iso_string__abs(this._days);
-	        var months       = iso_string__abs(this._months);
+	        if (!this.isValid()) {
+	            return this.localeData().invalidDate();
+	        }
+
+	        var seconds = abs$1(this._milliseconds) / 1000;
+	        var days         = abs$1(this._days);
+	        var months       = abs$1(this._months);
 	        var minutes, hours, years;
 
 	        // 3600 seconds -> 60 minutes -> 1 hour
@@ -25424,7 +26008,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        var D = days;
 	        var h = hours;
 	        var m = minutes;
-	        var s = seconds;
+	        var s = seconds ? seconds.toFixed(3).replace(/\.?0+$/, '') : '';
 	        var total = this.asSeconds();
 
 	        if (!total) {
@@ -25433,52 +26017,57 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            return 'P0D';
 	        }
 
-	        return (total < 0 ? '-' : '') +
-	            'P' +
-	            (Y ? Y + 'Y' : '') +
-	            (M ? M + 'M' : '') +
-	            (D ? D + 'D' : '') +
+	        var totalSign = total < 0 ? '-' : '';
+	        var ymSign = sign(this._months) !== sign(total) ? '-' : '';
+	        var daysSign = sign(this._days) !== sign(total) ? '-' : '';
+	        var hmsSign = sign(this._milliseconds) !== sign(total) ? '-' : '';
+
+	        return totalSign + 'P' +
+	            (Y ? ymSign + Y + 'Y' : '') +
+	            (M ? ymSign + M + 'M' : '') +
+	            (D ? daysSign + D + 'D' : '') +
 	            ((h || m || s) ? 'T' : '') +
-	            (h ? h + 'H' : '') +
-	            (m ? m + 'M' : '') +
-	            (s ? s + 'S' : '');
+	            (h ? hmsSign + h + 'H' : '') +
+	            (m ? hmsSign + m + 'M' : '') +
+	            (s ? hmsSign + s + 'S' : '');
 	    }
 
-	    var duration_prototype__proto = Duration.prototype;
+	    var proto$2 = Duration.prototype;
 
-	    duration_prototype__proto.abs            = duration_abs__abs;
-	    duration_prototype__proto.add            = duration_add_subtract__add;
-	    duration_prototype__proto.subtract       = duration_add_subtract__subtract;
-	    duration_prototype__proto.as             = as;
-	    duration_prototype__proto.asMilliseconds = asMilliseconds;
-	    duration_prototype__proto.asSeconds      = asSeconds;
-	    duration_prototype__proto.asMinutes      = asMinutes;
-	    duration_prototype__proto.asHours        = asHours;
-	    duration_prototype__proto.asDays         = asDays;
-	    duration_prototype__proto.asWeeks        = asWeeks;
-	    duration_prototype__proto.asMonths       = asMonths;
-	    duration_prototype__proto.asYears        = asYears;
-	    duration_prototype__proto.valueOf        = duration_as__valueOf;
-	    duration_prototype__proto._bubble        = bubble;
-	    duration_prototype__proto.get            = duration_get__get;
-	    duration_prototype__proto.milliseconds   = milliseconds;
-	    duration_prototype__proto.seconds        = seconds;
-	    duration_prototype__proto.minutes        = minutes;
-	    duration_prototype__proto.hours          = hours;
-	    duration_prototype__proto.days           = days;
-	    duration_prototype__proto.weeks          = weeks;
-	    duration_prototype__proto.months         = months;
-	    duration_prototype__proto.years          = years;
-	    duration_prototype__proto.humanize       = humanize;
-	    duration_prototype__proto.toISOString    = iso_string__toISOString;
-	    duration_prototype__proto.toString       = iso_string__toISOString;
-	    duration_prototype__proto.toJSON         = iso_string__toISOString;
-	    duration_prototype__proto.locale         = locale;
-	    duration_prototype__proto.localeData     = localeData;
+	    proto$2.isValid        = isValid$1;
+	    proto$2.abs            = abs;
+	    proto$2.add            = add$1;
+	    proto$2.subtract       = subtract$1;
+	    proto$2.as             = as;
+	    proto$2.asMilliseconds = asMilliseconds;
+	    proto$2.asSeconds      = asSeconds;
+	    proto$2.asMinutes      = asMinutes;
+	    proto$2.asHours        = asHours;
+	    proto$2.asDays         = asDays;
+	    proto$2.asWeeks        = asWeeks;
+	    proto$2.asMonths       = asMonths;
+	    proto$2.asYears        = asYears;
+	    proto$2.valueOf        = valueOf$1;
+	    proto$2._bubble        = bubble;
+	    proto$2.clone          = clone$1;
+	    proto$2.get            = get$2;
+	    proto$2.milliseconds   = milliseconds;
+	    proto$2.seconds        = seconds;
+	    proto$2.minutes        = minutes;
+	    proto$2.hours          = hours;
+	    proto$2.days           = days;
+	    proto$2.weeks          = weeks;
+	    proto$2.months         = months;
+	    proto$2.years          = years;
+	    proto$2.humanize       = humanize;
+	    proto$2.toISOString    = toISOString$1;
+	    proto$2.toString       = toISOString$1;
+	    proto$2.toJSON         = toISOString$1;
+	    proto$2.locale         = locale;
+	    proto$2.localeData     = localeData;
 
-	    // Deprecations
-	    duration_prototype__proto.toIsoString = deprecate('toIsoString() is deprecated. Please use toISOString() instead (notice the capitals)', iso_string__toISOString);
-	    duration_prototype__proto.lang = lang;
+	    proto$2.toIsoString = deprecate('toIsoString() is deprecated. Please use toISOString() instead (notice the capitals)', toISOString$1);
+	    proto$2.lang = lang;
 
 	    // Side effect imports
 
@@ -25501,264 +26090,308 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    // Side effect imports
 
 
-	    utils_hooks__hooks.version = '2.13.0';
+	    hooks.version = '2.22.2';
 
-	    setHookCallback(local__createLocal);
+	    setHookCallback(createLocal);
 
-	    utils_hooks__hooks.fn                    = momentPrototype;
-	    utils_hooks__hooks.min                   = min;
-	    utils_hooks__hooks.max                   = max;
-	    utils_hooks__hooks.now                   = now;
-	    utils_hooks__hooks.utc                   = create_utc__createUTC;
-	    utils_hooks__hooks.unix                  = moment__createUnix;
-	    utils_hooks__hooks.months                = lists__listMonths;
-	    utils_hooks__hooks.isDate                = isDate;
-	    utils_hooks__hooks.locale                = locale_locales__getSetGlobalLocale;
-	    utils_hooks__hooks.invalid               = valid__createInvalid;
-	    utils_hooks__hooks.duration              = create__createDuration;
-	    utils_hooks__hooks.isMoment              = isMoment;
-	    utils_hooks__hooks.weekdays              = lists__listWeekdays;
-	    utils_hooks__hooks.parseZone             = moment__createInZone;
-	    utils_hooks__hooks.localeData            = locale_locales__getLocale;
-	    utils_hooks__hooks.isDuration            = isDuration;
-	    utils_hooks__hooks.monthsShort           = lists__listMonthsShort;
-	    utils_hooks__hooks.weekdaysMin           = lists__listWeekdaysMin;
-	    utils_hooks__hooks.defineLocale          = defineLocale;
-	    utils_hooks__hooks.updateLocale          = updateLocale;
-	    utils_hooks__hooks.locales               = locale_locales__listLocales;
-	    utils_hooks__hooks.weekdaysShort         = lists__listWeekdaysShort;
-	    utils_hooks__hooks.normalizeUnits        = normalizeUnits;
-	    utils_hooks__hooks.relativeTimeThreshold = duration_humanize__getSetRelativeTimeThreshold;
-	    utils_hooks__hooks.prototype             = momentPrototype;
+	    hooks.fn                    = proto;
+	    hooks.min                   = min;
+	    hooks.max                   = max;
+	    hooks.now                   = now;
+	    hooks.utc                   = createUTC;
+	    hooks.unix                  = createUnix;
+	    hooks.months                = listMonths;
+	    hooks.isDate                = isDate;
+	    hooks.locale                = getSetGlobalLocale;
+	    hooks.invalid               = createInvalid;
+	    hooks.duration              = createDuration;
+	    hooks.isMoment              = isMoment;
+	    hooks.weekdays              = listWeekdays;
+	    hooks.parseZone             = createInZone;
+	    hooks.localeData            = getLocale;
+	    hooks.isDuration            = isDuration;
+	    hooks.monthsShort           = listMonthsShort;
+	    hooks.weekdaysMin           = listWeekdaysMin;
+	    hooks.defineLocale          = defineLocale;
+	    hooks.updateLocale          = updateLocale;
+	    hooks.locales               = listLocales;
+	    hooks.weekdaysShort         = listWeekdaysShort;
+	    hooks.normalizeUnits        = normalizeUnits;
+	    hooks.relativeTimeRounding  = getSetRelativeTimeRounding;
+	    hooks.relativeTimeThreshold = getSetRelativeTimeThreshold;
+	    hooks.calendarFormat        = getCalendarFormat;
+	    hooks.prototype             = proto;
 
-	    var _moment = utils_hooks__hooks;
+	    // currently HTML5 input type only supports 24-hour formats
+	    hooks.HTML5_FMT = {
+	        DATETIME_LOCAL: 'YYYY-MM-DDTHH:mm',             // <input type="datetime-local" />
+	        DATETIME_LOCAL_SECONDS: 'YYYY-MM-DDTHH:mm:ss',  // <input type="datetime-local" step="1" />
+	        DATETIME_LOCAL_MS: 'YYYY-MM-DDTHH:mm:ss.SSS',   // <input type="datetime-local" step="0.001" />
+	        DATE: 'YYYY-MM-DD',                             // <input type="date" />
+	        TIME: 'HH:mm',                                  // <input type="time" />
+	        TIME_SECONDS: 'HH:mm:ss',                       // <input type="time" step="1" />
+	        TIME_MS: 'HH:mm:ss.SSS',                        // <input type="time" step="0.001" />
+	        WEEK: 'YYYY-[W]WW',                             // <input type="week" />
+	        MONTH: 'YYYY-MM'                                // <input type="month" />
+	    };
 
-	    return _moment;
+	    return hooks;
 
-	}));
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)(module)))
+	})));
 
-/***/ },
-/* 8 */
-/***/ function(module, exports) {
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)(module)))
 
-	module.exports = function(module) {
-		if(!module.webpackPolyfill) {
-			module.deprecate = function() {};
-			module.paths = [];
-			// module.parent = undefined by default
-			module.children = [];
-			module.webpackPolyfill = 1;
-		}
-		return module;
-	}
-
-
-/***/ },
+/***/ }),
 /* 9 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	var map = {
 		"./af": 10,
 		"./af.js": 10,
 		"./ar": 11,
-		"./ar-ma": 12,
-		"./ar-ma.js": 12,
-		"./ar-sa": 13,
-		"./ar-sa.js": 13,
-		"./ar-tn": 14,
-		"./ar-tn.js": 14,
+		"./ar-dz": 12,
+		"./ar-dz.js": 12,
+		"./ar-kw": 13,
+		"./ar-kw.js": 13,
+		"./ar-ly": 14,
+		"./ar-ly.js": 14,
+		"./ar-ma": 15,
+		"./ar-ma.js": 15,
+		"./ar-sa": 16,
+		"./ar-sa.js": 16,
+		"./ar-tn": 17,
+		"./ar-tn.js": 17,
 		"./ar.js": 11,
-		"./az": 15,
-		"./az.js": 15,
-		"./be": 16,
-		"./be.js": 16,
-		"./bg": 17,
-		"./bg.js": 17,
-		"./bn": 18,
-		"./bn.js": 18,
-		"./bo": 19,
-		"./bo.js": 19,
-		"./br": 20,
-		"./br.js": 20,
-		"./bs": 21,
-		"./bs.js": 21,
-		"./ca": 22,
-		"./ca.js": 22,
-		"./cs": 23,
-		"./cs.js": 23,
-		"./cv": 24,
-		"./cv.js": 24,
-		"./cy": 25,
-		"./cy.js": 25,
-		"./da": 26,
-		"./da.js": 26,
-		"./de": 27,
-		"./de-at": 28,
-		"./de-at.js": 28,
-		"./de.js": 27,
-		"./dv": 29,
-		"./dv.js": 29,
-		"./el": 30,
-		"./el.js": 30,
-		"./en-au": 31,
-		"./en-au.js": 31,
-		"./en-ca": 32,
-		"./en-ca.js": 32,
-		"./en-gb": 33,
-		"./en-gb.js": 33,
-		"./en-ie": 34,
-		"./en-ie.js": 34,
-		"./en-nz": 35,
-		"./en-nz.js": 35,
-		"./eo": 36,
-		"./eo.js": 36,
-		"./es": 37,
-		"./es.js": 37,
-		"./et": 38,
-		"./et.js": 38,
-		"./eu": 39,
-		"./eu.js": 39,
-		"./fa": 40,
-		"./fa.js": 40,
-		"./fi": 41,
-		"./fi.js": 41,
-		"./fo": 42,
-		"./fo.js": 42,
-		"./fr": 43,
-		"./fr-ca": 44,
-		"./fr-ca.js": 44,
-		"./fr-ch": 45,
-		"./fr-ch.js": 45,
-		"./fr.js": 43,
-		"./fy": 46,
-		"./fy.js": 46,
-		"./gd": 47,
-		"./gd.js": 47,
-		"./gl": 48,
-		"./gl.js": 48,
-		"./he": 49,
-		"./he.js": 49,
-		"./hi": 50,
-		"./hi.js": 50,
-		"./hr": 51,
-		"./hr.js": 51,
-		"./hu": 52,
-		"./hu.js": 52,
-		"./hy-am": 53,
-		"./hy-am.js": 53,
-		"./id": 54,
-		"./id.js": 54,
-		"./is": 55,
-		"./is.js": 55,
-		"./it": 56,
-		"./it.js": 56,
-		"./ja": 57,
-		"./ja.js": 57,
-		"./jv": 58,
-		"./jv.js": 58,
-		"./ka": 59,
-		"./ka.js": 59,
-		"./kk": 60,
-		"./kk.js": 60,
-		"./km": 61,
-		"./km.js": 61,
-		"./ko": 62,
-		"./ko.js": 62,
-		"./ky": 63,
-		"./ky.js": 63,
-		"./lb": 64,
-		"./lb.js": 64,
-		"./lo": 65,
-		"./lo.js": 65,
-		"./lt": 66,
-		"./lt.js": 66,
-		"./lv": 67,
-		"./lv.js": 67,
-		"./me": 68,
-		"./me.js": 68,
-		"./mk": 69,
-		"./mk.js": 69,
-		"./ml": 70,
-		"./ml.js": 70,
-		"./mr": 71,
-		"./mr.js": 71,
-		"./ms": 72,
-		"./ms-my": 73,
-		"./ms-my.js": 73,
-		"./ms.js": 72,
-		"./my": 74,
-		"./my.js": 74,
-		"./nb": 75,
-		"./nb.js": 75,
-		"./ne": 76,
-		"./ne.js": 76,
-		"./nl": 77,
-		"./nl.js": 77,
-		"./nn": 78,
-		"./nn.js": 78,
-		"./pa-in": 79,
-		"./pa-in.js": 79,
-		"./pl": 80,
-		"./pl.js": 80,
-		"./pt": 81,
-		"./pt-br": 82,
-		"./pt-br.js": 82,
-		"./pt.js": 81,
-		"./ro": 83,
-		"./ro.js": 83,
-		"./ru": 84,
-		"./ru.js": 84,
-		"./se": 85,
-		"./se.js": 85,
-		"./si": 86,
-		"./si.js": 86,
-		"./sk": 87,
-		"./sk.js": 87,
-		"./sl": 88,
-		"./sl.js": 88,
-		"./sq": 89,
-		"./sq.js": 89,
-		"./sr": 90,
-		"./sr-cyrl": 91,
-		"./sr-cyrl.js": 91,
-		"./sr.js": 90,
-		"./ss": 92,
-		"./ss.js": 92,
-		"./sv": 93,
-		"./sv.js": 93,
-		"./sw": 94,
-		"./sw.js": 94,
-		"./ta": 95,
-		"./ta.js": 95,
-		"./te": 96,
-		"./te.js": 96,
-		"./th": 97,
-		"./th.js": 97,
-		"./tl-ph": 98,
-		"./tl-ph.js": 98,
-		"./tlh": 99,
-		"./tlh.js": 99,
-		"./tr": 100,
-		"./tr.js": 100,
-		"./tzl": 101,
-		"./tzl.js": 101,
-		"./tzm": 102,
-		"./tzm-latn": 103,
-		"./tzm-latn.js": 103,
-		"./tzm.js": 102,
-		"./uk": 104,
-		"./uk.js": 104,
-		"./uz": 105,
-		"./uz.js": 105,
-		"./vi": 106,
-		"./vi.js": 106,
-		"./x-pseudo": 107,
-		"./x-pseudo.js": 107,
-		"./zh-cn": 108,
-		"./zh-cn.js": 108,
-		"./zh-tw": 109,
-		"./zh-tw.js": 109
+		"./az": 18,
+		"./az.js": 18,
+		"./be": 19,
+		"./be.js": 19,
+		"./bg": 20,
+		"./bg.js": 20,
+		"./bm": 21,
+		"./bm.js": 21,
+		"./bn": 22,
+		"./bn.js": 22,
+		"./bo": 23,
+		"./bo.js": 23,
+		"./br": 24,
+		"./br.js": 24,
+		"./bs": 25,
+		"./bs.js": 25,
+		"./ca": 26,
+		"./ca.js": 26,
+		"./cs": 27,
+		"./cs.js": 27,
+		"./cv": 28,
+		"./cv.js": 28,
+		"./cy": 29,
+		"./cy.js": 29,
+		"./da": 30,
+		"./da.js": 30,
+		"./de": 31,
+		"./de-at": 32,
+		"./de-at.js": 32,
+		"./de-ch": 33,
+		"./de-ch.js": 33,
+		"./de.js": 31,
+		"./dv": 34,
+		"./dv.js": 34,
+		"./el": 35,
+		"./el.js": 35,
+		"./en-au": 36,
+		"./en-au.js": 36,
+		"./en-ca": 37,
+		"./en-ca.js": 37,
+		"./en-gb": 38,
+		"./en-gb.js": 38,
+		"./en-ie": 39,
+		"./en-ie.js": 39,
+		"./en-il": 40,
+		"./en-il.js": 40,
+		"./en-nz": 41,
+		"./en-nz.js": 41,
+		"./eo": 42,
+		"./eo.js": 42,
+		"./es": 43,
+		"./es-do": 44,
+		"./es-do.js": 44,
+		"./es-us": 45,
+		"./es-us.js": 45,
+		"./es.js": 43,
+		"./et": 46,
+		"./et.js": 46,
+		"./eu": 47,
+		"./eu.js": 47,
+		"./fa": 48,
+		"./fa.js": 48,
+		"./fi": 49,
+		"./fi.js": 49,
+		"./fo": 50,
+		"./fo.js": 50,
+		"./fr": 51,
+		"./fr-ca": 52,
+		"./fr-ca.js": 52,
+		"./fr-ch": 53,
+		"./fr-ch.js": 53,
+		"./fr.js": 51,
+		"./fy": 54,
+		"./fy.js": 54,
+		"./gd": 55,
+		"./gd.js": 55,
+		"./gl": 56,
+		"./gl.js": 56,
+		"./gom-latn": 57,
+		"./gom-latn.js": 57,
+		"./gu": 58,
+		"./gu.js": 58,
+		"./he": 59,
+		"./he.js": 59,
+		"./hi": 60,
+		"./hi.js": 60,
+		"./hr": 61,
+		"./hr.js": 61,
+		"./hu": 62,
+		"./hu.js": 62,
+		"./hy-am": 63,
+		"./hy-am.js": 63,
+		"./id": 64,
+		"./id.js": 64,
+		"./is": 65,
+		"./is.js": 65,
+		"./it": 66,
+		"./it.js": 66,
+		"./ja": 67,
+		"./ja.js": 67,
+		"./jv": 68,
+		"./jv.js": 68,
+		"./ka": 69,
+		"./ka.js": 69,
+		"./kk": 70,
+		"./kk.js": 70,
+		"./km": 71,
+		"./km.js": 71,
+		"./kn": 72,
+		"./kn.js": 72,
+		"./ko": 73,
+		"./ko.js": 73,
+		"./ky": 74,
+		"./ky.js": 74,
+		"./lb": 75,
+		"./lb.js": 75,
+		"./lo": 76,
+		"./lo.js": 76,
+		"./lt": 77,
+		"./lt.js": 77,
+		"./lv": 78,
+		"./lv.js": 78,
+		"./me": 79,
+		"./me.js": 79,
+		"./mi": 80,
+		"./mi.js": 80,
+		"./mk": 81,
+		"./mk.js": 81,
+		"./ml": 82,
+		"./ml.js": 82,
+		"./mn": 83,
+		"./mn.js": 83,
+		"./mr": 84,
+		"./mr.js": 84,
+		"./ms": 85,
+		"./ms-my": 86,
+		"./ms-my.js": 86,
+		"./ms.js": 85,
+		"./mt": 87,
+		"./mt.js": 87,
+		"./my": 88,
+		"./my.js": 88,
+		"./nb": 89,
+		"./nb.js": 89,
+		"./ne": 90,
+		"./ne.js": 90,
+		"./nl": 91,
+		"./nl-be": 92,
+		"./nl-be.js": 92,
+		"./nl.js": 91,
+		"./nn": 93,
+		"./nn.js": 93,
+		"./pa-in": 94,
+		"./pa-in.js": 94,
+		"./pl": 95,
+		"./pl.js": 95,
+		"./pt": 96,
+		"./pt-br": 97,
+		"./pt-br.js": 97,
+		"./pt.js": 96,
+		"./ro": 98,
+		"./ro.js": 98,
+		"./ru": 99,
+		"./ru.js": 99,
+		"./sd": 100,
+		"./sd.js": 100,
+		"./se": 101,
+		"./se.js": 101,
+		"./si": 102,
+		"./si.js": 102,
+		"./sk": 103,
+		"./sk.js": 103,
+		"./sl": 104,
+		"./sl.js": 104,
+		"./sq": 105,
+		"./sq.js": 105,
+		"./sr": 106,
+		"./sr-cyrl": 107,
+		"./sr-cyrl.js": 107,
+		"./sr.js": 106,
+		"./ss": 108,
+		"./ss.js": 108,
+		"./sv": 109,
+		"./sv.js": 109,
+		"./sw": 110,
+		"./sw.js": 110,
+		"./ta": 111,
+		"./ta.js": 111,
+		"./te": 112,
+		"./te.js": 112,
+		"./tet": 113,
+		"./tet.js": 113,
+		"./tg": 114,
+		"./tg.js": 114,
+		"./th": 115,
+		"./th.js": 115,
+		"./tl-ph": 116,
+		"./tl-ph.js": 116,
+		"./tlh": 117,
+		"./tlh.js": 117,
+		"./tr": 118,
+		"./tr.js": 118,
+		"./tzl": 119,
+		"./tzl.js": 119,
+		"./tzm": 120,
+		"./tzm-latn": 121,
+		"./tzm-latn.js": 121,
+		"./tzm.js": 120,
+		"./ug-cn": 122,
+		"./ug-cn.js": 122,
+		"./uk": 123,
+		"./uk.js": 123,
+		"./ur": 124,
+		"./ur.js": 124,
+		"./uz": 125,
+		"./uz-latn": 126,
+		"./uz-latn.js": 126,
+		"./uz.js": 125,
+		"./vi": 127,
+		"./vi.js": 127,
+		"./x-pseudo": 128,
+		"./x-pseudo.js": 128,
+		"./yo": 129,
+		"./yo.js": 129,
+		"./zh-cn": 130,
+		"./zh-cn.js": 130,
+		"./zh-hk": 131,
+		"./zh-hk.js": 131,
+		"./zh-tw": 132,
+		"./zh-tw.js": 132
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -25774,24 +26407,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	webpackContext.id = 9;
 
 
-/***/ },
+/***/ }),
 /* 10 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : afrikaans (af)
-	//! author : Werner Mollentze : https://github.com/wernerm
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var af = moment.defineLocale('af', {
 	        months : 'Januarie_Februarie_Maart_April_Mei_Junie_Julie_Augustus_September_Oktober_November_Desember'.split('_'),
-	        monthsShort : 'Jan_Feb_Mar_Apr_Mei_Jun_Jul_Aug_Sep_Okt_Nov_Des'.split('_'),
+	        monthsShort : 'Jan_Feb_Mrt_Apr_Mei_Jun_Jul_Aug_Sep_Okt_Nov_Des'.split('_'),
 	        weekdays : 'Sondag_Maandag_Dinsdag_Woensdag_Donderdag_Vrydag_Saterdag'.split('_'),
 	        weekdaysShort : 'Son_Maa_Din_Woe_Don_Vry_Sat'.split('_'),
 	        weekdaysMin : 'So_Ma_Di_Wo_Do_Vr_Sa'.split('_'),
@@ -25826,6 +26457,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'oor %s',
 	            past : '%s gelede',
 	            s : '\'n paar sekondes',
+	            ss : '%d sekondes',
 	            m : '\'n minuut',
 	            mm : '%d minute',
 	            h : '\'n uur',
@@ -25837,7 +26469,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : '\'n jaar',
 	            yy : '%d jaar'
 	        },
-	        ordinalParse: /\d{1,2}(ste|de)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}(ste|de)/,
 	        ordinal : function (number) {
 	            return number + ((number === 1 || number === 8 || number >= 20) ? 'ste' : 'de'); // Thanks to Joris Röling : https://github.com/jjupiter
 	        },
@@ -25849,23 +26481,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return af;
 
-	}));
+	})));
 
-/***/ },
+
+/***/ }),
 /* 11 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! Locale: Arabic (ar)
-	//! Author: Abdel Said: https://github.com/abdelsaid
-	//! Changes in months, weekdays: Ahmed Elkhatib
-	//! Native plural forms: forabi https://github.com/forabi
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var symbolMap = {
@@ -25909,18 +26538,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            return str.replace(/%d/i, number);
 	        };
 	    }, months = [
-	        'كانون الثاني يناير',
-	        'شباط فبراير',
-	        'آذار مارس',
-	        'نيسان أبريل',
-	        'أيار مايو',
-	        'حزيران يونيو',
-	        'تموز يوليو',
-	        'آب أغسطس',
-	        'أيلول سبتمبر',
-	        'تشرين الأول أكتوبر',
-	        'تشرين الثاني نوفمبر',
-	        'كانون الأول ديسمبر'
+	        'يناير',
+	        'فبراير',
+	        'مارس',
+	        'أبريل',
+	        'مايو',
+	        'يونيو',
+	        'يوليو',
+	        'أغسطس',
+	        'سبتمبر',
+	        'أكتوبر',
+	        'نوفمبر',
+	        'ديسمبر'
 	    ];
 
 	    var ar = moment.defineLocale('ar', {
@@ -25961,6 +26590,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'بعد %s',
 	            past : 'منذ %s',
 	            s : pluralize('s'),
+	            ss : pluralize('s'),
 	            m : pluralize('m'),
 	            mm : pluralize('m'),
 	            h : pluralize('h'),
@@ -25973,7 +26603,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            yy : pluralize('y')
 	        },
 	        preparse: function (string) {
-	            return string.replace(/\u200f/g, '').replace(/[١٢٣٤٥٦٧٨٩٠]/g, function (match) {
+	            return string.replace(/[١٢٣٤٥٦٧٨٩٠]/g, function (match) {
 	                return numberMap[match];
 	            }).replace(/،/g, ',');
 	        },
@@ -25990,25 +26620,86 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return ar;
 
-	}));
+	})));
 
-/***/ },
+
+/***/ }),
 /* 12 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Moroccan Arabic (ar-ma)
-	//! author : ElFadili Yassine : https://github.com/ElFadiliY
-	//! author : Abdel Said : https://github.com/abdelsaid
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
-	    var ar_ma = moment.defineLocale('ar-ma', {
+	    var arDz = moment.defineLocale('ar-dz', {
+	        months : 'جانفي_فيفري_مارس_أفريل_ماي_جوان_جويلية_أوت_سبتمبر_أكتوبر_نوفمبر_ديسمبر'.split('_'),
+	        monthsShort : 'جانفي_فيفري_مارس_أفريل_ماي_جوان_جويلية_أوت_سبتمبر_أكتوبر_نوفمبر_ديسمبر'.split('_'),
+	        weekdays : 'الأحد_الإثنين_الثلاثاء_الأربعاء_الخميس_الجمعة_السبت'.split('_'),
+	        weekdaysShort : 'احد_اثنين_ثلاثاء_اربعاء_خميس_جمعة_سبت'.split('_'),
+	        weekdaysMin : 'أح_إث_ثلا_أر_خم_جم_سب'.split('_'),
+	        weekdaysParseExact : true,
+	        longDateFormat : {
+	            LT : 'HH:mm',
+	            LTS : 'HH:mm:ss',
+	            L : 'DD/MM/YYYY',
+	            LL : 'D MMMM YYYY',
+	            LLL : 'D MMMM YYYY HH:mm',
+	            LLLL : 'dddd D MMMM YYYY HH:mm'
+	        },
+	        calendar : {
+	            sameDay: '[اليوم على الساعة] LT',
+	            nextDay: '[غدا على الساعة] LT',
+	            nextWeek: 'dddd [على الساعة] LT',
+	            lastDay: '[أمس على الساعة] LT',
+	            lastWeek: 'dddd [على الساعة] LT',
+	            sameElse: 'L'
+	        },
+	        relativeTime : {
+	            future : 'في %s',
+	            past : 'منذ %s',
+	            s : 'ثوان',
+	            ss : '%d ثانية',
+	            m : 'دقيقة',
+	            mm : '%d دقائق',
+	            h : 'ساعة',
+	            hh : '%d ساعات',
+	            d : 'يوم',
+	            dd : '%d أيام',
+	            M : 'شهر',
+	            MM : '%d أشهر',
+	            y : 'سنة',
+	            yy : '%d سنوات'
+	        },
+	        week : {
+	            dow : 0, // Sunday is the first day of the week.
+	            doy : 4  // The week that contains Jan 1st is the first week of the year.
+	        }
+	    });
+
+	    return arDz;
+
+	})));
+
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
+
+
+	    var arKw = moment.defineLocale('ar-kw', {
 	        months : 'يناير_فبراير_مارس_أبريل_ماي_يونيو_يوليوز_غشت_شتنبر_أكتوبر_نونبر_دجنبر'.split('_'),
 	        monthsShort : 'يناير_فبراير_مارس_أبريل_ماي_يونيو_يوليوز_غشت_شتنبر_أكتوبر_نونبر_دجنبر'.split('_'),
 	        weekdays : 'الأحد_الإتنين_الثلاثاء_الأربعاء_الخميس_الجمعة_السبت'.split('_'),
@@ -26035,6 +26726,196 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'في %s',
 	            past : 'منذ %s',
 	            s : 'ثوان',
+	            ss : '%d ثانية',
+	            m : 'دقيقة',
+	            mm : '%d دقائق',
+	            h : 'ساعة',
+	            hh : '%d ساعات',
+	            d : 'يوم',
+	            dd : '%d أيام',
+	            M : 'شهر',
+	            MM : '%d أشهر',
+	            y : 'سنة',
+	            yy : '%d سنوات'
+	        },
+	        week : {
+	            dow : 0, // Sunday is the first day of the week.
+	            doy : 12  // The week that contains Jan 1st is the first week of the year.
+	        }
+	    });
+
+	    return arKw;
+
+	})));
+
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
+
+
+	    var symbolMap = {
+	        '1': '1',
+	        '2': '2',
+	        '3': '3',
+	        '4': '4',
+	        '5': '5',
+	        '6': '6',
+	        '7': '7',
+	        '8': '8',
+	        '9': '9',
+	        '0': '0'
+	    }, pluralForm = function (n) {
+	        return n === 0 ? 0 : n === 1 ? 1 : n === 2 ? 2 : n % 100 >= 3 && n % 100 <= 10 ? 3 : n % 100 >= 11 ? 4 : 5;
+	    }, plurals = {
+	        s : ['أقل من ثانية', 'ثانية واحدة', ['ثانيتان', 'ثانيتين'], '%d ثوان', '%d ثانية', '%d ثانية'],
+	        m : ['أقل من دقيقة', 'دقيقة واحدة', ['دقيقتان', 'دقيقتين'], '%d دقائق', '%d دقيقة', '%d دقيقة'],
+	        h : ['أقل من ساعة', 'ساعة واحدة', ['ساعتان', 'ساعتين'], '%d ساعات', '%d ساعة', '%d ساعة'],
+	        d : ['أقل من يوم', 'يوم واحد', ['يومان', 'يومين'], '%d أيام', '%d يومًا', '%d يوم'],
+	        M : ['أقل من شهر', 'شهر واحد', ['شهران', 'شهرين'], '%d أشهر', '%d شهرا', '%d شهر'],
+	        y : ['أقل من عام', 'عام واحد', ['عامان', 'عامين'], '%d أعوام', '%d عامًا', '%d عام']
+	    }, pluralize = function (u) {
+	        return function (number, withoutSuffix, string, isFuture) {
+	            var f = pluralForm(number),
+	                str = plurals[u][pluralForm(number)];
+	            if (f === 2) {
+	                str = str[withoutSuffix ? 0 : 1];
+	            }
+	            return str.replace(/%d/i, number);
+	        };
+	    }, months = [
+	        'يناير',
+	        'فبراير',
+	        'مارس',
+	        'أبريل',
+	        'مايو',
+	        'يونيو',
+	        'يوليو',
+	        'أغسطس',
+	        'سبتمبر',
+	        'أكتوبر',
+	        'نوفمبر',
+	        'ديسمبر'
+	    ];
+
+	    var arLy = moment.defineLocale('ar-ly', {
+	        months : months,
+	        monthsShort : months,
+	        weekdays : 'الأحد_الإثنين_الثلاثاء_الأربعاء_الخميس_الجمعة_السبت'.split('_'),
+	        weekdaysShort : 'أحد_إثنين_ثلاثاء_أربعاء_خميس_جمعة_سبت'.split('_'),
+	        weekdaysMin : 'ح_ن_ث_ر_خ_ج_س'.split('_'),
+	        weekdaysParseExact : true,
+	        longDateFormat : {
+	            LT : 'HH:mm',
+	            LTS : 'HH:mm:ss',
+	            L : 'D/\u200FM/\u200FYYYY',
+	            LL : 'D MMMM YYYY',
+	            LLL : 'D MMMM YYYY HH:mm',
+	            LLLL : 'dddd D MMMM YYYY HH:mm'
+	        },
+	        meridiemParse: /ص|م/,
+	        isPM : function (input) {
+	            return 'م' === input;
+	        },
+	        meridiem : function (hour, minute, isLower) {
+	            if (hour < 12) {
+	                return 'ص';
+	            } else {
+	                return 'م';
+	            }
+	        },
+	        calendar : {
+	            sameDay: '[اليوم عند الساعة] LT',
+	            nextDay: '[غدًا عند الساعة] LT',
+	            nextWeek: 'dddd [عند الساعة] LT',
+	            lastDay: '[أمس عند الساعة] LT',
+	            lastWeek: 'dddd [عند الساعة] LT',
+	            sameElse: 'L'
+	        },
+	        relativeTime : {
+	            future : 'بعد %s',
+	            past : 'منذ %s',
+	            s : pluralize('s'),
+	            ss : pluralize('s'),
+	            m : pluralize('m'),
+	            mm : pluralize('m'),
+	            h : pluralize('h'),
+	            hh : pluralize('h'),
+	            d : pluralize('d'),
+	            dd : pluralize('d'),
+	            M : pluralize('M'),
+	            MM : pluralize('M'),
+	            y : pluralize('y'),
+	            yy : pluralize('y')
+	        },
+	        preparse: function (string) {
+	            return string.replace(/،/g, ',');
+	        },
+	        postformat: function (string) {
+	            return string.replace(/\d/g, function (match) {
+	                return symbolMap[match];
+	            }).replace(/,/g, '،');
+	        },
+	        week : {
+	            dow : 6, // Saturday is the first day of the week.
+	            doy : 12  // The week that contains Jan 1st is the first week of the year.
+	        }
+	    });
+
+	    return arLy;
+
+	})));
+
+
+/***/ }),
+/* 15 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
+
+
+	    var arMa = moment.defineLocale('ar-ma', {
+	        months : 'يناير_فبراير_مارس_أبريل_ماي_يونيو_يوليوز_غشت_شتنبر_أكتوبر_نونبر_دجنبر'.split('_'),
+	        monthsShort : 'يناير_فبراير_مارس_أبريل_ماي_يونيو_يوليوز_غشت_شتنبر_أكتوبر_نونبر_دجنبر'.split('_'),
+	        weekdays : 'الأحد_الإتنين_الثلاثاء_الأربعاء_الخميس_الجمعة_السبت'.split('_'),
+	        weekdaysShort : 'احد_اتنين_ثلاثاء_اربعاء_خميس_جمعة_سبت'.split('_'),
+	        weekdaysMin : 'ح_ن_ث_ر_خ_ج_س'.split('_'),
+	        weekdaysParseExact : true,
+	        longDateFormat : {
+	            LT : 'HH:mm',
+	            LTS : 'HH:mm:ss',
+	            L : 'DD/MM/YYYY',
+	            LL : 'D MMMM YYYY',
+	            LLL : 'D MMMM YYYY HH:mm',
+	            LLLL : 'dddd D MMMM YYYY HH:mm'
+	        },
+	        calendar : {
+	            sameDay: '[اليوم على الساعة] LT',
+	            nextDay: '[غدا على الساعة] LT',
+	            nextWeek: 'dddd [على الساعة] LT',
+	            lastDay: '[أمس على الساعة] LT',
+	            lastWeek: 'dddd [على الساعة] LT',
+	            sameElse: 'L'
+	        },
+	        relativeTime : {
+	            future : 'في %s',
+	            past : 'منذ %s',
+	            s : 'ثوان',
+	            ss : '%d ثانية',
 	            m : 'دقيقة',
 	            mm : '%d دقائق',
 	            h : 'ساعة',
@@ -26052,23 +26933,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	    });
 
-	    return ar_ma;
+	    return arMa;
 
-	}));
+	})));
 
-/***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Arabic Saudi Arabia (ar-sa)
-	//! author : Suhail Alkowaileet : https://github.com/xsoh
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var symbolMap = {
@@ -26095,7 +26975,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        '٠': '0'
 	    };
 
-	    var ar_sa = moment.defineLocale('ar-sa', {
+	    var arSa = moment.defineLocale('ar-sa', {
 	        months : 'يناير_فبراير_مارس_أبريل_مايو_يونيو_يوليو_أغسطس_سبتمبر_أكتوبر_نوفمبر_ديسمبر'.split('_'),
 	        monthsShort : 'يناير_فبراير_مارس_أبريل_مايو_يونيو_يوليو_أغسطس_سبتمبر_أكتوبر_نوفمبر_ديسمبر'.split('_'),
 	        weekdays : 'الأحد_الإثنين_الثلاثاء_الأربعاء_الخميس_الجمعة_السبت'.split('_'),
@@ -26133,6 +27013,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'في %s',
 	            past : 'منذ %s',
 	            s : 'ثوان',
+	            ss : '%d ثانية',
 	            m : 'دقيقة',
 	            mm : '%d دقائق',
 	            h : 'ساعة',
@@ -26155,30 +27036,30 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            }).replace(/,/g, '،');
 	        },
 	        week : {
-	            dow : 6, // Saturday is the first day of the week.
-	            doy : 12  // The week that contains Jan 1st is the first week of the year.
+	            dow : 0, // Sunday is the first day of the week.
+	            doy : 6  // The week that contains Jan 1st is the first week of the year.
 	        }
 	    });
 
-	    return ar_sa;
+	    return arSa;
 
-	}));
+	})));
 
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale  : Tunisian Arabic (ar-tn)
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
-	    var ar_tn = moment.defineLocale('ar-tn', {
+	    var arTn = moment.defineLocale('ar-tn', {
 	        months: 'جانفي_فيفري_مارس_أفريل_ماي_جوان_جويلية_أوت_سبتمبر_أكتوبر_نوفمبر_ديسمبر'.split('_'),
 	        monthsShort: 'جانفي_فيفري_مارس_أفريل_ماي_جوان_جويلية_أوت_سبتمبر_أكتوبر_نوفمبر_ديسمبر'.split('_'),
 	        weekdays: 'الأحد_الإثنين_الثلاثاء_الأربعاء_الخميس_الجمعة_السبت'.split('_'),
@@ -26205,6 +27086,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future: 'في %s',
 	            past: 'منذ %s',
 	            s: 'ثوان',
+	            ss : '%d ثانية',
 	            m: 'دقيقة',
 	            mm: '%d دقائق',
 	            h: 'ساعة',
@@ -26222,23 +27104,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	    });
 
-	    return ar_tn;
+	    return arTn;
 
-	}));
+	})));
 
-/***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : azerbaijani (az)
-	//! author : topchiyev : https://github.com/topchiyev
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var suffixes = {
@@ -26288,7 +27169,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        relativeTime : {
 	            future : '%s sonra',
 	            past : '%s əvvəl',
-	            s : 'birneçə saniyyə',
+	            s : 'birneçə saniyə',
+	            ss : '%d saniyə',
 	            m : 'bir dəqiqə',
 	            mm : '%d dəqiqə',
 	            h : 'bir saat',
@@ -26315,7 +27197,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                return 'axşam';
 	            }
 	        },
-	        ordinalParse: /\d{1,2}-(ıncı|inci|nci|üncü|ncı|uncu)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}-(ıncı|inci|nci|üncü|ncı|uncu)/,
 	        ordinal : function (number) {
 	            if (number === 0) {  // special case for zero
 	                return number + '-ıncı';
@@ -26333,23 +27215,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return az;
 
-	}));
+	})));
 
-/***/ },
-/* 16 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : belarusian (be)
-	//! author : Dmitry Demidov : https://github.com/demidov91
-	//! author: Praleska: http://praleska.pro/
-	//! Author : Menelion Elensúle : https://github.com/Oire
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    function plural(word, num) {
@@ -26358,6 +27237,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 	    function relativeTimeWithPlural(number, withoutSuffix, key) {
 	        var format = {
+	            'ss': withoutSuffix ? 'секунда_секунды_секунд' : 'секунду_секунды_секунд',
 	            'mm': withoutSuffix ? 'хвіліна_хвіліны_хвілін' : 'хвіліну_хвіліны_хвілін',
 	            'hh': withoutSuffix ? 'гадзіна_гадзіны_гадзін' : 'гадзіну_гадзіны_гадзін',
 	            'dd': 'дзень_дні_дзён',
@@ -26384,7 +27264,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        weekdays : {
 	            format: 'нядзелю_панядзелак_аўторак_сераду_чацвер_пятніцу_суботу'.split('_'),
 	            standalone: 'нядзеля_панядзелак_аўторак_серада_чацвер_пятніца_субота'.split('_'),
-	            isFormat: /\[ ?[Вв] ?(?:мінулую|наступную)? ?\] ?dddd/
+	            isFormat: /\[ ?[Ууў] ?(?:мінулую|наступную)? ?\] ?dddd/
 	        },
 	        weekdaysShort : 'нд_пн_ат_ср_чц_пт_сб'.split('_'),
 	        weekdaysMin : 'нд_пн_ат_ср_чц_пт_сб'.split('_'),
@@ -26405,15 +27285,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            },
 	            lastWeek: function () {
 	                switch (this.day()) {
-	                case 0:
-	                case 3:
-	                case 5:
-	                case 6:
-	                    return '[У мінулую] dddd [ў] LT';
-	                case 1:
-	                case 2:
-	                case 4:
-	                    return '[У мінулы] dddd [ў] LT';
+	                    case 0:
+	                    case 3:
+	                    case 5:
+	                    case 6:
+	                        return '[У мінулую] dddd [ў] LT';
+	                    case 1:
+	                    case 2:
+	                    case 4:
+	                        return '[У мінулы] dddd [ў] LT';
 	                }
 	            },
 	            sameElse: 'L'
@@ -26448,19 +27328,19 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                return 'вечара';
 	            }
 	        },
-	        ordinalParse: /\d{1,2}-(і|ы|га)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}-(і|ы|га)/,
 	        ordinal: function (number, period) {
 	            switch (period) {
-	            case 'M':
-	            case 'd':
-	            case 'DDD':
-	            case 'w':
-	            case 'W':
-	                return (number % 10 === 2 || number % 10 === 3) && (number % 100 !== 12 && number % 100 !== 13) ? number + '-і' : number + '-ы';
-	            case 'D':
-	                return number + '-га';
-	            default:
-	                return number;
+	                case 'M':
+	                case 'd':
+	                case 'DDD':
+	                case 'w':
+	                case 'W':
+	                    return (number % 10 === 2 || number % 10 === 3) && (number % 100 !== 12 && number % 100 !== 13) ? number + '-і' : number + '-ы';
+	                case 'D':
+	                    return number + '-га';
+	                default:
+	                    return number;
 	            }
 	        },
 	        week : {
@@ -26471,21 +27351,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return be;
 
-	}));
+	})));
 
-/***/ },
-/* 17 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : bulgarian (bg)
-	//! author : Krasen Borisov : https://github.com/kraz
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var bg = moment.defineLocale('bg', {
@@ -26509,15 +27388,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            lastDay : '[Вчера в] LT',
 	            lastWeek : function () {
 	                switch (this.day()) {
-	                case 0:
-	                case 3:
-	                case 6:
-	                    return '[В изминалата] dddd [в] LT';
-	                case 1:
-	                case 2:
-	                case 4:
-	                case 5:
-	                    return '[В изминалия] dddd [в] LT';
+	                    case 0:
+	                    case 3:
+	                    case 6:
+	                        return '[В изминалата] dddd [в] LT';
+	                    case 1:
+	                    case 2:
+	                    case 4:
+	                    case 5:
+	                        return '[В изминалия] dddd [в] LT';
 	                }
 	            },
 	            sameElse : 'L'
@@ -26526,6 +27405,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'след %s',
 	            past : 'преди %s',
 	            s : 'няколко секунди',
+	            ss : '%d секунди',
 	            m : 'минута',
 	            mm : '%d минути',
 	            h : 'час',
@@ -26537,7 +27417,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'година',
 	            yy : '%d години'
 	        },
-	        ordinalParse: /\d{1,2}-(ев|ен|ти|ви|ри|ми)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}-(ев|ен|ти|ви|ри|ми)/,
 	        ordinal : function (number) {
 	            var lastDigit = number % 10,
 	                last2Digits = number % 100;
@@ -26565,21 +27445,82 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return bg;
 
-	}));
+	})));
 
-/***/ },
-/* 18 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Bengali (bn)
-	//! author : Kaushik Gandhi : https://github.com/kaushikgandhi
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
+
+
+	    var bm = moment.defineLocale('bm', {
+	        months : 'Zanwuyekalo_Fewuruyekalo_Marisikalo_Awirilikalo_Mɛkalo_Zuwɛnkalo_Zuluyekalo_Utikalo_Sɛtanburukalo_ɔkutɔburukalo_Nowanburukalo_Desanburukalo'.split('_'),
+	        monthsShort : 'Zan_Few_Mar_Awi_Mɛ_Zuw_Zul_Uti_Sɛt_ɔku_Now_Des'.split('_'),
+	        weekdays : 'Kari_Ntɛnɛn_Tarata_Araba_Alamisa_Juma_Sibiri'.split('_'),
+	        weekdaysShort : 'Kar_Ntɛ_Tar_Ara_Ala_Jum_Sib'.split('_'),
+	        weekdaysMin : 'Ka_Nt_Ta_Ar_Al_Ju_Si'.split('_'),
+	        longDateFormat : {
+	            LT : 'HH:mm',
+	            LTS : 'HH:mm:ss',
+	            L : 'DD/MM/YYYY',
+	            LL : 'MMMM [tile] D [san] YYYY',
+	            LLL : 'MMMM [tile] D [san] YYYY [lɛrɛ] HH:mm',
+	            LLLL : 'dddd MMMM [tile] D [san] YYYY [lɛrɛ] HH:mm'
+	        },
+	        calendar : {
+	            sameDay : '[Bi lɛrɛ] LT',
+	            nextDay : '[Sini lɛrɛ] LT',
+	            nextWeek : 'dddd [don lɛrɛ] LT',
+	            lastDay : '[Kunu lɛrɛ] LT',
+	            lastWeek : 'dddd [tɛmɛnen lɛrɛ] LT',
+	            sameElse : 'L'
+	        },
+	        relativeTime : {
+	            future : '%s kɔnɔ',
+	            past : 'a bɛ %s bɔ',
+	            s : 'sanga dama dama',
+	            ss : 'sekondi %d',
+	            m : 'miniti kelen',
+	            mm : 'miniti %d',
+	            h : 'lɛrɛ kelen',
+	            hh : 'lɛrɛ %d',
+	            d : 'tile kelen',
+	            dd : 'tile %d',
+	            M : 'kalo kelen',
+	            MM : 'kalo %d',
+	            y : 'san kelen',
+	            yy : 'san %d'
+	        },
+	        week : {
+	            dow : 1, // Monday is the first day of the week.
+	            doy : 4  // The week that contains Jan 4th is the first week of the year.
+	        }
+	    });
+
+	    return bm;
+
+	})));
+
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
 
 
 	    var symbolMap = {
@@ -26608,11 +27549,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    };
 
 	    var bn = moment.defineLocale('bn', {
-	        months : 'জানুয়ারী_ফেবুয়ারী_মার্চ_এপ্রিল_মে_জুন_জুলাই_অগাস্ট_সেপ্টেম্বর_অক্টোবর_নভেম্বর_ডিসেম্বর'.split('_'),
-	        monthsShort : 'জানু_ফেব_মার্চ_এপর_মে_জুন_জুল_অগ_সেপ্ট_অক্টো_নভ_ডিসেম্'.split('_'),
-	        weekdays : 'রবিবার_সোমবার_মঙ্গলবার_বুধবার_বৃহস্পত্তিবার_শুক্রবার_শনিবার'.split('_'),
-	        weekdaysShort : 'রবি_সোম_মঙ্গল_বুধ_বৃহস্পত্তি_শুক্র_শনি'.split('_'),
-	        weekdaysMin : 'রব_সম_মঙ্গ_বু_ব্রিহ_শু_শনি'.split('_'),
+	        months : 'জানুয়ারী_ফেব্রুয়ারি_মার্চ_এপ্রিল_মে_জুন_জুলাই_আগস্ট_সেপ্টেম্বর_অক্টোবর_নভেম্বর_ডিসেম্বর'.split('_'),
+	        monthsShort : 'জানু_ফেব_মার্চ_এপ্র_মে_জুন_জুল_আগ_সেপ্ট_অক্টো_নভে_ডিসে'.split('_'),
+	        weekdays : 'রবিবার_সোমবার_মঙ্গলবার_বুধবার_বৃহস্পতিবার_শুক্রবার_শনিবার'.split('_'),
+	        weekdaysShort : 'রবি_সোম_মঙ্গল_বুধ_বৃহস্পতি_শুক্র_শনি'.split('_'),
+	        weekdaysMin : 'রবি_সোম_মঙ্গ_বুধ_বৃহঃ_শুক্র_শনি'.split('_'),
 	        longDateFormat : {
 	            LT : 'A h:mm সময়',
 	            LTS : 'A h:mm:ss সময়',
@@ -26633,6 +27574,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : '%s পরে',
 	            past : '%s আগে',
 	            s : 'কয়েক সেকেন্ড',
+	            ss : '%d সেকেন্ড',
 	            m : 'এক মিনিট',
 	            mm : '%d মিনিট',
 	            h : 'এক ঘন্টা',
@@ -26688,21 +27630,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return bn;
 
-	}));
+	})));
 
-/***/ },
-/* 19 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 23 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : tibetan (bo)
-	//! author : Thupten N. Chakrishar : https://github.com/vajradog
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var symbolMap = {
@@ -26756,6 +27697,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : '%s ལ་',
 	            past : '%s སྔན་ལ',
 	            s : 'ལམ་སང',
+	            ss : '%d སྐར་ཆ།',
 	            m : 'སྐར་མ་གཅིག',
 	            mm : '%d སྐར་མ',
 	            h : 'ཆུ་ཚོད་གཅིག',
@@ -26811,21 +27753,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return bo;
 
-	}));
+	})));
 
-/***/ },
-/* 20 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : breton (br)
-	//! author : Jean-Baptiste Le Duigou : https://github.com/jbleduigou
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    function relativeTimeWithMutation(number, withoutSuffix, key) {
@@ -26838,14 +27779,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 	    function specialMutationForYears(number) {
 	        switch (lastNumber(number)) {
-	        case 1:
-	        case 3:
-	        case 4:
-	        case 5:
-	        case 9:
-	            return number + ' bloaz';
-	        default:
-	            return number + ' vloaz';
+	            case 1:
+	            case 3:
+	            case 4:
+	            case 5:
+	            case 9:
+	                return number + ' bloaz';
+	            default:
+	                return number + ' vloaz';
 	        }
 	    }
 	    function lastNumber(number) {
@@ -26899,6 +27840,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'a-benn %s',
 	            past : '%s \'zo',
 	            s : 'un nebeud segondennoù',
+	            ss : '%d eilenn',
 	            m : 'ur vunutenn',
 	            mm : relativeTimeWithMutation,
 	            h : 'un eur',
@@ -26910,7 +27852,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'ur bloaz',
 	            yy : specialMutationForYears
 	        },
-	        ordinalParse: /\d{1,2}(añ|vet)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}(añ|vet)/,
 	        ordinal : function (number) {
 	            var output = (number === 1) ? 'añ' : 'vet';
 	            return number + output;
@@ -26923,74 +27865,81 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return br;
 
-	}));
+	})));
 
-/***/ },
-/* 21 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : bosnian (bs)
-	//! author : Nedim Cholich : https://github.com/frontyard
-	//! based on (hr) translation by Bojan Marković
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    function translate(number, withoutSuffix, key) {
 	        var result = number + ' ';
 	        switch (key) {
-	        case 'm':
-	            return withoutSuffix ? 'jedna minuta' : 'jedne minute';
-	        case 'mm':
-	            if (number === 1) {
-	                result += 'minuta';
-	            } else if (number === 2 || number === 3 || number === 4) {
-	                result += 'minute';
-	            } else {
-	                result += 'minuta';
-	            }
-	            return result;
-	        case 'h':
-	            return withoutSuffix ? 'jedan sat' : 'jednog sata';
-	        case 'hh':
-	            if (number === 1) {
-	                result += 'sat';
-	            } else if (number === 2 || number === 3 || number === 4) {
-	                result += 'sata';
-	            } else {
-	                result += 'sati';
-	            }
-	            return result;
-	        case 'dd':
-	            if (number === 1) {
-	                result += 'dan';
-	            } else {
-	                result += 'dana';
-	            }
-	            return result;
-	        case 'MM':
-	            if (number === 1) {
-	                result += 'mjesec';
-	            } else if (number === 2 || number === 3 || number === 4) {
-	                result += 'mjeseca';
-	            } else {
-	                result += 'mjeseci';
-	            }
-	            return result;
-	        case 'yy':
-	            if (number === 1) {
-	                result += 'godina';
-	            } else if (number === 2 || number === 3 || number === 4) {
-	                result += 'godine';
-	            } else {
-	                result += 'godina';
-	            }
-	            return result;
+	            case 'ss':
+	                if (number === 1) {
+	                    result += 'sekunda';
+	                } else if (number === 2 || number === 3 || number === 4) {
+	                    result += 'sekunde';
+	                } else {
+	                    result += 'sekundi';
+	                }
+	                return result;
+	            case 'm':
+	                return withoutSuffix ? 'jedna minuta' : 'jedne minute';
+	            case 'mm':
+	                if (number === 1) {
+	                    result += 'minuta';
+	                } else if (number === 2 || number === 3 || number === 4) {
+	                    result += 'minute';
+	                } else {
+	                    result += 'minuta';
+	                }
+	                return result;
+	            case 'h':
+	                return withoutSuffix ? 'jedan sat' : 'jednog sata';
+	            case 'hh':
+	                if (number === 1) {
+	                    result += 'sat';
+	                } else if (number === 2 || number === 3 || number === 4) {
+	                    result += 'sata';
+	                } else {
+	                    result += 'sati';
+	                }
+	                return result;
+	            case 'dd':
+	                if (number === 1) {
+	                    result += 'dan';
+	                } else {
+	                    result += 'dana';
+	                }
+	                return result;
+	            case 'MM':
+	                if (number === 1) {
+	                    result += 'mjesec';
+	                } else if (number === 2 || number === 3 || number === 4) {
+	                    result += 'mjeseca';
+	                } else {
+	                    result += 'mjeseci';
+	                }
+	                return result;
+	            case 'yy':
+	                if (number === 1) {
+	                    result += 'godina';
+	                } else if (number === 2 || number === 3 || number === 4) {
+	                    result += 'godine';
+	                } else {
+	                    result += 'godina';
+	                }
+	                return result;
 	        }
 	    }
 
@@ -27005,7 +27954,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        longDateFormat : {
 	            LT : 'H:mm',
 	            LTS : 'H:mm:ss',
-	            L : 'DD. MM. YYYY',
+	            L : 'DD.MM.YYYY',
 	            LL : 'D. MMMM YYYY',
 	            LLL : 'D. MMMM YYYY H:mm',
 	            LLLL : 'dddd, D. MMMM YYYY H:mm'
@@ -27015,32 +27964,32 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            nextDay  : '[sutra u] LT',
 	            nextWeek : function () {
 	                switch (this.day()) {
-	                case 0:
-	                    return '[u] [nedjelju] [u] LT';
-	                case 3:
-	                    return '[u] [srijedu] [u] LT';
-	                case 6:
-	                    return '[u] [subotu] [u] LT';
-	                case 1:
-	                case 2:
-	                case 4:
-	                case 5:
-	                    return '[u] dddd [u] LT';
+	                    case 0:
+	                        return '[u] [nedjelju] [u] LT';
+	                    case 3:
+	                        return '[u] [srijedu] [u] LT';
+	                    case 6:
+	                        return '[u] [subotu] [u] LT';
+	                    case 1:
+	                    case 2:
+	                    case 4:
+	                    case 5:
+	                        return '[u] dddd [u] LT';
 	                }
 	            },
 	            lastDay  : '[jučer u] LT',
 	            lastWeek : function () {
 	                switch (this.day()) {
-	                case 0:
-	                case 3:
-	                    return '[prošlu] dddd [u] LT';
-	                case 6:
-	                    return '[prošle] [subote] [u] LT';
-	                case 1:
-	                case 2:
-	                case 4:
-	                case 5:
-	                    return '[prošli] dddd [u] LT';
+	                    case 0:
+	                    case 3:
+	                        return '[prošlu] dddd [u] LT';
+	                    case 6:
+	                        return '[prošle] [subote] [u] LT';
+	                    case 1:
+	                    case 2:
+	                    case 4:
+	                    case 5:
+	                        return '[prošli] dddd [u] LT';
 	                }
 	            },
 	            sameElse : 'L'
@@ -27049,6 +27998,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'za %s',
 	            past   : 'prije %s',
 	            s      : 'par sekundi',
+	            ss     : translate,
 	            m      : translate,
 	            mm     : translate,
 	            h      : translate,
@@ -27060,7 +28010,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y      : 'godinu',
 	            yy     : translate
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -27070,38 +28020,44 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return bs;
 
-	}));
+	})));
 
-/***/ },
-/* 22 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : catalan (ca)
-	//! author : Juan G. Hurtado : https://github.com/juanghurtado
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var ca = moment.defineLocale('ca', {
-	        months : 'gener_febrer_març_abril_maig_juny_juliol_agost_setembre_octubre_novembre_desembre'.split('_'),
-	        monthsShort : 'gen._febr._mar._abr._mai._jun._jul._ag._set._oct._nov._des.'.split('_'),
+	        months : {
+	            standalone: 'gener_febrer_març_abril_maig_juny_juliol_agost_setembre_octubre_novembre_desembre'.split('_'),
+	            format: 'de gener_de febrer_de març_d\'abril_de maig_de juny_de juliol_d\'agost_de setembre_d\'octubre_de novembre_de desembre'.split('_'),
+	            isFormat: /D[oD]?(\s)+MMMM/
+	        },
+	        monthsShort : 'gen._febr._març_abr._maig_juny_jul._ag._set._oct._nov._des.'.split('_'),
 	        monthsParseExact : true,
 	        weekdays : 'diumenge_dilluns_dimarts_dimecres_dijous_divendres_dissabte'.split('_'),
 	        weekdaysShort : 'dg._dl._dt._dc._dj._dv._ds.'.split('_'),
-	        weekdaysMin : 'Dg_Dl_Dt_Dc_Dj_Dv_Ds'.split('_'),
+	        weekdaysMin : 'dg_dl_dt_dc_dj_dv_ds'.split('_'),
 	        weekdaysParseExact : true,
 	        longDateFormat : {
 	            LT : 'H:mm',
 	            LTS : 'H:mm:ss',
 	            L : 'DD/MM/YYYY',
-	            LL : 'D MMMM YYYY',
-	            LLL : 'D MMMM YYYY H:mm',
-	            LLLL : 'dddd D MMMM YYYY H:mm'
+	            LL : 'D MMMM [de] YYYY',
+	            ll : 'D MMM YYYY',
+	            LLL : 'D MMMM [de] YYYY [a les] H:mm',
+	            lll : 'D MMM YYYY, H:mm',
+	            LLLL : 'dddd D MMMM [de] YYYY [a les] H:mm',
+	            llll : 'ddd D MMM YYYY, H:mm'
 	        },
 	        calendar : {
 	            sameDay : function () {
@@ -27122,9 +28078,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            sameElse : 'L'
 	        },
 	        relativeTime : {
-	            future : 'en %s',
+	            future : 'd\'aquí %s',
 	            past : 'fa %s',
 	            s : 'uns segons',
+	            ss : '%d segons',
 	            m : 'un minut',
 	            mm : '%d minuts',
 	            h : 'una hora',
@@ -27136,7 +28093,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'un any',
 	            yy : '%d anys'
 	        },
-	        ordinalParse: /\d{1,2}(r|n|t|è|a)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}(r|n|t|è|a)/,
 	        ordinal : function (number, period) {
 	            var output = (number === 1) ? 'r' :
 	                (number === 2) ? 'n' :
@@ -27155,21 +28112,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return ca;
 
-	}));
+	})));
 
-/***/ },
-/* 23 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 27 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : czech (cs)
-	//! author : petrbela : https://github.com/petrbela
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var months = 'leden_únor_březen_duben_květen_červen_červenec_srpen_září_říjen_listopad_prosinec'.split('_'),
@@ -27180,53 +28136,60 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    function translate(number, withoutSuffix, key, isFuture) {
 	        var result = number + ' ';
 	        switch (key) {
-	        case 's':  // a few seconds / in a few seconds / a few seconds ago
-	            return (withoutSuffix || isFuture) ? 'pár sekund' : 'pár sekundami';
-	        case 'm':  // a minute / in a minute / a minute ago
-	            return withoutSuffix ? 'minuta' : (isFuture ? 'minutu' : 'minutou');
-	        case 'mm': // 9 minutes / in 9 minutes / 9 minutes ago
-	            if (withoutSuffix || isFuture) {
-	                return result + (plural(number) ? 'minuty' : 'minut');
-	            } else {
-	                return result + 'minutami';
-	            }
-	            break;
-	        case 'h':  // an hour / in an hour / an hour ago
-	            return withoutSuffix ? 'hodina' : (isFuture ? 'hodinu' : 'hodinou');
-	        case 'hh': // 9 hours / in 9 hours / 9 hours ago
-	            if (withoutSuffix || isFuture) {
-	                return result + (plural(number) ? 'hodiny' : 'hodin');
-	            } else {
-	                return result + 'hodinami';
-	            }
-	            break;
-	        case 'd':  // a day / in a day / a day ago
-	            return (withoutSuffix || isFuture) ? 'den' : 'dnem';
-	        case 'dd': // 9 days / in 9 days / 9 days ago
-	            if (withoutSuffix || isFuture) {
-	                return result + (plural(number) ? 'dny' : 'dní');
-	            } else {
-	                return result + 'dny';
-	            }
-	            break;
-	        case 'M':  // a month / in a month / a month ago
-	            return (withoutSuffix || isFuture) ? 'měsíc' : 'měsícem';
-	        case 'MM': // 9 months / in 9 months / 9 months ago
-	            if (withoutSuffix || isFuture) {
-	                return result + (plural(number) ? 'měsíce' : 'měsíců');
-	            } else {
-	                return result + 'měsíci';
-	            }
-	            break;
-	        case 'y':  // a year / in a year / a year ago
-	            return (withoutSuffix || isFuture) ? 'rok' : 'rokem';
-	        case 'yy': // 9 years / in 9 years / 9 years ago
-	            if (withoutSuffix || isFuture) {
-	                return result + (plural(number) ? 'roky' : 'let');
-	            } else {
-	                return result + 'lety';
-	            }
-	            break;
+	            case 's':  // a few seconds / in a few seconds / a few seconds ago
+	                return (withoutSuffix || isFuture) ? 'pár sekund' : 'pár sekundami';
+	            case 'ss': // 9 seconds / in 9 seconds / 9 seconds ago
+	                if (withoutSuffix || isFuture) {
+	                    return result + (plural(number) ? 'sekundy' : 'sekund');
+	                } else {
+	                    return result + 'sekundami';
+	                }
+	                break;
+	            case 'm':  // a minute / in a minute / a minute ago
+	                return withoutSuffix ? 'minuta' : (isFuture ? 'minutu' : 'minutou');
+	            case 'mm': // 9 minutes / in 9 minutes / 9 minutes ago
+	                if (withoutSuffix || isFuture) {
+	                    return result + (plural(number) ? 'minuty' : 'minut');
+	                } else {
+	                    return result + 'minutami';
+	                }
+	                break;
+	            case 'h':  // an hour / in an hour / an hour ago
+	                return withoutSuffix ? 'hodina' : (isFuture ? 'hodinu' : 'hodinou');
+	            case 'hh': // 9 hours / in 9 hours / 9 hours ago
+	                if (withoutSuffix || isFuture) {
+	                    return result + (plural(number) ? 'hodiny' : 'hodin');
+	                } else {
+	                    return result + 'hodinami';
+	                }
+	                break;
+	            case 'd':  // a day / in a day / a day ago
+	                return (withoutSuffix || isFuture) ? 'den' : 'dnem';
+	            case 'dd': // 9 days / in 9 days / 9 days ago
+	                if (withoutSuffix || isFuture) {
+	                    return result + (plural(number) ? 'dny' : 'dní');
+	                } else {
+	                    return result + 'dny';
+	                }
+	                break;
+	            case 'M':  // a month / in a month / a month ago
+	                return (withoutSuffix || isFuture) ? 'měsíc' : 'měsícem';
+	            case 'MM': // 9 months / in 9 months / 9 months ago
+	                if (withoutSuffix || isFuture) {
+	                    return result + (plural(number) ? 'měsíce' : 'měsíců');
+	                } else {
+	                    return result + 'měsíci';
+	                }
+	                break;
+	            case 'y':  // a year / in a year / a year ago
+	                return (withoutSuffix || isFuture) ? 'rok' : 'rokem';
+	            case 'yy': // 9 years / in 9 years / 9 years ago
+	                if (withoutSuffix || isFuture) {
+	                    return result + (plural(number) ? 'roky' : 'let');
+	                } else {
+	                    return result + 'lety';
+	                }
+	                break;
 	        }
 	    }
 
@@ -27264,43 +28227,44 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            L : 'DD.MM.YYYY',
 	            LL : 'D. MMMM YYYY',
 	            LLL : 'D. MMMM YYYY H:mm',
-	            LLLL : 'dddd D. MMMM YYYY H:mm'
+	            LLLL : 'dddd D. MMMM YYYY H:mm',
+	            l : 'D. M. YYYY'
 	        },
 	        calendar : {
 	            sameDay: '[dnes v] LT',
 	            nextDay: '[zítra v] LT',
 	            nextWeek: function () {
 	                switch (this.day()) {
-	                case 0:
-	                    return '[v neděli v] LT';
-	                case 1:
-	                case 2:
-	                    return '[v] dddd [v] LT';
-	                case 3:
-	                    return '[ve středu v] LT';
-	                case 4:
-	                    return '[ve čtvrtek v] LT';
-	                case 5:
-	                    return '[v pátek v] LT';
-	                case 6:
-	                    return '[v sobotu v] LT';
+	                    case 0:
+	                        return '[v neděli v] LT';
+	                    case 1:
+	                    case 2:
+	                        return '[v] dddd [v] LT';
+	                    case 3:
+	                        return '[ve středu v] LT';
+	                    case 4:
+	                        return '[ve čtvrtek v] LT';
+	                    case 5:
+	                        return '[v pátek v] LT';
+	                    case 6:
+	                        return '[v sobotu v] LT';
 	                }
 	            },
 	            lastDay: '[včera v] LT',
 	            lastWeek: function () {
 	                switch (this.day()) {
-	                case 0:
-	                    return '[minulou neděli v] LT';
-	                case 1:
-	                case 2:
-	                    return '[minulé] dddd [v] LT';
-	                case 3:
-	                    return '[minulou středu v] LT';
-	                case 4:
-	                case 5:
-	                    return '[minulý] dddd [v] LT';
-	                case 6:
-	                    return '[minulou sobotu v] LT';
+	                    case 0:
+	                        return '[minulou neděli v] LT';
+	                    case 1:
+	                    case 2:
+	                        return '[minulé] dddd [v] LT';
+	                    case 3:
+	                        return '[minulou středu v] LT';
+	                    case 4:
+	                    case 5:
+	                        return '[minulý] dddd [v] LT';
+	                    case 6:
+	                        return '[minulou sobotu v] LT';
 	                }
 	            },
 	            sameElse: 'L'
@@ -27309,6 +28273,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'za %s',
 	            past : 'před %s',
 	            s : translate,
+	            ss : translate,
 	            m : translate,
 	            mm : translate,
 	            h : translate,
@@ -27320,7 +28285,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : translate,
 	            yy : translate
 	        },
-	        ordinalParse : /\d{1,2}\./,
+	        dayOfMonthOrdinalParse : /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -27330,21 +28295,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return cs;
 
-	}));
+	})));
 
-/***/ },
-/* 24 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 28 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : chuvash (cv)
-	//! author : Anatoly Mironov : https://github.com/mirontoli
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var cv = moment.defineLocale('cv', {
@@ -27376,6 +28340,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            },
 	            past : '%s каялла',
 	            s : 'пӗр-ик ҫеккунт',
+	            ss : '%d ҫеккунт',
 	            m : 'пӗр минут',
 	            mm : '%d минут',
 	            h : 'пӗр сехет',
@@ -27387,7 +28352,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'пӗр ҫул',
 	            yy : '%d ҫул'
 	        },
-	        ordinalParse: /\d{1,2}-мӗш/,
+	        dayOfMonthOrdinalParse: /\d{1,2}-мӗш/,
 	        ordinal : '%d-мӗш',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -27397,21 +28362,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return cv;
 
-	}));
+	})));
 
-/***/ },
-/* 25 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 29 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Welsh (cy)
-	//! author : Robert Allen
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var cy = moment.defineLocale('cy', {
@@ -27442,6 +28406,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future: 'mewn %s',
 	            past: '%s yn ôl',
 	            s: 'ychydig eiliadau',
+	            ss: '%d eiliad',
 	            m: 'munud',
 	            mm: '%d munud',
 	            h: 'awr',
@@ -27453,7 +28418,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y: 'blwyddyn',
 	            yy: '%d flynedd'
 	        },
-	        ordinalParse: /\d{1,2}(fed|ain|af|il|ydd|ed|eg)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}(fed|ain|af|il|ydd|ed|eg)/,
 	        // traditional ordinal numbers above 31 are not commonly used in colloquial Welsh
 	        ordinal: function (number) {
 	            var b = number,
@@ -27481,21 +28446,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return cy;
 
-	}));
+	})));
 
-/***/ },
-/* 26 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 30 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : danish (da)
-	//! author : Ulrik Nielsen : https://github.com/mrbase
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var da = moment.defineLocale('da', {
@@ -27507,23 +28471,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        longDateFormat : {
 	            LT : 'HH:mm',
 	            LTS : 'HH:mm:ss',
-	            L : 'DD/MM/YYYY',
+	            L : 'DD.MM.YYYY',
 	            LL : 'D. MMMM YYYY',
 	            LLL : 'D. MMMM YYYY HH:mm',
-	            LLLL : 'dddd [d.] D. MMMM YYYY HH:mm'
+	            LLLL : 'dddd [d.] D. MMMM YYYY [kl.] HH:mm'
 	        },
 	        calendar : {
-	            sameDay : '[I dag kl.] LT',
-	            nextDay : '[I morgen kl.] LT',
-	            nextWeek : 'dddd [kl.] LT',
-	            lastDay : '[I går kl.] LT',
-	            lastWeek : '[sidste] dddd [kl] LT',
+	            sameDay : '[i dag kl.] LT',
+	            nextDay : '[i morgen kl.] LT',
+	            nextWeek : 'på dddd [kl.] LT',
+	            lastDay : '[i går kl.] LT',
+	            lastWeek : '[i] dddd[s kl.] LT',
 	            sameElse : 'L'
 	        },
 	        relativeTime : {
 	            future : 'om %s',
 	            past : '%s siden',
 	            s : 'få sekunder',
+	            ss : '%d sekunder',
 	            m : 'et minut',
 	            mm : '%d minutter',
 	            h : 'en time',
@@ -27535,7 +28500,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'et år',
 	            yy : '%d år'
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -27545,23 +28510,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return da;
 
-	}));
+	})));
 
-/***/ },
-/* 27 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 31 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : german (de)
-	//! author : lluchs : https://github.com/lluchs
-	//! author: Menelion Elensúle: https://github.com/Oire
-	//! author : Mikolaj Dadela : https://github.com/mik01aj
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    function processRelativeTime(number, withoutSuffix, key, isFuture) {
@@ -27580,7 +28542,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    var de = moment.defineLocale('de', {
 	        months : 'Januar_Februar_März_April_Mai_Juni_Juli_August_September_Oktober_November_Dezember'.split('_'),
-	        monthsShort : 'Jan._Febr._Mrz._Apr._Mai_Jun._Jul._Aug._Sept._Okt._Nov._Dez.'.split('_'),
+	        monthsShort : 'Jan._Feb._März_Apr._Mai_Juni_Juli_Aug._Sep._Okt._Nov._Dez.'.split('_'),
 	        monthsParseExact : true,
 	        weekdays : 'Sonntag_Montag_Dienstag_Mittwoch_Donnerstag_Freitag_Samstag'.split('_'),
 	        weekdaysShort : 'So._Mo._Di._Mi._Do._Fr._Sa.'.split('_'),
@@ -27606,6 +28568,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'in %s',
 	            past : 'vor %s',
 	            s : 'ein paar Sekunden',
+	            ss : '%d Sekunden',
 	            m : processRelativeTime,
 	            mm : '%d Minuten',
 	            h : processRelativeTime,
@@ -27617,7 +28580,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : processRelativeTime,
 	            yy : processRelativeTime
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -27627,24 +28590,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return de;
 
-	}));
+	})));
 
-/***/ },
-/* 28 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 32 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : austrian german (de-at)
-	//! author : lluchs : https://github.com/lluchs
-	//! author: Menelion Elensúle: https://github.com/Oire
-	//! author : Martin Groller : https://github.com/MadMG
-	//! author : Mikolaj Dadela : https://github.com/mik01aj
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    function processRelativeTime(number, withoutSuffix, key, isFuture) {
@@ -27661,9 +28620,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return withoutSuffix ? format[key][0] : format[key][1];
 	    }
 
-	    var de_at = moment.defineLocale('de-at', {
+	    var deAt = moment.defineLocale('de-at', {
 	        months : 'Jänner_Februar_März_April_Mai_Juni_Juli_August_September_Oktober_November_Dezember'.split('_'),
-	        monthsShort : 'Jän._Febr._Mrz._Apr._Mai_Jun._Jul._Aug._Sept._Okt._Nov._Dez.'.split('_'),
+	        monthsShort : 'Jän._Feb._März_Apr._Mai_Juni_Juli_Aug._Sep._Okt._Nov._Dez.'.split('_'),
 	        monthsParseExact : true,
 	        weekdays : 'Sonntag_Montag_Dienstag_Mittwoch_Donnerstag_Freitag_Samstag'.split('_'),
 	        weekdaysShort : 'So._Mo._Di._Mi._Do._Fr._Sa.'.split('_'),
@@ -27689,6 +28648,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'in %s',
 	            past : 'vor %s',
 	            s : 'ein paar Sekunden',
+	            ss : '%d Sekunden',
 	            m : processRelativeTime,
 	            mm : '%d Minuten',
 	            h : processRelativeTime,
@@ -27700,7 +28660,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : processRelativeTime,
 	            yy : processRelativeTime
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -27708,23 +28668,102 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	    });
 
-	    return de_at;
+	    return deAt;
 
-	}));
+	})));
 
-/***/ },
-/* 29 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 33 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : dhivehi (dv)
-	//! author : Jawish Hameed : https://github.com/jawish
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
+
+
+	    function processRelativeTime(number, withoutSuffix, key, isFuture) {
+	        var format = {
+	            'm': ['eine Minute', 'einer Minute'],
+	            'h': ['eine Stunde', 'einer Stunde'],
+	            'd': ['ein Tag', 'einem Tag'],
+	            'dd': [number + ' Tage', number + ' Tagen'],
+	            'M': ['ein Monat', 'einem Monat'],
+	            'MM': [number + ' Monate', number + ' Monaten'],
+	            'y': ['ein Jahr', 'einem Jahr'],
+	            'yy': [number + ' Jahre', number + ' Jahren']
+	        };
+	        return withoutSuffix ? format[key][0] : format[key][1];
+	    }
+
+	    var deCh = moment.defineLocale('de-ch', {
+	        months : 'Januar_Februar_März_April_Mai_Juni_Juli_August_September_Oktober_November_Dezember'.split('_'),
+	        monthsShort : 'Jan._Feb._März_Apr._Mai_Juni_Juli_Aug._Sep._Okt._Nov._Dez.'.split('_'),
+	        monthsParseExact : true,
+	        weekdays : 'Sonntag_Montag_Dienstag_Mittwoch_Donnerstag_Freitag_Samstag'.split('_'),
+	        weekdaysShort : 'So_Mo_Di_Mi_Do_Fr_Sa'.split('_'),
+	        weekdaysMin : 'So_Mo_Di_Mi_Do_Fr_Sa'.split('_'),
+	        weekdaysParseExact : true,
+	        longDateFormat : {
+	            LT: 'HH:mm',
+	            LTS: 'HH:mm:ss',
+	            L : 'DD.MM.YYYY',
+	            LL : 'D. MMMM YYYY',
+	            LLL : 'D. MMMM YYYY HH:mm',
+	            LLLL : 'dddd, D. MMMM YYYY HH:mm'
+	        },
+	        calendar : {
+	            sameDay: '[heute um] LT [Uhr]',
+	            sameElse: 'L',
+	            nextDay: '[morgen um] LT [Uhr]',
+	            nextWeek: 'dddd [um] LT [Uhr]',
+	            lastDay: '[gestern um] LT [Uhr]',
+	            lastWeek: '[letzten] dddd [um] LT [Uhr]'
+	        },
+	        relativeTime : {
+	            future : 'in %s',
+	            past : 'vor %s',
+	            s : 'ein paar Sekunden',
+	            ss : '%d Sekunden',
+	            m : processRelativeTime,
+	            mm : '%d Minuten',
+	            h : processRelativeTime,
+	            hh : '%d Stunden',
+	            d : processRelativeTime,
+	            dd : processRelativeTime,
+	            M : processRelativeTime,
+	            MM : processRelativeTime,
+	            y : processRelativeTime,
+	            yy : processRelativeTime
+	        },
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
+	        ordinal : '%d.',
+	        week : {
+	            dow : 1, // Monday is the first day of the week.
+	            doy : 4  // The week that contains Jan 4th is the first week of the year.
+	        }
+	    });
+
+	    return deCh;
+
+	})));
+
+
+/***/ }),
+/* 34 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
 
 
 	    var months = [
@@ -27788,6 +28827,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'ތެރޭގައި %s',
 	            past : 'ކުރިން %s',
 	            s : 'ސިކުންތުކޮޅެއް',
+	            ss : 'd% ސިކުންތު',
 	            m : 'މިނިޓެއް',
 	            mm : 'މިނިޓު %d',
 	            h : 'ގަޑިއިރެއް',
@@ -27813,21 +28853,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return dv;
 
-	}));
+	})));
 
-/***/ },
-/* 30 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 35 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : modern greek (el)
-	//! author : Aggelos Karalias : https://github.com/mehiel
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 	    function isFunction(input) {
 	        return input instanceof Function || Object.prototype.toString.call(input) === '[object Function]';
@@ -27838,7 +28877,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        monthsNominativeEl : 'Ιανουάριος_Φεβρουάριος_Μάρτιος_Απρίλιος_Μάιος_Ιούνιος_Ιούλιος_Αύγουστος_Σεπτέμβριος_Οκτώβριος_Νοέμβριος_Δεκέμβριος'.split('_'),
 	        monthsGenitiveEl : 'Ιανουαρίου_Φεβρουαρίου_Μαρτίου_Απριλίου_Μαΐου_Ιουνίου_Ιουλίου_Αυγούστου_Σεπτεμβρίου_Οκτωβρίου_Νοεμβρίου_Δεκεμβρίου'.split('_'),
 	        months : function (momentToFormat, format) {
-	            if (/D/.test(format.substring(0, format.indexOf('MMMM')))) { // if there is a day number before 'MMMM'
+	            if (!momentToFormat) {
+	                return this._monthsNominativeEl;
+	            } else if (typeof format === 'string' && /D/.test(format.substring(0, format.indexOf('MMMM')))) { // if there is a day number before 'MMMM'
 	                return this._monthsGenitiveEl[momentToFormat.month()];
 	            } else {
 	                return this._monthsNominativeEl[momentToFormat.month()];
@@ -27894,6 +28935,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'σε %s',
 	            past : '%s πριν',
 	            s : 'λίγα δευτερόλεπτα',
+	            ss : '%d δευτερόλεπτα',
 	            m : 'ένα λεπτό',
 	            mm : '%d λεπτά',
 	            h : 'μία ώρα',
@@ -27905,7 +28947,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'ένας χρόνος',
 	            yy : '%d χρόνια'
 	        },
-	        ordinalParse: /\d{1,2}η/,
+	        dayOfMonthOrdinalParse: /\d{1,2}η/,
 	        ordinal: '%dη',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -27915,23 +28957,23 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return el;
 
-	}));
+	})));
 
-/***/ },
-/* 31 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 36 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : australian english (en-au)
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
-	    var en_au = moment.defineLocale('en-au', {
+	    var enAu = moment.defineLocale('en-au', {
 	        months : 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_'),
 	        monthsShort : 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_'),
 	        weekdays : 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_'),
@@ -27957,6 +28999,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'in %s',
 	            past : '%s ago',
 	            s : 'a few seconds',
+	            ss : '%d seconds',
 	            m : 'a minute',
 	            mm : '%d minutes',
 	            h : 'an hour',
@@ -27968,7 +29011,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'a year',
 	            yy : '%d years'
 	        },
-	        ordinalParse: /\d{1,2}(st|nd|rd|th)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}(st|nd|rd|th)/,
 	        ordinal : function (number) {
 	            var b = number % 10,
 	                output = (~~(number % 100 / 10) === 1) ? 'th' :
@@ -27983,26 +29026,25 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	    });
 
-	    return en_au;
+	    return enAu;
 
-	}));
+	})));
 
-/***/ },
-/* 32 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 37 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : canadian english (en-ca)
-	//! author : Jonathan Abourbih : https://github.com/jonbca
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
-	    var en_ca = moment.defineLocale('en-ca', {
+	    var enCa = moment.defineLocale('en-ca', {
 	        months : 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_'),
 	        monthsShort : 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_'),
 	        weekdays : 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_'),
@@ -28028,6 +29070,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'in %s',
 	            past : '%s ago',
 	            s : 'a few seconds',
+	            ss : '%d seconds',
 	            m : 'a minute',
 	            mm : '%d minutes',
 	            h : 'an hour',
@@ -28039,7 +29082,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'a year',
 	            yy : '%d years'
 	        },
-	        ordinalParse: /\d{1,2}(st|nd|rd|th)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}(st|nd|rd|th)/,
 	        ordinal : function (number) {
 	            var b = number % 10,
 	                output = (~~(number % 100 / 10) === 1) ? 'th' :
@@ -28050,26 +29093,167 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	    });
 
-	    return en_ca;
+	    return enCa;
 
-	}));
+	})));
 
-/***/ },
-/* 33 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 38 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : great britain english (en-gb)
-	//! author : Chris Gedrim : https://github.com/chrisgedrim
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
-	    var en_gb = moment.defineLocale('en-gb', {
+	    var enGb = moment.defineLocale('en-gb', {
+	        months : 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_'),
+	        monthsShort : 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_'),
+	        weekdays : 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_'),
+	        weekdaysShort : 'Sun_Mon_Tue_Wed_Thu_Fri_Sat'.split('_'),
+	        weekdaysMin : 'Su_Mo_Tu_We_Th_Fr_Sa'.split('_'),
+	        longDateFormat : {
+	            LT : 'HH:mm',
+	            LTS : 'HH:mm:ss',
+	            L : 'DD/MM/YYYY',
+	            LL : 'D MMMM YYYY',
+	            LLL : 'D MMMM YYYY HH:mm',
+	            LLLL : 'dddd, D MMMM YYYY HH:mm'
+	        },
+	        calendar : {
+	            sameDay : '[Today at] LT',
+	            nextDay : '[Tomorrow at] LT',
+	            nextWeek : 'dddd [at] LT',
+	            lastDay : '[Yesterday at] LT',
+	            lastWeek : '[Last] dddd [at] LT',
+	            sameElse : 'L'
+	        },
+	        relativeTime : {
+	            future : 'in %s',
+	            past : '%s ago',
+	            s : 'a few seconds',
+	            ss : '%d seconds',
+	            m : 'a minute',
+	            mm : '%d minutes',
+	            h : 'an hour',
+	            hh : '%d hours',
+	            d : 'a day',
+	            dd : '%d days',
+	            M : 'a month',
+	            MM : '%d months',
+	            y : 'a year',
+	            yy : '%d years'
+	        },
+	        dayOfMonthOrdinalParse: /\d{1,2}(st|nd|rd|th)/,
+	        ordinal : function (number) {
+	            var b = number % 10,
+	                output = (~~(number % 100 / 10) === 1) ? 'th' :
+	                (b === 1) ? 'st' :
+	                (b === 2) ? 'nd' :
+	                (b === 3) ? 'rd' : 'th';
+	            return number + output;
+	        },
+	        week : {
+	            dow : 1, // Monday is the first day of the week.
+	            doy : 4  // The week that contains Jan 4th is the first week of the year.
+	        }
+	    });
+
+	    return enGb;
+
+	})));
+
+
+/***/ }),
+/* 39 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
+
+
+	    var enIe = moment.defineLocale('en-ie', {
+	        months : 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_'),
+	        monthsShort : 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_'),
+	        weekdays : 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_'),
+	        weekdaysShort : 'Sun_Mon_Tue_Wed_Thu_Fri_Sat'.split('_'),
+	        weekdaysMin : 'Su_Mo_Tu_We_Th_Fr_Sa'.split('_'),
+	        longDateFormat : {
+	            LT : 'HH:mm',
+	            LTS : 'HH:mm:ss',
+	            L : 'DD-MM-YYYY',
+	            LL : 'D MMMM YYYY',
+	            LLL : 'D MMMM YYYY HH:mm',
+	            LLLL : 'dddd D MMMM YYYY HH:mm'
+	        },
+	        calendar : {
+	            sameDay : '[Today at] LT',
+	            nextDay : '[Tomorrow at] LT',
+	            nextWeek : 'dddd [at] LT',
+	            lastDay : '[Yesterday at] LT',
+	            lastWeek : '[Last] dddd [at] LT',
+	            sameElse : 'L'
+	        },
+	        relativeTime : {
+	            future : 'in %s',
+	            past : '%s ago',
+	            s : 'a few seconds',
+	            ss : '%d seconds',
+	            m : 'a minute',
+	            mm : '%d minutes',
+	            h : 'an hour',
+	            hh : '%d hours',
+	            d : 'a day',
+	            dd : '%d days',
+	            M : 'a month',
+	            MM : '%d months',
+	            y : 'a year',
+	            yy : '%d years'
+	        },
+	        dayOfMonthOrdinalParse: /\d{1,2}(st|nd|rd|th)/,
+	        ordinal : function (number) {
+	            var b = number % 10,
+	                output = (~~(number % 100 / 10) === 1) ? 'th' :
+	                (b === 1) ? 'st' :
+	                (b === 2) ? 'nd' :
+	                (b === 3) ? 'rd' : 'th';
+	            return number + output;
+	        },
+	        week : {
+	            dow : 1, // Monday is the first day of the week.
+	            doy : 4  // The week that contains Jan 4th is the first week of the year.
+	        }
+	    });
+
+	    return enIe;
+
+	})));
+
+
+/***/ }),
+/* 40 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
+
+
+	    var enIl = moment.defineLocale('en-il', {
 	        months : 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_'),
 	        monthsShort : 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_'),
 	        weekdays : 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_'),
@@ -28106,7 +29290,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'a year',
 	            yy : '%d years'
 	        },
-	        ordinalParse: /\d{1,2}(st|nd|rd|th)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}(st|nd|rd|th)/,
 	        ordinal : function (number) {
 	            var b = number % 10,
 	                output = (~~(number % 100 / 10) === 1) ? 'th' :
@@ -28114,103 +29298,28 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                (b === 2) ? 'nd' :
 	                (b === 3) ? 'rd' : 'th';
 	            return number + output;
-	        },
-	        week : {
-	            dow : 1, // Monday is the first day of the week.
-	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
 
-	    return en_gb;
+	    return enIl;
 
-	}));
-
-/***/ },
-/* 34 */
-/***/ function(module, exports, __webpack_require__) {
-
-	//! moment.js locale configuration
-	//! locale : Irish english (en-ie)
-	//! author : Chris Cartlidge : https://github.com/chriscartlidge
-
-	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
-	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	})));
 
 
-	    var en_ie = moment.defineLocale('en-ie', {
-	        months : 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_'),
-	        monthsShort : 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_'),
-	        weekdays : 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_'),
-	        weekdaysShort : 'Sun_Mon_Tue_Wed_Thu_Fri_Sat'.split('_'),
-	        weekdaysMin : 'Su_Mo_Tu_We_Th_Fr_Sa'.split('_'),
-	        longDateFormat : {
-	            LT : 'HH:mm',
-	            LTS : 'HH:mm:ss',
-	            L : 'DD-MM-YYYY',
-	            LL : 'D MMMM YYYY',
-	            LLL : 'D MMMM YYYY HH:mm',
-	            LLLL : 'dddd D MMMM YYYY HH:mm'
-	        },
-	        calendar : {
-	            sameDay : '[Today at] LT',
-	            nextDay : '[Tomorrow at] LT',
-	            nextWeek : 'dddd [at] LT',
-	            lastDay : '[Yesterday at] LT',
-	            lastWeek : '[Last] dddd [at] LT',
-	            sameElse : 'L'
-	        },
-	        relativeTime : {
-	            future : 'in %s',
-	            past : '%s ago',
-	            s : 'a few seconds',
-	            m : 'a minute',
-	            mm : '%d minutes',
-	            h : 'an hour',
-	            hh : '%d hours',
-	            d : 'a day',
-	            dd : '%d days',
-	            M : 'a month',
-	            MM : '%d months',
-	            y : 'a year',
-	            yy : '%d years'
-	        },
-	        ordinalParse: /\d{1,2}(st|nd|rd|th)/,
-	        ordinal : function (number) {
-	            var b = number % 10,
-	                output = (~~(number % 100 / 10) === 1) ? 'th' :
-	                (b === 1) ? 'st' :
-	                (b === 2) ? 'nd' :
-	                (b === 3) ? 'rd' : 'th';
-	            return number + output;
-	        },
-	        week : {
-	            dow : 1, // Monday is the first day of the week.
-	            doy : 4  // The week that contains Jan 4th is the first week of the year.
-	        }
-	    });
-
-	    return en_ie;
-
-	}));
-
-/***/ },
-/* 35 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ }),
+/* 41 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : New Zealand english (en-nz)
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
-	    var en_nz = moment.defineLocale('en-nz', {
+	    var enNz = moment.defineLocale('en-nz', {
 	        months : 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_'),
 	        monthsShort : 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_'),
 	        weekdays : 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_'),
@@ -28236,6 +29345,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'in %s',
 	            past : '%s ago',
 	            s : 'a few seconds',
+	            ss : '%d seconds',
 	            m : 'a minute',
 	            mm : '%d minutes',
 	            h : 'an hour',
@@ -28247,7 +29357,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'a year',
 	            yy : '%d years'
 	        },
-	        ordinalParse: /\d{1,2}(st|nd|rd|th)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}(st|nd|rd|th)/,
 	        ordinal : function (number) {
 	            var b = number % 10,
 	                output = (~~(number % 100 / 10) === 1) ? 'th' :
@@ -28262,40 +29372,37 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	    });
 
-	    return en_nz;
+	    return enNz;
 
-	}));
+	})));
 
-/***/ },
-/* 36 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 42 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : esperanto (eo)
-	//! author : Colin Dean : https://github.com/colindean
-	//! komento: Mi estas malcerta se mi korekte traktis akuzativojn en tiu traduko.
-	//!          Se ne, bonvolu korekti kaj avizi min por ke mi povas lerni!
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var eo = moment.defineLocale('eo', {
 	        months : 'januaro_februaro_marto_aprilo_majo_junio_julio_aŭgusto_septembro_oktobro_novembro_decembro'.split('_'),
 	        monthsShort : 'jan_feb_mar_apr_maj_jun_jul_aŭg_sep_okt_nov_dec'.split('_'),
-	        weekdays : 'Dimanĉo_Lundo_Mardo_Merkredo_Ĵaŭdo_Vendredo_Sabato'.split('_'),
-	        weekdaysShort : 'Dim_Lun_Mard_Merk_Ĵaŭ_Ven_Sab'.split('_'),
-	        weekdaysMin : 'Di_Lu_Ma_Me_Ĵa_Ve_Sa'.split('_'),
+	        weekdays : 'dimanĉo_lundo_mardo_merkredo_ĵaŭdo_vendredo_sabato'.split('_'),
+	        weekdaysShort : 'dim_lun_mard_merk_ĵaŭ_ven_sab'.split('_'),
+	        weekdaysMin : 'di_lu_ma_me_ĵa_ve_sa'.split('_'),
 	        longDateFormat : {
 	            LT : 'HH:mm',
 	            LTS : 'HH:mm:ss',
 	            L : 'YYYY-MM-DD',
-	            LL : 'D[-an de] MMMM, YYYY',
-	            LLL : 'D[-an de] MMMM, YYYY HH:mm',
-	            LLLL : 'dddd, [la] D[-an de] MMMM, YYYY HH:mm'
+	            LL : 'D[-a de] MMMM, YYYY',
+	            LLL : 'D[-a de] MMMM, YYYY HH:mm',
+	            LLLL : 'dddd, [la] D[-a de] MMMM, YYYY HH:mm'
 	        },
 	        meridiemParse: /[ap]\.t\.m/i,
 	        isPM: function (input) {
@@ -28317,9 +29424,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            sameElse : 'L'
 	        },
 	        relativeTime : {
-	            future : 'je %s',
+	            future : 'post %s',
 	            past : 'antaŭ %s',
 	            s : 'sekundoj',
+	            ss : '%d sekundoj',
 	            m : 'minuto',
 	            mm : '%d minutoj',
 	            h : 'horo',
@@ -28331,7 +29439,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'jaro',
 	            yy : '%d jaroj'
 	        },
-	        ordinalParse: /\d{1,2}a/,
+	        dayOfMonthOrdinalParse: /\d{1,2}a/,
 	        ordinal : '%da',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -28341,36 +29449,46 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return eo;
 
-	}));
+	})));
 
-/***/ },
-/* 37 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 43 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : spanish (es)
-	//! author : Julio Napurí : https://github.com/julionc
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var monthsShortDot = 'ene._feb._mar._abr._may._jun._jul._ago._sep._oct._nov._dic.'.split('_'),
 	        monthsShort = 'ene_feb_mar_abr_may_jun_jul_ago_sep_oct_nov_dic'.split('_');
 
+	    var monthsParse = [/^ene/i, /^feb/i, /^mar/i, /^abr/i, /^may/i, /^jun/i, /^jul/i, /^ago/i, /^sep/i, /^oct/i, /^nov/i, /^dic/i];
+	    var monthsRegex = /^(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|ene\.?|feb\.?|mar\.?|abr\.?|may\.?|jun\.?|jul\.?|ago\.?|sep\.?|oct\.?|nov\.?|dic\.?)/i;
+
 	    var es = moment.defineLocale('es', {
 	        months : 'enero_febrero_marzo_abril_mayo_junio_julio_agosto_septiembre_octubre_noviembre_diciembre'.split('_'),
 	        monthsShort : function (m, format) {
-	            if (/-MMM-/.test(format)) {
+	            if (!m) {
+	                return monthsShortDot;
+	            } else if (/-MMM-/.test(format)) {
 	                return monthsShort[m.month()];
 	            } else {
 	                return monthsShortDot[m.month()];
 	            }
 	        },
-	        monthsParseExact : true,
+	        monthsRegex : monthsRegex,
+	        monthsShortRegex : monthsRegex,
+	        monthsStrictRegex : /^(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)/i,
+	        monthsShortStrictRegex : /^(ene\.?|feb\.?|mar\.?|abr\.?|may\.?|jun\.?|jul\.?|ago\.?|sep\.?|oct\.?|nov\.?|dic\.?)/i,
+	        monthsParse : monthsParse,
+	        longMonthsParse : monthsParse,
+	        shortMonthsParse : monthsParse,
 	        weekdays : 'domingo_lunes_martes_miércoles_jueves_viernes_sábado'.split('_'),
 	        weekdaysShort : 'dom._lun._mar._mié._jue._vie._sáb.'.split('_'),
 	        weekdaysMin : 'do_lu_ma_mi_ju_vi_sá'.split('_'),
@@ -28405,6 +29523,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'en %s',
 	            past : 'hace %s',
 	            s : 'unos segundos',
+	            ss : '%d segundos',
 	            m : 'un minuto',
 	            mm : '%d minutos',
 	            h : 'una hora',
@@ -28416,7 +29535,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'un año',
 	            yy : '%d años'
 	        },
-	        ordinalParse : /\d{1,2}º/,
+	        dayOfMonthOrdinalParse : /\d{1,2}º/,
 	        ordinal : '%dº',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -28426,27 +29545,209 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return es;
 
-	}));
+	})));
 
-/***/ },
-/* 38 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 44 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : estonian (et)
-	//! author : Henry Kehlmann : https://github.com/madhenry
-	//! improvements : Illimar Tambek : https://github.com/ragulka
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
+
+
+	    var monthsShortDot = 'ene._feb._mar._abr._may._jun._jul._ago._sep._oct._nov._dic.'.split('_'),
+	        monthsShort = 'ene_feb_mar_abr_may_jun_jul_ago_sep_oct_nov_dic'.split('_');
+
+	    var monthsParse = [/^ene/i, /^feb/i, /^mar/i, /^abr/i, /^may/i, /^jun/i, /^jul/i, /^ago/i, /^sep/i, /^oct/i, /^nov/i, /^dic/i];
+	    var monthsRegex = /^(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|ene\.?|feb\.?|mar\.?|abr\.?|may\.?|jun\.?|jul\.?|ago\.?|sep\.?|oct\.?|nov\.?|dic\.?)/i;
+
+	    var esDo = moment.defineLocale('es-do', {
+	        months : 'enero_febrero_marzo_abril_mayo_junio_julio_agosto_septiembre_octubre_noviembre_diciembre'.split('_'),
+	        monthsShort : function (m, format) {
+	            if (!m) {
+	                return monthsShortDot;
+	            } else if (/-MMM-/.test(format)) {
+	                return monthsShort[m.month()];
+	            } else {
+	                return monthsShortDot[m.month()];
+	            }
+	        },
+	        monthsRegex: monthsRegex,
+	        monthsShortRegex: monthsRegex,
+	        monthsStrictRegex: /^(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)/i,
+	        monthsShortStrictRegex: /^(ene\.?|feb\.?|mar\.?|abr\.?|may\.?|jun\.?|jul\.?|ago\.?|sep\.?|oct\.?|nov\.?|dic\.?)/i,
+	        monthsParse: monthsParse,
+	        longMonthsParse: monthsParse,
+	        shortMonthsParse: monthsParse,
+	        weekdays : 'domingo_lunes_martes_miércoles_jueves_viernes_sábado'.split('_'),
+	        weekdaysShort : 'dom._lun._mar._mié._jue._vie._sáb.'.split('_'),
+	        weekdaysMin : 'do_lu_ma_mi_ju_vi_sá'.split('_'),
+	        weekdaysParseExact : true,
+	        longDateFormat : {
+	            LT : 'h:mm A',
+	            LTS : 'h:mm:ss A',
+	            L : 'DD/MM/YYYY',
+	            LL : 'D [de] MMMM [de] YYYY',
+	            LLL : 'D [de] MMMM [de] YYYY h:mm A',
+	            LLLL : 'dddd, D [de] MMMM [de] YYYY h:mm A'
+	        },
+	        calendar : {
+	            sameDay : function () {
+	                return '[hoy a la' + ((this.hours() !== 1) ? 's' : '') + '] LT';
+	            },
+	            nextDay : function () {
+	                return '[mañana a la' + ((this.hours() !== 1) ? 's' : '') + '] LT';
+	            },
+	            nextWeek : function () {
+	                return 'dddd [a la' + ((this.hours() !== 1) ? 's' : '') + '] LT';
+	            },
+	            lastDay : function () {
+	                return '[ayer a la' + ((this.hours() !== 1) ? 's' : '') + '] LT';
+	            },
+	            lastWeek : function () {
+	                return '[el] dddd [pasado a la' + ((this.hours() !== 1) ? 's' : '') + '] LT';
+	            },
+	            sameElse : 'L'
+	        },
+	        relativeTime : {
+	            future : 'en %s',
+	            past : 'hace %s',
+	            s : 'unos segundos',
+	            ss : '%d segundos',
+	            m : 'un minuto',
+	            mm : '%d minutos',
+	            h : 'una hora',
+	            hh : '%d horas',
+	            d : 'un día',
+	            dd : '%d días',
+	            M : 'un mes',
+	            MM : '%d meses',
+	            y : 'un año',
+	            yy : '%d años'
+	        },
+	        dayOfMonthOrdinalParse : /\d{1,2}º/,
+	        ordinal : '%dº',
+	        week : {
+	            dow : 1, // Monday is the first day of the week.
+	            doy : 4  // The week that contains Jan 4th is the first week of the year.
+	        }
+	    });
+
+	    return esDo;
+
+	})));
+
+
+/***/ }),
+/* 45 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
+
+
+	    var monthsShortDot = 'ene._feb._mar._abr._may._jun._jul._ago._sep._oct._nov._dic.'.split('_'),
+	        monthsShort = 'ene_feb_mar_abr_may_jun_jul_ago_sep_oct_nov_dic'.split('_');
+
+	    var esUs = moment.defineLocale('es-us', {
+	        months : 'enero_febrero_marzo_abril_mayo_junio_julio_agosto_septiembre_octubre_noviembre_diciembre'.split('_'),
+	        monthsShort : function (m, format) {
+	            if (!m) {
+	                return monthsShortDot;
+	            } else if (/-MMM-/.test(format)) {
+	                return monthsShort[m.month()];
+	            } else {
+	                return monthsShortDot[m.month()];
+	            }
+	        },
+	        monthsParseExact : true,
+	        weekdays : 'domingo_lunes_martes_miércoles_jueves_viernes_sábado'.split('_'),
+	        weekdaysShort : 'dom._lun._mar._mié._jue._vie._sáb.'.split('_'),
+	        weekdaysMin : 'do_lu_ma_mi_ju_vi_sá'.split('_'),
+	        weekdaysParseExact : true,
+	        longDateFormat : {
+	            LT : 'h:mm A',
+	            LTS : 'h:mm:ss A',
+	            L : 'MM/DD/YYYY',
+	            LL : 'MMMM [de] D [de] YYYY',
+	            LLL : 'MMMM [de] D [de] YYYY h:mm A',
+	            LLLL : 'dddd, MMMM [de] D [de] YYYY h:mm A'
+	        },
+	        calendar : {
+	            sameDay : function () {
+	                return '[hoy a la' + ((this.hours() !== 1) ? 's' : '') + '] LT';
+	            },
+	            nextDay : function () {
+	                return '[mañana a la' + ((this.hours() !== 1) ? 's' : '') + '] LT';
+	            },
+	            nextWeek : function () {
+	                return 'dddd [a la' + ((this.hours() !== 1) ? 's' : '') + '] LT';
+	            },
+	            lastDay : function () {
+	                return '[ayer a la' + ((this.hours() !== 1) ? 's' : '') + '] LT';
+	            },
+	            lastWeek : function () {
+	                return '[el] dddd [pasado a la' + ((this.hours() !== 1) ? 's' : '') + '] LT';
+	            },
+	            sameElse : 'L'
+	        },
+	        relativeTime : {
+	            future : 'en %s',
+	            past : 'hace %s',
+	            s : 'unos segundos',
+	            ss : '%d segundos',
+	            m : 'un minuto',
+	            mm : '%d minutos',
+	            h : 'una hora',
+	            hh : '%d horas',
+	            d : 'un día',
+	            dd : '%d días',
+	            M : 'un mes',
+	            MM : '%d meses',
+	            y : 'un año',
+	            yy : '%d años'
+	        },
+	        dayOfMonthOrdinalParse : /\d{1,2}º/,
+	        ordinal : '%dº',
+	        week : {
+	            dow : 0, // Sunday is the first day of the week.
+	            doy : 6  // The week that contains Jan 1st is the first week of the year.
+	        }
+	    });
+
+	    return esUs;
+
+	})));
+
+
+/***/ }),
+/* 46 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
 
 
 	    function processRelativeTime(number, withoutSuffix, key, isFuture) {
 	        var format = {
 	            's' : ['mõne sekundi', 'mõni sekund', 'paar sekundit'],
+	            'ss': [number + 'sekundi', number + 'sekundit'],
 	            'm' : ['ühe minuti', 'üks minut'],
 	            'mm': [number + ' minuti', number + ' minutit'],
 	            'h' : ['ühe tunni', 'tund aega', 'üks tund'],
@@ -28489,6 +29790,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : '%s pärast',
 	            past   : '%s tagasi',
 	            s      : processRelativeTime,
+	            ss     : processRelativeTime,
 	            m      : processRelativeTime,
 	            mm     : processRelativeTime,
 	            h      : processRelativeTime,
@@ -28500,7 +29802,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y      : processRelativeTime,
 	            yy     : processRelativeTime
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -28510,21 +29812,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return et;
 
-	}));
+	})));
 
-/***/ },
-/* 39 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 47 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : euskara (eu)
-	//! author : Eneko Illarramendi : https://github.com/eillarra
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var eu = moment.defineLocale('eu', {
@@ -28559,6 +29860,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : '%s barru',
 	            past : 'duela %s',
 	            s : 'segundo batzuk',
+	            ss : '%d segundo',
 	            m : 'minutu bat',
 	            mm : '%d minutu',
 	            h : 'ordu bat',
@@ -28570,7 +29872,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'urte bat',
 	            yy : '%d urte'
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -28580,21 +29882,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return eu;
 
-	}));
+	})));
 
-/***/ },
-/* 40 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 48 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Persian (fa)
-	//! author : Ebrahim Byagowi : https://github.com/ebraminio
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var symbolMap = {
@@ -28658,7 +29959,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        relativeTime : {
 	            future : 'در %s',
 	            past : '%s پیش',
-	            s : 'چندین ثانیه',
+	            s : 'چند ثانیه',
+	            ss : 'ثانیه d%',
 	            m : 'یک دقیقه',
 	            mm : '%d دقیقه',
 	            h : 'یک ساعت',
@@ -28680,7 +29982,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                return symbolMap[match];
 	            }).replace(/,/g, '،');
 	        },
-	        ordinalParse: /\d{1,2}م/,
+	        dayOfMonthOrdinalParse: /\d{1,2}م/,
 	        ordinal : '%dم',
 	        week : {
 	            dow : 6, // Saturday is the first day of the week.
@@ -28690,21 +29992,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return fa;
 
-	}));
+	})));
 
-/***/ },
-/* 41 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 49 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : finnish (fi)
-	//! author : Tarmo Aidantausta : https://github.com/bleadof
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var numbersPast = 'nolla yksi kaksi kolme neljä viisi kuusi seitsemän kahdeksan yhdeksän'.split(' '),
@@ -28715,33 +30016,35 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    function translate(number, withoutSuffix, key, isFuture) {
 	        var result = '';
 	        switch (key) {
-	        case 's':
-	            return isFuture ? 'muutaman sekunnin' : 'muutama sekunti';
-	        case 'm':
-	            return isFuture ? 'minuutin' : 'minuutti';
-	        case 'mm':
-	            result = isFuture ? 'minuutin' : 'minuuttia';
-	            break;
-	        case 'h':
-	            return isFuture ? 'tunnin' : 'tunti';
-	        case 'hh':
-	            result = isFuture ? 'tunnin' : 'tuntia';
-	            break;
-	        case 'd':
-	            return isFuture ? 'päivän' : 'päivä';
-	        case 'dd':
-	            result = isFuture ? 'päivän' : 'päivää';
-	            break;
-	        case 'M':
-	            return isFuture ? 'kuukauden' : 'kuukausi';
-	        case 'MM':
-	            result = isFuture ? 'kuukauden' : 'kuukautta';
-	            break;
-	        case 'y':
-	            return isFuture ? 'vuoden' : 'vuosi';
-	        case 'yy':
-	            result = isFuture ? 'vuoden' : 'vuotta';
-	            break;
+	            case 's':
+	                return isFuture ? 'muutaman sekunnin' : 'muutama sekunti';
+	            case 'ss':
+	                return isFuture ? 'sekunnin' : 'sekuntia';
+	            case 'm':
+	                return isFuture ? 'minuutin' : 'minuutti';
+	            case 'mm':
+	                result = isFuture ? 'minuutin' : 'minuuttia';
+	                break;
+	            case 'h':
+	                return isFuture ? 'tunnin' : 'tunti';
+	            case 'hh':
+	                result = isFuture ? 'tunnin' : 'tuntia';
+	                break;
+	            case 'd':
+	                return isFuture ? 'päivän' : 'päivä';
+	            case 'dd':
+	                result = isFuture ? 'päivän' : 'päivää';
+	                break;
+	            case 'M':
+	                return isFuture ? 'kuukauden' : 'kuukausi';
+	            case 'MM':
+	                result = isFuture ? 'kuukauden' : 'kuukautta';
+	                break;
+	            case 'y':
+	                return isFuture ? 'vuoden' : 'vuosi';
+	            case 'yy':
+	                result = isFuture ? 'vuoden' : 'vuotta';
+	                break;
 	        }
 	        result = verbalNumber(number, isFuture) + ' ' + result;
 	        return result;
@@ -28780,6 +30083,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : '%s päästä',
 	            past : '%s sitten',
 	            s : translate,
+	            ss : translate,
 	            m : translate,
 	            mm : translate,
 	            h : translate,
@@ -28791,7 +30095,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : translate,
 	            yy : translate
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -28801,21 +30105,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return fi;
 
-	}));
+	})));
 
-/***/ },
-/* 42 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 50 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : faroese (fo)
-	//! author : Ragnar Johannesen : https://github.com/ragnar123
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var fo = moment.defineLocale('fo', {
@@ -28844,6 +30147,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'um %s',
 	            past : '%s síðani',
 	            s : 'fá sekund',
+	            ss : '%d sekundir',
 	            m : 'ein minutt',
 	            mm : '%d minuttir',
 	            h : 'ein tími',
@@ -28855,7 +30159,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'eitt ár',
 	            yy : '%d ár'
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -28865,21 +30169,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return fo;
 
-	}));
+	})));
 
-/***/ },
-/* 43 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 51 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : french (fr)
-	//! author : John Fischer : https://github.com/jfroffice
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var fr = moment.defineLocale('fr', {
@@ -28888,7 +30191,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        monthsParseExact : true,
 	        weekdays : 'dimanche_lundi_mardi_mercredi_jeudi_vendredi_samedi'.split('_'),
 	        weekdaysShort : 'dim._lun._mar._mer._jeu._ven._sam.'.split('_'),
-	        weekdaysMin : 'Di_Lu_Ma_Me_Je_Ve_Sa'.split('_'),
+	        weekdaysMin : 'di_lu_ma_me_je_ve_sa'.split('_'),
 	        weekdaysParseExact : true,
 	        longDateFormat : {
 	            LT : 'HH:mm',
@@ -28899,17 +30202,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            LLLL : 'dddd D MMMM YYYY HH:mm'
 	        },
 	        calendar : {
-	            sameDay: '[Aujourd\'hui à] LT',
-	            nextDay: '[Demain à] LT',
-	            nextWeek: 'dddd [à] LT',
-	            lastDay: '[Hier à] LT',
-	            lastWeek: 'dddd [dernier à] LT',
-	            sameElse: 'L'
+	            sameDay : '[Aujourd’hui à] LT',
+	            nextDay : '[Demain à] LT',
+	            nextWeek : 'dddd [à] LT',
+	            lastDay : '[Hier à] LT',
+	            lastWeek : 'dddd [dernier à] LT',
+	            sameElse : 'L'
 	        },
 	        relativeTime : {
 	            future : 'dans %s',
 	            past : 'il y a %s',
 	            s : 'quelques secondes',
+	            ss : '%d secondes',
 	            m : 'une minute',
 	            mm : '%d minutes',
 	            h : 'une heure',
@@ -28921,9 +30225,28 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'un an',
 	            yy : '%d ans'
 	        },
-	        ordinalParse: /\d{1,2}(er|)/,
-	        ordinal : function (number) {
-	            return number + (number === 1 ? 'er' : '');
+	        dayOfMonthOrdinalParse: /\d{1,2}(er|)/,
+	        ordinal : function (number, period) {
+	            switch (period) {
+	                // TODO: Return 'e' when day of month > 1. Move this case inside
+	                // block for masculine words below.
+	                // See https://github.com/moment/moment/issues/3375
+	                case 'D':
+	                    return number + (number === 1 ? 'er' : '');
+
+	                // Words with masculine grammatical gender: mois, trimestre, jour
+	                default:
+	                case 'M':
+	                case 'Q':
+	                case 'DDD':
+	                case 'd':
+	                    return number + (number === 1 ? 'er' : 'e');
+
+	                // Words with feminine grammatical gender: semaine
+	                case 'w':
+	                case 'W':
+	                    return number + (number === 1 ? 're' : 'e');
+	            }
 	        },
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -28933,30 +30256,29 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return fr;
 
-	}));
+	})));
 
-/***/ },
-/* 44 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 52 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : canadian french (fr-ca)
-	//! author : Jonathan Abourbih : https://github.com/jonbca
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
-	    var fr_ca = moment.defineLocale('fr-ca', {
+	    var frCa = moment.defineLocale('fr-ca', {
 	        months : 'janvier_février_mars_avril_mai_juin_juillet_août_septembre_octobre_novembre_décembre'.split('_'),
 	        monthsShort : 'janv._févr._mars_avr._mai_juin_juil._août_sept._oct._nov._déc.'.split('_'),
 	        monthsParseExact : true,
 	        weekdays : 'dimanche_lundi_mardi_mercredi_jeudi_vendredi_samedi'.split('_'),
 	        weekdaysShort : 'dim._lun._mar._mer._jeu._ven._sam.'.split('_'),
-	        weekdaysMin : 'Di_Lu_Ma_Me_Je_Ve_Sa'.split('_'),
+	        weekdaysMin : 'di_lu_ma_me_je_ve_sa'.split('_'),
 	        weekdaysParseExact : true,
 	        longDateFormat : {
 	            LT : 'HH:mm',
@@ -28967,17 +30289,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            LLLL : 'dddd D MMMM YYYY HH:mm'
 	        },
 	        calendar : {
-	            sameDay: '[Aujourd\'hui à] LT',
-	            nextDay: '[Demain à] LT',
-	            nextWeek: 'dddd [à] LT',
-	            lastDay: '[Hier à] LT',
-	            lastWeek: 'dddd [dernier à] LT',
-	            sameElse: 'L'
+	            sameDay : '[Aujourd’hui à] LT',
+	            nextDay : '[Demain à] LT',
+	            nextWeek : 'dddd [à] LT',
+	            lastDay : '[Hier à] LT',
+	            lastWeek : 'dddd [dernier à] LT',
+	            sameElse : 'L'
 	        },
 	        relativeTime : {
 	            future : 'dans %s',
 	            past : 'il y a %s',
 	            s : 'quelques secondes',
+	            ss : '%d secondes',
 	            m : 'une minute',
 	            mm : '%d minutes',
 	            h : 'une heure',
@@ -28989,38 +30312,51 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'un an',
 	            yy : '%d ans'
 	        },
-	        ordinalParse: /\d{1,2}(er|e)/,
-	        ordinal : function (number) {
-	            return number + (number === 1 ? 'er' : 'e');
+	        dayOfMonthOrdinalParse: /\d{1,2}(er|e)/,
+	        ordinal : function (number, period) {
+	            switch (period) {
+	                // Words with masculine grammatical gender: mois, trimestre, jour
+	                default:
+	                case 'M':
+	                case 'Q':
+	                case 'D':
+	                case 'DDD':
+	                case 'd':
+	                    return number + (number === 1 ? 'er' : 'e');
+
+	                // Words with feminine grammatical gender: semaine
+	                case 'w':
+	                case 'W':
+	                    return number + (number === 1 ? 're' : 'e');
+	            }
 	        }
 	    });
 
-	    return fr_ca;
+	    return frCa;
 
-	}));
+	})));
 
-/***/ },
-/* 45 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 53 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : swiss french (fr)
-	//! author : Gaspard Bucher : https://github.com/gaspard
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
-	    var fr_ch = moment.defineLocale('fr-ch', {
+	    var frCh = moment.defineLocale('fr-ch', {
 	        months : 'janvier_février_mars_avril_mai_juin_juillet_août_septembre_octobre_novembre_décembre'.split('_'),
 	        monthsShort : 'janv._févr._mars_avr._mai_juin_juil._août_sept._oct._nov._déc.'.split('_'),
 	        monthsParseExact : true,
 	        weekdays : 'dimanche_lundi_mardi_mercredi_jeudi_vendredi_samedi'.split('_'),
 	        weekdaysShort : 'dim._lun._mar._mer._jeu._ven._sam.'.split('_'),
-	        weekdaysMin : 'Di_Lu_Ma_Me_Je_Ve_Sa'.split('_'),
+	        weekdaysMin : 'di_lu_ma_me_je_ve_sa'.split('_'),
 	        weekdaysParseExact : true,
 	        longDateFormat : {
 	            LT : 'HH:mm',
@@ -29031,17 +30367,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            LLLL : 'dddd D MMMM YYYY HH:mm'
 	        },
 	        calendar : {
-	            sameDay: '[Aujourd\'hui à] LT',
-	            nextDay: '[Demain à] LT',
-	            nextWeek: 'dddd [à] LT',
-	            lastDay: '[Hier à] LT',
-	            lastWeek: 'dddd [dernier à] LT',
-	            sameElse: 'L'
+	            sameDay : '[Aujourd’hui à] LT',
+	            nextDay : '[Demain à] LT',
+	            nextWeek : 'dddd [à] LT',
+	            lastDay : '[Hier à] LT',
+	            lastWeek : 'dddd [dernier à] LT',
+	            sameElse : 'L'
 	        },
 	        relativeTime : {
 	            future : 'dans %s',
 	            past : 'il y a %s',
 	            s : 'quelques secondes',
+	            ss : '%d secondes',
 	            m : 'une minute',
 	            mm : '%d minutes',
 	            h : 'une heure',
@@ -29053,9 +30390,23 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'un an',
 	            yy : '%d ans'
 	        },
-	        ordinalParse: /\d{1,2}(er|e)/,
-	        ordinal : function (number) {
-	            return number + (number === 1 ? 'er' : 'e');
+	        dayOfMonthOrdinalParse: /\d{1,2}(er|e)/,
+	        ordinal : function (number, period) {
+	            switch (period) {
+	                // Words with masculine grammatical gender: mois, trimestre, jour
+	                default:
+	                case 'M':
+	                case 'Q':
+	                case 'D':
+	                case 'DDD':
+	                case 'd':
+	                    return number + (number === 1 ? 'er' : 'e');
+
+	                // Words with feminine grammatical gender: semaine
+	                case 'w':
+	                case 'W':
+	                    return number + (number === 1 ? 're' : 'e');
+	            }
 	        },
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -29063,23 +30414,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	    });
 
-	    return fr_ch;
+	    return frCh;
 
-	}));
+	})));
 
-/***/ },
-/* 46 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 54 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : frisian (fy)
-	//! author : Robin van der Vliet : https://github.com/robin0van0der0v
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var monthsShortWithDots = 'jan._feb._mrt._apr._mai_jun._jul._aug._sep._okt._nov._des.'.split('_'),
@@ -29088,7 +30438,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    var fy = moment.defineLocale('fy', {
 	        months : 'jannewaris_febrewaris_maart_april_maaie_juny_july_augustus_septimber_oktober_novimber_desimber'.split('_'),
 	        monthsShort : function (m, format) {
-	            if (/-MMM-/.test(format)) {
+	            if (!m) {
+	                return monthsShortWithDots;
+	            } else if (/-MMM-/.test(format)) {
 	                return monthsShortWithoutDots[m.month()];
 	            } else {
 	                return monthsShortWithDots[m.month()];
@@ -29119,6 +30471,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'oer %s',
 	            past : '%s lyn',
 	            s : 'in pear sekonden',
+	            ss : '%d sekonden',
 	            m : 'ien minút',
 	            mm : '%d minuten',
 	            h : 'ien oere',
@@ -29130,7 +30483,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'ien jier',
 	            yy : '%d jierren'
 	        },
-	        ordinalParse: /\d{1,2}(ste|de)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}(ste|de)/,
 	        ordinal : function (number) {
 	            return number + ((number === 1 || number === 8 || number >= 20) ? 'ste' : 'de');
 	        },
@@ -29142,21 +30495,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return fy;
 
-	}));
+	})));
 
-/***/ },
-/* 47 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 55 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : great britain scottish gealic (gd)
-	//! author : Jon Ashdown : https://github.com/jonashdown
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var months = [
@@ -29198,6 +30550,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'ann an %s',
 	            past : 'bho chionn %s',
 	            s : 'beagan diogan',
+	            ss : '%d diogan',
 	            m : 'mionaid',
 	            mm : '%d mionaidean',
 	            h : 'uair',
@@ -29209,7 +30562,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'bliadhna',
 	            yy : '%d bliadhna'
 	        },
-	        ordinalParse : /\d{1,2}(d|na|mh)/,
+	        dayOfMonthOrdinalParse : /\d{1,2}(d|na|mh)/,
 	        ordinal : function (number) {
 	            var output = number === 1 ? 'd' : number % 10 === 2 ? 'na' : 'mh';
 	            return number + output;
@@ -29222,38 +30575,37 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return gd;
 
-	}));
+	})));
 
-/***/ },
-/* 48 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 56 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : galician (gl)
-	//! author : Juan G. Hurtado : https://github.com/juanghurtado
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var gl = moment.defineLocale('gl', {
-	        months : 'Xaneiro_Febreiro_Marzo_Abril_Maio_Xuño_Xullo_Agosto_Setembro_Outubro_Novembro_Decembro'.split('_'),
-	        monthsShort : 'Xan._Feb._Mar._Abr._Mai._Xuñ._Xul._Ago._Set._Out._Nov._Dec.'.split('_'),
+	        months : 'xaneiro_febreiro_marzo_abril_maio_xuño_xullo_agosto_setembro_outubro_novembro_decembro'.split('_'),
+	        monthsShort : 'xan._feb._mar._abr._mai._xuñ._xul._ago._set._out._nov._dec.'.split('_'),
 	        monthsParseExact: true,
-	        weekdays : 'Domingo_Luns_Martes_Mércores_Xoves_Venres_Sábado'.split('_'),
-	        weekdaysShort : 'Dom._Lun._Mar._Mér._Xov._Ven._Sáb.'.split('_'),
-	        weekdaysMin : 'Do_Lu_Ma_Mé_Xo_Ve_Sá'.split('_'),
+	        weekdays : 'domingo_luns_martes_mércores_xoves_venres_sábado'.split('_'),
+	        weekdaysShort : 'dom._lun._mar._mér._xov._ven._sáb.'.split('_'),
+	        weekdaysMin : 'do_lu_ma_mé_xo_ve_sá'.split('_'),
 	        weekdaysParseExact : true,
 	        longDateFormat : {
 	            LT : 'H:mm',
 	            LTS : 'H:mm:ss',
 	            L : 'DD/MM/YYYY',
-	            LL : 'D MMMM YYYY',
-	            LLL : 'D MMMM YYYY H:mm',
-	            LLLL : 'dddd D MMMM YYYY H:mm'
+	            LL : 'D [de] MMMM [de] YYYY',
+	            LLL : 'D [de] MMMM [de] YYYY H:mm',
+	            LLLL : 'dddd, D [de] MMMM [de] YYYY H:mm'
 	        },
 	        calendar : {
 	            sameDay : function () {
@@ -29275,13 +30627,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        },
 	        relativeTime : {
 	            future : function (str) {
-	                if (str === 'uns segundos') {
-	                    return 'nuns segundos';
+	                if (str.indexOf('un') === 0) {
+	                    return 'n' + str;
 	                }
 	                return 'en ' + str;
 	            },
 	            past : 'hai %s',
 	            s : 'uns segundos',
+	            ss : '%d segundos',
 	            m : 'un minuto',
 	            mm : '%d minutos',
 	            h : 'unha hora',
@@ -29293,33 +30646,285 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'un ano',
 	            yy : '%d anos'
 	        },
-	        ordinalParse : /\d{1,2}º/,
+	        dayOfMonthOrdinalParse : /\d{1,2}º/,
 	        ordinal : '%dº',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
-	            doy : 7  // The week that contains Jan 1st is the first week of the year.
+	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
 
 	    return gl;
 
-	}));
+	})));
 
-/***/ },
-/* 49 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 57 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Hebrew (he)
-	//! author : Tomer Cohen : https://github.com/tomer
-	//! author : Moshe Simantov : https://github.com/DevelopmentIL
-	//! author : Tal Ater : https://github.com/TalAter
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
+
+
+	    function processRelativeTime(number, withoutSuffix, key, isFuture) {
+	        var format = {
+	            's': ['thodde secondanim', 'thodde second'],
+	            'ss': [number + ' secondanim', number + ' second'],
+	            'm': ['eka mintan', 'ek minute'],
+	            'mm': [number + ' mintanim', number + ' mintam'],
+	            'h': ['eka horan', 'ek hor'],
+	            'hh': [number + ' horanim', number + ' horam'],
+	            'd': ['eka disan', 'ek dis'],
+	            'dd': [number + ' disanim', number + ' dis'],
+	            'M': ['eka mhoinean', 'ek mhoino'],
+	            'MM': [number + ' mhoineanim', number + ' mhoine'],
+	            'y': ['eka vorsan', 'ek voros'],
+	            'yy': [number + ' vorsanim', number + ' vorsam']
+	        };
+	        return withoutSuffix ? format[key][0] : format[key][1];
+	    }
+
+	    var gomLatn = moment.defineLocale('gom-latn', {
+	        months : 'Janer_Febrer_Mars_Abril_Mai_Jun_Julai_Agost_Setembr_Otubr_Novembr_Dezembr'.split('_'),
+	        monthsShort : 'Jan._Feb._Mars_Abr._Mai_Jun_Jul._Ago._Set._Otu._Nov._Dez.'.split('_'),
+	        monthsParseExact : true,
+	        weekdays : 'Aitar_Somar_Mongllar_Budvar_Brestar_Sukrar_Son\'var'.split('_'),
+	        weekdaysShort : 'Ait._Som._Mon._Bud._Bre._Suk._Son.'.split('_'),
+	        weekdaysMin : 'Ai_Sm_Mo_Bu_Br_Su_Sn'.split('_'),
+	        weekdaysParseExact : true,
+	        longDateFormat : {
+	            LT : 'A h:mm [vazta]',
+	            LTS : 'A h:mm:ss [vazta]',
+	            L : 'DD-MM-YYYY',
+	            LL : 'D MMMM YYYY',
+	            LLL : 'D MMMM YYYY A h:mm [vazta]',
+	            LLLL : 'dddd, MMMM[achea] Do, YYYY, A h:mm [vazta]',
+	            llll: 'ddd, D MMM YYYY, A h:mm [vazta]'
+	        },
+	        calendar : {
+	            sameDay: '[Aiz] LT',
+	            nextDay: '[Faleam] LT',
+	            nextWeek: '[Ieta to] dddd[,] LT',
+	            lastDay: '[Kal] LT',
+	            lastWeek: '[Fatlo] dddd[,] LT',
+	            sameElse: 'L'
+	        },
+	        relativeTime : {
+	            future : '%s',
+	            past : '%s adim',
+	            s : processRelativeTime,
+	            ss : processRelativeTime,
+	            m : processRelativeTime,
+	            mm : processRelativeTime,
+	            h : processRelativeTime,
+	            hh : processRelativeTime,
+	            d : processRelativeTime,
+	            dd : processRelativeTime,
+	            M : processRelativeTime,
+	            MM : processRelativeTime,
+	            y : processRelativeTime,
+	            yy : processRelativeTime
+	        },
+	        dayOfMonthOrdinalParse : /\d{1,2}(er)/,
+	        ordinal : function (number, period) {
+	            switch (period) {
+	                // the ordinal 'er' only applies to day of the month
+	                case 'D':
+	                    return number + 'er';
+	                default:
+	                case 'M':
+	                case 'Q':
+	                case 'DDD':
+	                case 'd':
+	                case 'w':
+	                case 'W':
+	                    return number;
+	            }
+	        },
+	        week : {
+	            dow : 1, // Monday is the first day of the week.
+	            doy : 4  // The week that contains Jan 4th is the first week of the year.
+	        },
+	        meridiemParse: /rati|sokalli|donparam|sanje/,
+	        meridiemHour : function (hour, meridiem) {
+	            if (hour === 12) {
+	                hour = 0;
+	            }
+	            if (meridiem === 'rati') {
+	                return hour < 4 ? hour : hour + 12;
+	            } else if (meridiem === 'sokalli') {
+	                return hour;
+	            } else if (meridiem === 'donparam') {
+	                return hour > 12 ? hour : hour + 12;
+	            } else if (meridiem === 'sanje') {
+	                return hour + 12;
+	            }
+	        },
+	        meridiem : function (hour, minute, isLower) {
+	            if (hour < 4) {
+	                return 'rati';
+	            } else if (hour < 12) {
+	                return 'sokalli';
+	            } else if (hour < 16) {
+	                return 'donparam';
+	            } else if (hour < 20) {
+	                return 'sanje';
+	            } else {
+	                return 'rati';
+	            }
+	        }
+	    });
+
+	    return gomLatn;
+
+	})));
+
+
+/***/ }),
+/* 58 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
+
+
+	    var symbolMap = {
+	            '1': '૧',
+	            '2': '૨',
+	            '3': '૩',
+	            '4': '૪',
+	            '5': '૫',
+	            '6': '૬',
+	            '7': '૭',
+	            '8': '૮',
+	            '9': '૯',
+	            '0': '૦'
+	        },
+	        numberMap = {
+	            '૧': '1',
+	            '૨': '2',
+	            '૩': '3',
+	            '૪': '4',
+	            '૫': '5',
+	            '૬': '6',
+	            '૭': '7',
+	            '૮': '8',
+	            '૯': '9',
+	            '૦': '0'
+	        };
+
+	    var gu = moment.defineLocale('gu', {
+	        months: 'જાન્યુઆરી_ફેબ્રુઆરી_માર્ચ_એપ્રિલ_મે_જૂન_જુલાઈ_ઑગસ્ટ_સપ્ટેમ્બર_ઑક્ટ્બર_નવેમ્બર_ડિસેમ્બર'.split('_'),
+	        monthsShort: 'જાન્યુ._ફેબ્રુ._માર્ચ_એપ્રિ._મે_જૂન_જુલા._ઑગ._સપ્ટે._ઑક્ટ્._નવે._ડિસે.'.split('_'),
+	        monthsParseExact: true,
+	        weekdays: 'રવિવાર_સોમવાર_મંગળવાર_બુધ્વાર_ગુરુવાર_શુક્રવાર_શનિવાર'.split('_'),
+	        weekdaysShort: 'રવિ_સોમ_મંગળ_બુધ્_ગુરુ_શુક્ર_શનિ'.split('_'),
+	        weekdaysMin: 'ર_સો_મં_બુ_ગુ_શુ_શ'.split('_'),
+	        longDateFormat: {
+	            LT: 'A h:mm વાગ્યે',
+	            LTS: 'A h:mm:ss વાગ્યે',
+	            L: 'DD/MM/YYYY',
+	            LL: 'D MMMM YYYY',
+	            LLL: 'D MMMM YYYY, A h:mm વાગ્યે',
+	            LLLL: 'dddd, D MMMM YYYY, A h:mm વાગ્યે'
+	        },
+	        calendar: {
+	            sameDay: '[આજ] LT',
+	            nextDay: '[કાલે] LT',
+	            nextWeek: 'dddd, LT',
+	            lastDay: '[ગઇકાલે] LT',
+	            lastWeek: '[પાછલા] dddd, LT',
+	            sameElse: 'L'
+	        },
+	        relativeTime: {
+	            future: '%s મા',
+	            past: '%s પેહલા',
+	            s: 'અમુક પળો',
+	            ss: '%d સેકંડ',
+	            m: 'એક મિનિટ',
+	            mm: '%d મિનિટ',
+	            h: 'એક કલાક',
+	            hh: '%d કલાક',
+	            d: 'એક દિવસ',
+	            dd: '%d દિવસ',
+	            M: 'એક મહિનો',
+	            MM: '%d મહિનો',
+	            y: 'એક વર્ષ',
+	            yy: '%d વર્ષ'
+	        },
+	        preparse: function (string) {
+	            return string.replace(/[૧૨૩૪૫૬૭૮૯૦]/g, function (match) {
+	                return numberMap[match];
+	            });
+	        },
+	        postformat: function (string) {
+	            return string.replace(/\d/g, function (match) {
+	                return symbolMap[match];
+	            });
+	        },
+	        // Gujarati notation for meridiems are quite fuzzy in practice. While there exists
+	        // a rigid notion of a 'Pahar' it is not used as rigidly in modern Gujarati.
+	        meridiemParse: /રાત|બપોર|સવાર|સાંજ/,
+	        meridiemHour: function (hour, meridiem) {
+	            if (hour === 12) {
+	                hour = 0;
+	            }
+	            if (meridiem === 'રાત') {
+	                return hour < 4 ? hour : hour + 12;
+	            } else if (meridiem === 'સવાર') {
+	                return hour;
+	            } else if (meridiem === 'બપોર') {
+	                return hour >= 10 ? hour : hour + 12;
+	            } else if (meridiem === 'સાંજ') {
+	                return hour + 12;
+	            }
+	        },
+	        meridiem: function (hour, minute, isLower) {
+	            if (hour < 4) {
+	                return 'રાત';
+	            } else if (hour < 10) {
+	                return 'સવાર';
+	            } else if (hour < 17) {
+	                return 'બપોર';
+	            } else if (hour < 20) {
+	                return 'સાંજ';
+	            } else {
+	                return 'રાત';
+	            }
+	        },
+	        week: {
+	            dow: 0, // Sunday is the first day of the week.
+	            doy: 6 // The week that contains Jan 1st is the first week of the year.
+	        }
+	    });
+
+	    return gu;
+
+	})));
+
+
+/***/ }),
+/* 59 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
 
 
 	    var he = moment.defineLocale('he', {
@@ -29352,6 +30957,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'בעוד %s',
 	            past : 'לפני %s',
 	            s : 'מספר שניות',
+	            ss : '%d שניות',
 	            m : 'דקה',
 	            mm : '%d דקות',
 	            h : 'שעה',
@@ -29406,21 +31012,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return he;
 
-	}));
+	})));
 
-/***/ },
-/* 50 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 60 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : hindi (hi)
-	//! author : Mayank Singhal : https://github.com/mayanksinghal
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var symbolMap = {
@@ -29475,6 +31080,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : '%s में',
 	            past : '%s पहले',
 	            s : 'कुछ ही क्षण',
+	            ss : '%d सेकंड',
 	            m : 'एक मिनट',
 	            mm : '%d मिनट',
 	            h : 'एक घंटा',
@@ -29534,73 +31140,81 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return hi;
 
-	}));
+	})));
 
-/***/ },
-/* 51 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 61 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : hrvatski (hr)
-	//! author : Bojan Marković : https://github.com/bmarkovic
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    function translate(number, withoutSuffix, key) {
 	        var result = number + ' ';
 	        switch (key) {
-	        case 'm':
-	            return withoutSuffix ? 'jedna minuta' : 'jedne minute';
-	        case 'mm':
-	            if (number === 1) {
-	                result += 'minuta';
-	            } else if (number === 2 || number === 3 || number === 4) {
-	                result += 'minute';
-	            } else {
-	                result += 'minuta';
-	            }
-	            return result;
-	        case 'h':
-	            return withoutSuffix ? 'jedan sat' : 'jednog sata';
-	        case 'hh':
-	            if (number === 1) {
-	                result += 'sat';
-	            } else if (number === 2 || number === 3 || number === 4) {
-	                result += 'sata';
-	            } else {
-	                result += 'sati';
-	            }
-	            return result;
-	        case 'dd':
-	            if (number === 1) {
-	                result += 'dan';
-	            } else {
-	                result += 'dana';
-	            }
-	            return result;
-	        case 'MM':
-	            if (number === 1) {
-	                result += 'mjesec';
-	            } else if (number === 2 || number === 3 || number === 4) {
-	                result += 'mjeseca';
-	            } else {
-	                result += 'mjeseci';
-	            }
-	            return result;
-	        case 'yy':
-	            if (number === 1) {
-	                result += 'godina';
-	            } else if (number === 2 || number === 3 || number === 4) {
-	                result += 'godine';
-	            } else {
-	                result += 'godina';
-	            }
-	            return result;
+	            case 'ss':
+	                if (number === 1) {
+	                    result += 'sekunda';
+	                } else if (number === 2 || number === 3 || number === 4) {
+	                    result += 'sekunde';
+	                } else {
+	                    result += 'sekundi';
+	                }
+	                return result;
+	            case 'm':
+	                return withoutSuffix ? 'jedna minuta' : 'jedne minute';
+	            case 'mm':
+	                if (number === 1) {
+	                    result += 'minuta';
+	                } else if (number === 2 || number === 3 || number === 4) {
+	                    result += 'minute';
+	                } else {
+	                    result += 'minuta';
+	                }
+	                return result;
+	            case 'h':
+	                return withoutSuffix ? 'jedan sat' : 'jednog sata';
+	            case 'hh':
+	                if (number === 1) {
+	                    result += 'sat';
+	                } else if (number === 2 || number === 3 || number === 4) {
+	                    result += 'sata';
+	                } else {
+	                    result += 'sati';
+	                }
+	                return result;
+	            case 'dd':
+	                if (number === 1) {
+	                    result += 'dan';
+	                } else {
+	                    result += 'dana';
+	                }
+	                return result;
+	            case 'MM':
+	                if (number === 1) {
+	                    result += 'mjesec';
+	                } else if (number === 2 || number === 3 || number === 4) {
+	                    result += 'mjeseca';
+	                } else {
+	                    result += 'mjeseci';
+	                }
+	                return result;
+	            case 'yy':
+	                if (number === 1) {
+	                    result += 'godina';
+	                } else if (number === 2 || number === 3 || number === 4) {
+	                    result += 'godine';
+	                } else {
+	                    result += 'godina';
+	                }
+	                return result;
 	        }
 	    }
 
@@ -29618,7 +31232,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        longDateFormat : {
 	            LT : 'H:mm',
 	            LTS : 'H:mm:ss',
-	            L : 'DD. MM. YYYY',
+	            L : 'DD.MM.YYYY',
 	            LL : 'D. MMMM YYYY',
 	            LLL : 'D. MMMM YYYY H:mm',
 	            LLLL : 'dddd, D. MMMM YYYY H:mm'
@@ -29628,32 +31242,32 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            nextDay  : '[sutra u] LT',
 	            nextWeek : function () {
 	                switch (this.day()) {
-	                case 0:
-	                    return '[u] [nedjelju] [u] LT';
-	                case 3:
-	                    return '[u] [srijedu] [u] LT';
-	                case 6:
-	                    return '[u] [subotu] [u] LT';
-	                case 1:
-	                case 2:
-	                case 4:
-	                case 5:
-	                    return '[u] dddd [u] LT';
+	                    case 0:
+	                        return '[u] [nedjelju] [u] LT';
+	                    case 3:
+	                        return '[u] [srijedu] [u] LT';
+	                    case 6:
+	                        return '[u] [subotu] [u] LT';
+	                    case 1:
+	                    case 2:
+	                    case 4:
+	                    case 5:
+	                        return '[u] dddd [u] LT';
 	                }
 	            },
 	            lastDay  : '[jučer u] LT',
 	            lastWeek : function () {
 	                switch (this.day()) {
-	                case 0:
-	                case 3:
-	                    return '[prošlu] dddd [u] LT';
-	                case 6:
-	                    return '[prošle] [subote] [u] LT';
-	                case 1:
-	                case 2:
-	                case 4:
-	                case 5:
-	                    return '[prošli] dddd [u] LT';
+	                    case 0:
+	                    case 3:
+	                        return '[prošlu] dddd [u] LT';
+	                    case 6:
+	                        return '[prošle] [subote] [u] LT';
+	                    case 1:
+	                    case 2:
+	                    case 4:
+	                    case 5:
+	                        return '[prošli] dddd [u] LT';
 	                }
 	            },
 	            sameElse : 'L'
@@ -29662,6 +31276,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'za %s',
 	            past   : 'prije %s',
 	            s      : 'par sekundi',
+	            ss     : translate,
 	            m      : translate,
 	            mm     : translate,
 	            h      : translate,
@@ -29673,7 +31288,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y      : 'godinu',
 	            yy     : translate
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -29683,50 +31298,50 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return hr;
 
-	}));
+	})));
 
-/***/ },
-/* 52 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 62 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : hungarian (hu)
-	//! author : Adam Brunner : https://github.com/adambrunner
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var weekEndings = 'vasárnap hétfőn kedden szerdán csütörtökön pénteken szombaton'.split(' ');
 	    function translate(number, withoutSuffix, key, isFuture) {
-	        var num = number,
-	            suffix;
+	        var num = number;
 	        switch (key) {
-	        case 's':
-	            return (isFuture || withoutSuffix) ? 'néhány másodperc' : 'néhány másodperce';
-	        case 'm':
-	            return 'egy' + (isFuture || withoutSuffix ? ' perc' : ' perce');
-	        case 'mm':
-	            return num + (isFuture || withoutSuffix ? ' perc' : ' perce');
-	        case 'h':
-	            return 'egy' + (isFuture || withoutSuffix ? ' óra' : ' órája');
-	        case 'hh':
-	            return num + (isFuture || withoutSuffix ? ' óra' : ' órája');
-	        case 'd':
-	            return 'egy' + (isFuture || withoutSuffix ? ' nap' : ' napja');
-	        case 'dd':
-	            return num + (isFuture || withoutSuffix ? ' nap' : ' napja');
-	        case 'M':
-	            return 'egy' + (isFuture || withoutSuffix ? ' hónap' : ' hónapja');
-	        case 'MM':
-	            return num + (isFuture || withoutSuffix ? ' hónap' : ' hónapja');
-	        case 'y':
-	            return 'egy' + (isFuture || withoutSuffix ? ' év' : ' éve');
-	        case 'yy':
-	            return num + (isFuture || withoutSuffix ? ' év' : ' éve');
+	            case 's':
+	                return (isFuture || withoutSuffix) ? 'néhány másodperc' : 'néhány másodperce';
+	            case 'ss':
+	                return num + (isFuture || withoutSuffix) ? ' másodperc' : ' másodperce';
+	            case 'm':
+	                return 'egy' + (isFuture || withoutSuffix ? ' perc' : ' perce');
+	            case 'mm':
+	                return num + (isFuture || withoutSuffix ? ' perc' : ' perce');
+	            case 'h':
+	                return 'egy' + (isFuture || withoutSuffix ? ' óra' : ' órája');
+	            case 'hh':
+	                return num + (isFuture || withoutSuffix ? ' óra' : ' órája');
+	            case 'd':
+	                return 'egy' + (isFuture || withoutSuffix ? ' nap' : ' napja');
+	            case 'dd':
+	                return num + (isFuture || withoutSuffix ? ' nap' : ' napja');
+	            case 'M':
+	                return 'egy' + (isFuture || withoutSuffix ? ' hónap' : ' hónapja');
+	            case 'MM':
+	                return num + (isFuture || withoutSuffix ? ' hónap' : ' hónapja');
+	            case 'y':
+	                return 'egy' + (isFuture || withoutSuffix ? ' év' : ' éve');
+	            case 'yy':
+	                return num + (isFuture || withoutSuffix ? ' év' : ' éve');
 	        }
 	        return '';
 	    }
@@ -29775,6 +31390,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : '%s múlva',
 	            past : '%s',
 	            s : translate,
+	            ss : translate,
 	            m : translate,
 	            mm : translate,
 	            h : translate,
@@ -29786,34 +31402,33 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : translate,
 	            yy : translate
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
-	            doy : 7  // The week that contains Jan 1st is the first week of the year.
+	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
 
 	    return hu;
 
-	}));
+	})));
 
-/***/ },
-/* 53 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 63 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Armenian (hy-am)
-	//! author : Armendarabyan : https://github.com/armendarabyan
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
-	    var hy_am = moment.defineLocale('hy-am', {
+	    var hyAm = moment.defineLocale('hy-am', {
 	        months : {
 	            format: 'հունվարի_փետրվարի_մարտի_ապրիլի_մայիսի_հունիսի_հուլիսի_օգոստոսի_սեպտեմբերի_հոկտեմբերի_նոյեմբերի_դեկտեմբերի'.split('_'),
 	            standalone: 'հունվար_փետրվար_մարտ_ապրիլ_մայիս_հունիս_հուլիս_օգոստոս_սեպտեմբեր_հոկտեմբեր_նոյեմբեր_դեկտեմբեր'.split('_')
@@ -29846,6 +31461,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : '%s հետո',
 	            past : '%s առաջ',
 	            s : 'մի քանի վայրկյան',
+	            ss : '%d վայրկյան',
 	            m : 'րոպե',
 	            mm : '%d րոպե',
 	            h : 'ժամ',
@@ -29872,19 +31488,19 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                return 'երեկոյան';
 	            }
 	        },
-	        ordinalParse: /\d{1,2}|\d{1,2}-(ին|րդ)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}|\d{1,2}-(ին|րդ)/,
 	        ordinal: function (number, period) {
 	            switch (period) {
-	            case 'DDD':
-	            case 'w':
-	            case 'W':
-	            case 'DDDo':
-	                if (number === 1) {
-	                    return number + '-ին';
-	                }
-	                return number + '-րդ';
-	            default:
-	                return number;
+	                case 'DDD':
+	                case 'w':
+	                case 'W':
+	                case 'DDDo':
+	                    if (number === 1) {
+	                        return number + '-ին';
+	                    }
+	                    return number + '-րդ';
+	                default:
+	                    return number;
 	            }
 	        },
 	        week : {
@@ -29893,29 +31509,27 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	    });
 
-	    return hy_am;
+	    return hyAm;
 
-	}));
+	})));
 
-/***/ },
-/* 54 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 64 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Bahasa Indonesia (id)
-	//! author : Mohammad Satrio Utomo : https://github.com/tyok
-	//! reference: http://id.wikisource.org/wiki/Pedoman_Umum_Ejaan_Bahasa_Indonesia_yang_Disempurnakan
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var id = moment.defineLocale('id', {
 	        months : 'Januari_Februari_Maret_April_Mei_Juni_Juli_Agustus_September_Oktober_November_Desember'.split('_'),
-	        monthsShort : 'Jan_Feb_Mar_Apr_Mei_Jun_Jul_Ags_Sep_Okt_Nov_Des'.split('_'),
+	        monthsShort : 'Jan_Feb_Mar_Apr_Mei_Jun_Jul_Agt_Sep_Okt_Nov_Des'.split('_'),
 	        weekdays : 'Minggu_Senin_Selasa_Rabu_Kamis_Jumat_Sabtu'.split('_'),
 	        weekdaysShort : 'Min_Sen_Sel_Rab_Kam_Jum_Sab'.split('_'),
 	        weekdaysMin : 'Mg_Sn_Sl_Rb_Km_Jm_Sb'.split('_'),
@@ -29963,6 +31577,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'dalam %s',
 	            past : '%s yang lalu',
 	            s : 'beberapa detik',
+	            ss : '%d detik',
 	            m : 'semenit',
 	            mm : '%d menit',
 	            h : 'sejam',
@@ -29982,21 +31597,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return id;
 
-	}));
+	})));
 
-/***/ },
-/* 55 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 65 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : icelandic (is)
-	//! author : Hinrik Örn Sigurðsson : https://github.com/hinrik
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    function plural(n) {
@@ -30010,59 +31624,64 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    function translate(number, withoutSuffix, key, isFuture) {
 	        var result = number + ' ';
 	        switch (key) {
-	        case 's':
-	            return withoutSuffix || isFuture ? 'nokkrar sekúndur' : 'nokkrum sekúndum';
-	        case 'm':
-	            return withoutSuffix ? 'mínúta' : 'mínútu';
-	        case 'mm':
-	            if (plural(number)) {
-	                return result + (withoutSuffix || isFuture ? 'mínútur' : 'mínútum');
-	            } else if (withoutSuffix) {
-	                return result + 'mínúta';
-	            }
-	            return result + 'mínútu';
-	        case 'hh':
-	            if (plural(number)) {
-	                return result + (withoutSuffix || isFuture ? 'klukkustundir' : 'klukkustundum');
-	            }
-	            return result + 'klukkustund';
-	        case 'd':
-	            if (withoutSuffix) {
-	                return 'dagur';
-	            }
-	            return isFuture ? 'dag' : 'degi';
-	        case 'dd':
-	            if (plural(number)) {
-	                if (withoutSuffix) {
-	                    return result + 'dagar';
+	            case 's':
+	                return withoutSuffix || isFuture ? 'nokkrar sekúndur' : 'nokkrum sekúndum';
+	            case 'ss':
+	                if (plural(number)) {
+	                    return result + (withoutSuffix || isFuture ? 'sekúndur' : 'sekúndum');
 	                }
-	                return result + (isFuture ? 'daga' : 'dögum');
-	            } else if (withoutSuffix) {
-	                return result + 'dagur';
-	            }
-	            return result + (isFuture ? 'dag' : 'degi');
-	        case 'M':
-	            if (withoutSuffix) {
-	                return 'mánuður';
-	            }
-	            return isFuture ? 'mánuð' : 'mánuði';
-	        case 'MM':
-	            if (plural(number)) {
-	                if (withoutSuffix) {
-	                    return result + 'mánuðir';
+	                return result + 'sekúnda';
+	            case 'm':
+	                return withoutSuffix ? 'mínúta' : 'mínútu';
+	            case 'mm':
+	                if (plural(number)) {
+	                    return result + (withoutSuffix || isFuture ? 'mínútur' : 'mínútum');
+	                } else if (withoutSuffix) {
+	                    return result + 'mínúta';
 	                }
-	                return result + (isFuture ? 'mánuði' : 'mánuðum');
-	            } else if (withoutSuffix) {
-	                return result + 'mánuður';
-	            }
-	            return result + (isFuture ? 'mánuð' : 'mánuði');
-	        case 'y':
-	            return withoutSuffix || isFuture ? 'ár' : 'ári';
-	        case 'yy':
-	            if (plural(number)) {
-	                return result + (withoutSuffix || isFuture ? 'ár' : 'árum');
-	            }
-	            return result + (withoutSuffix || isFuture ? 'ár' : 'ári');
+	                return result + 'mínútu';
+	            case 'hh':
+	                if (plural(number)) {
+	                    return result + (withoutSuffix || isFuture ? 'klukkustundir' : 'klukkustundum');
+	                }
+	                return result + 'klukkustund';
+	            case 'd':
+	                if (withoutSuffix) {
+	                    return 'dagur';
+	                }
+	                return isFuture ? 'dag' : 'degi';
+	            case 'dd':
+	                if (plural(number)) {
+	                    if (withoutSuffix) {
+	                        return result + 'dagar';
+	                    }
+	                    return result + (isFuture ? 'daga' : 'dögum');
+	                } else if (withoutSuffix) {
+	                    return result + 'dagur';
+	                }
+	                return result + (isFuture ? 'dag' : 'degi');
+	            case 'M':
+	                if (withoutSuffix) {
+	                    return 'mánuður';
+	                }
+	                return isFuture ? 'mánuð' : 'mánuði';
+	            case 'MM':
+	                if (plural(number)) {
+	                    if (withoutSuffix) {
+	                        return result + 'mánuðir';
+	                    }
+	                    return result + (isFuture ? 'mánuði' : 'mánuðum');
+	                } else if (withoutSuffix) {
+	                    return result + 'mánuður';
+	                }
+	                return result + (isFuture ? 'mánuð' : 'mánuði');
+	            case 'y':
+	                return withoutSuffix || isFuture ? 'ár' : 'ári';
+	            case 'yy':
+	                if (plural(number)) {
+	                    return result + (withoutSuffix || isFuture ? 'ár' : 'árum');
+	                }
+	                return result + (withoutSuffix || isFuture ? 'ár' : 'ári');
 	        }
 	    }
 
@@ -30092,6 +31711,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'eftir %s',
 	            past : 'fyrir %s síðan',
 	            s : translate,
+	            ss : translate,
 	            m : translate,
 	            mm : translate,
 	            h : 'klukkustund',
@@ -30103,7 +31723,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : translate,
 	            yy : translate
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -30113,37 +31733,35 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return is;
 
-	}));
+	})));
 
-/***/ },
-/* 56 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 66 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : italian (it)
-	//! author : Lorenzo : https://github.com/aliem
-	//! author: Mattia Larentis: https://github.com/nostalgiaz
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var it = moment.defineLocale('it', {
 	        months : 'gennaio_febbraio_marzo_aprile_maggio_giugno_luglio_agosto_settembre_ottobre_novembre_dicembre'.split('_'),
 	        monthsShort : 'gen_feb_mar_apr_mag_giu_lug_ago_set_ott_nov_dic'.split('_'),
-	        weekdays : 'Domenica_Lunedì_Martedì_Mercoledì_Giovedì_Venerdì_Sabato'.split('_'),
-	        weekdaysShort : 'Dom_Lun_Mar_Mer_Gio_Ven_Sab'.split('_'),
-	        weekdaysMin : 'Do_Lu_Ma_Me_Gi_Ve_Sa'.split('_'),
+	        weekdays : 'domenica_lunedì_martedì_mercoledì_giovedì_venerdì_sabato'.split('_'),
+	        weekdaysShort : 'dom_lun_mar_mer_gio_ven_sab'.split('_'),
+	        weekdaysMin : 'do_lu_ma_me_gi_ve_sa'.split('_'),
 	        longDateFormat : {
 	            LT : 'HH:mm',
 	            LTS : 'HH:mm:ss',
 	            L : 'DD/MM/YYYY',
 	            LL : 'D MMMM YYYY',
 	            LLL : 'D MMMM YYYY HH:mm',
-	            LLLL : 'dddd, D MMMM YYYY HH:mm'
+	            LLLL : 'dddd D MMMM YYYY HH:mm'
 	        },
 	        calendar : {
 	            sameDay: '[Oggi alle] LT',
@@ -30166,6 +31784,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            },
 	            past : '%s fa',
 	            s : 'alcuni secondi',
+	            ss : '%d secondi',
 	            m : 'un minuto',
 	            mm : '%d minuti',
 	            h : 'un\'ora',
@@ -30177,7 +31796,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'un anno',
 	            yy : '%d anni'
 	        },
-	        ordinalParse : /\d{1,2}º/,
+	        dayOfMonthOrdinalParse : /\d{1,2}º/,
 	        ordinal: '%dº',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -30187,21 +31806,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return it;
 
-	}));
+	})));
 
-/***/ },
-/* 57 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 67 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : japanese (ja)
-	//! author : LI Long : https://github.com/baryon
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var ja = moment.defineLocale('ja', {
@@ -30211,12 +31829,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        weekdaysShort : '日_月_火_水_木_金_土'.split('_'),
 	        weekdaysMin : '日_月_火_水_木_金_土'.split('_'),
 	        longDateFormat : {
-	            LT : 'Ah時m分',
-	            LTS : 'Ah時m分s秒',
+	            LT : 'HH:mm',
+	            LTS : 'HH:mm:ss',
 	            L : 'YYYY/MM/DD',
 	            LL : 'YYYY年M月D日',
-	            LLL : 'YYYY年M月D日Ah時m分',
-	            LLLL : 'YYYY年M月D日Ah時m分 dddd'
+	            LLL : 'YYYY年M月D日 HH:mm',
+	            LLLL : 'YYYY年M月D日 dddd HH:mm',
+	            l : 'YYYY/MM/DD',
+	            ll : 'YYYY年M月D日',
+	            lll : 'YYYY年M月D日 HH:mm',
+	            llll : 'YYYY年M月D日(ddd) HH:mm'
 	        },
 	        meridiemParse: /午前|午後/i,
 	        isPM : function (input) {
@@ -30232,26 +31854,39 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        calendar : {
 	            sameDay : '[今日] LT',
 	            nextDay : '[明日] LT',
-	            nextWeek : '[来週]dddd LT',
+	            nextWeek : function (now) {
+	                if (now.week() < this.week()) {
+	                    return '[来週]dddd LT';
+	                } else {
+	                    return 'dddd LT';
+	                }
+	            },
 	            lastDay : '[昨日] LT',
-	            lastWeek : '[前週]dddd LT',
+	            lastWeek : function (now) {
+	                if (this.week() < now.week()) {
+	                    return '[先週]dddd LT';
+	                } else {
+	                    return 'dddd LT';
+	                }
+	            },
 	            sameElse : 'L'
 	        },
-	        ordinalParse : /\d{1,2}日/,
+	        dayOfMonthOrdinalParse : /\d{1,2}日/,
 	        ordinal : function (number, period) {
 	            switch (period) {
-	            case 'd':
-	            case 'D':
-	            case 'DDD':
-	                return number + '日';
-	            default:
-	                return number;
+	                case 'd':
+	                case 'D':
+	                case 'DDD':
+	                    return number + '日';
+	                default:
+	                    return number;
 	            }
 	        },
 	        relativeTime : {
 	            future : '%s後',
 	            past : '%s前',
 	            s : '数秒',
+	            ss : '%d秒',
 	            m : '1分',
 	            mm : '%d分',
 	            h : '1時間',
@@ -30267,22 +31902,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return ja;
 
-	}));
+	})));
 
-/***/ },
-/* 58 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 68 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Boso Jowo (jv)
-	//! author : Rony Lantip : https://github.com/lantip
-	//! reference: http://jv.wikipedia.org/wiki/Basa_Jawa
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var jv = moment.defineLocale('jv', {
@@ -30335,6 +31968,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'wonten ing %s',
 	            past : '%s ingkang kepengker',
 	            s : 'sawetawis detik',
+	            ss : '%d detik',
 	            m : 'setunggal menit',
 	            mm : '%d menit',
 	            h : 'setunggal jam',
@@ -30354,21 +31988,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return jv;
 
-	}));
+	})));
 
-/***/ },
-/* 59 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 69 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Georgian (ka)
-	//! author : Irakli Janiashvili : https://github.com/irakli-janiashvili
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var ka = moment.defineLocale('ka', {
@@ -30415,6 +32048,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                }
 	            },
 	            s : 'რამდენიმე წამი',
+	            ss : '%d წამი',
 	            m : 'წუთი',
 	            mm : '%d წუთი',
 	            h : 'საათი',
@@ -30426,7 +32060,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'წელი',
 	            yy : '%d წელი'
 	        },
-	        ordinalParse: /0|1-ლი|მე-\d{1,2}|\d{1,2}-ე/,
+	        dayOfMonthOrdinalParse: /0|1-ლი|მე-\d{1,2}|\d{1,2}-ე/,
 	        ordinal : function (number) {
 	            if (number === 0) {
 	                return number;
@@ -30447,21 +32081,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return ka;
 
-	}));
+	})));
 
-/***/ },
-/* 60 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 70 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : kazakh (kk)
-	//! authors : Nurlan Rakhimzhanov : https://github.com/nurlan
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var suffixes = {
@@ -30513,6 +32146,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : '%s ішінде',
 	            past : '%s бұрын',
 	            s : 'бірнеше секунд',
+	            ss : '%d секунд',
 	            m : 'бір минут',
 	            mm : '%d минут',
 	            h : 'бір сағат',
@@ -30524,7 +32158,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'бір жыл',
 	            yy : '%d жыл'
 	        },
-	        ordinalParse: /\d{1,2}-(ші|шы)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}-(ші|шы)/,
 	        ordinal : function (number) {
 	            var a = number % 10,
 	                b = number >= 100 ? 100 : null;
@@ -30538,36 +32172,75 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return kk;
 
-	}));
+	})));
 
-/***/ },
-/* 61 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 71 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : khmer (km)
-	//! author : Kruy Vanna : https://github.com/kruyvanna
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
+
+	    var symbolMap = {
+	        '1': '១',
+	        '2': '២',
+	        '3': '៣',
+	        '4': '៤',
+	        '5': '៥',
+	        '6': '៦',
+	        '7': '៧',
+	        '8': '៨',
+	        '9': '៩',
+	        '0': '០'
+	    }, numberMap = {
+	        '១': '1',
+	        '២': '2',
+	        '៣': '3',
+	        '៤': '4',
+	        '៥': '5',
+	        '៦': '6',
+	        '៧': '7',
+	        '៨': '8',
+	        '៩': '9',
+	        '០': '0'
+	    };
 
 	    var km = moment.defineLocale('km', {
-	        months: 'មករា_កុម្ភៈ_មីនា_មេសា_ឧសភា_មិថុនា_កក្កដា_សីហា_កញ្ញា_តុលា_វិច្ឆិកា_ធ្នូ'.split('_'),
-	        monthsShort: 'មករា_កុម្ភៈ_មីនា_មេសា_ឧសភា_មិថុនា_កក្កដា_សីហា_កញ្ញា_តុលា_វិច្ឆិកា_ធ្នូ'.split('_'),
+	        months: 'មករា_កុម្ភៈ_មីនា_មេសា_ឧសភា_មិថុនា_កក្កដា_សីហា_កញ្ញា_តុលា_វិច្ឆិកា_ធ្នូ'.split(
+	            '_'
+	        ),
+	        monthsShort: 'មករា_កុម្ភៈ_មីនា_មេសា_ឧសភា_មិថុនា_កក្កដា_សីហា_កញ្ញា_តុលា_វិច្ឆិកា_ធ្នូ'.split(
+	            '_'
+	        ),
 	        weekdays: 'អាទិត្យ_ច័ន្ទ_អង្គារ_ពុធ_ព្រហស្បតិ៍_សុក្រ_សៅរ៍'.split('_'),
-	        weekdaysShort: 'អាទិត្យ_ច័ន្ទ_អង្គារ_ពុធ_ព្រហស្បតិ៍_សុក្រ_សៅរ៍'.split('_'),
-	        weekdaysMin: 'អាទិត្យ_ច័ន្ទ_អង្គារ_ពុធ_ព្រហស្បតិ៍_សុក្រ_សៅរ៍'.split('_'),
+	        weekdaysShort: 'អា_ច_អ_ព_ព្រ_សុ_ស'.split('_'),
+	        weekdaysMin: 'អា_ច_អ_ព_ព្រ_សុ_ស'.split('_'),
+	        weekdaysParseExact: true,
 	        longDateFormat: {
 	            LT: 'HH:mm',
-	            LTS : 'HH:mm:ss',
+	            LTS: 'HH:mm:ss',
 	            L: 'DD/MM/YYYY',
 	            LL: 'D MMMM YYYY',
 	            LLL: 'D MMMM YYYY HH:mm',
 	            LLLL: 'dddd, D MMMM YYYY HH:mm'
+	        },
+	        meridiemParse: /ព្រឹក|ល្ងាច/,
+	        isPM: function (input) {
+	            return input === 'ល្ងាច';
+	        },
+	        meridiem: function (hour, minute, isLower) {
+	            if (hour < 12) {
+	                return 'ព្រឹក';
+	            } else {
+	                return 'ល្ងាច';
+	            }
 	        },
 	        calendar: {
 	            sameDay: '[ថ្ងៃនេះ ម៉ោង] LT',
@@ -30581,6 +32254,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future: '%sទៀត',
 	            past: '%sមុន',
 	            s: 'ប៉ុន្មានវិនាទី',
+	            ss: '%d វិនាទី',
 	            m: 'មួយនាទី',
 	            mm: '%d នាទី',
 	            h: 'មួយម៉ោង',
@@ -30592,6 +32266,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y: 'មួយឆ្នាំ',
 	            yy: '%d ឆ្នាំ'
 	        },
+	        dayOfMonthOrdinalParse : /ទី\d{1,2}/,
+	        ordinal : 'ទី%d',
+	        preparse: function (string) {
+	            return string.replace(/[១២៣៤៥៦៧៨៩០]/g, function (match) {
+	                return numberMap[match];
+	            });
+	        },
+	        postformat: function (string) {
+	            return string.replace(/\d/g, function (match) {
+	                return symbolMap[match];
+	            });
+	        },
 	        week: {
 	            dow: 1, // Monday is the first day of the week.
 	            doy: 4 // The week that contains Jan 4th is the first week of the year.
@@ -30600,25 +32286,150 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return km;
 
-	}));
+	})));
 
-/***/ },
-/* 62 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 72 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : korean (ko)
-	//!
-	//! authors
-	//!
-	//! - Kyungwook, Park : https://github.com/kyungw00k
-	//! - Jeeeyul Lee <jeeeyul@gmail.com>
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
+
+
+	    var symbolMap = {
+	        '1': '೧',
+	        '2': '೨',
+	        '3': '೩',
+	        '4': '೪',
+	        '5': '೫',
+	        '6': '೬',
+	        '7': '೭',
+	        '8': '೮',
+	        '9': '೯',
+	        '0': '೦'
+	    },
+	    numberMap = {
+	        '೧': '1',
+	        '೨': '2',
+	        '೩': '3',
+	        '೪': '4',
+	        '೫': '5',
+	        '೬': '6',
+	        '೭': '7',
+	        '೮': '8',
+	        '೯': '9',
+	        '೦': '0'
+	    };
+
+	    var kn = moment.defineLocale('kn', {
+	        months : 'ಜನವರಿ_ಫೆಬ್ರವರಿ_ಮಾರ್ಚ್_ಏಪ್ರಿಲ್_ಮೇ_ಜೂನ್_ಜುಲೈ_ಆಗಸ್ಟ್_ಸೆಪ್ಟೆಂಬರ್_ಅಕ್ಟೋಬರ್_ನವೆಂಬರ್_ಡಿಸೆಂಬರ್'.split('_'),
+	        monthsShort : 'ಜನ_ಫೆಬ್ರ_ಮಾರ್ಚ್_ಏಪ್ರಿಲ್_ಮೇ_ಜೂನ್_ಜುಲೈ_ಆಗಸ್ಟ್_ಸೆಪ್ಟೆಂ_ಅಕ್ಟೋ_ನವೆಂ_ಡಿಸೆಂ'.split('_'),
+	        monthsParseExact: true,
+	        weekdays : 'ಭಾನುವಾರ_ಸೋಮವಾರ_ಮಂಗಳವಾರ_ಬುಧವಾರ_ಗುರುವಾರ_ಶುಕ್ರವಾರ_ಶನಿವಾರ'.split('_'),
+	        weekdaysShort : 'ಭಾನು_ಸೋಮ_ಮಂಗಳ_ಬುಧ_ಗುರು_ಶುಕ್ರ_ಶನಿ'.split('_'),
+	        weekdaysMin : 'ಭಾ_ಸೋ_ಮಂ_ಬು_ಗು_ಶು_ಶ'.split('_'),
+	        longDateFormat : {
+	            LT : 'A h:mm',
+	            LTS : 'A h:mm:ss',
+	            L : 'DD/MM/YYYY',
+	            LL : 'D MMMM YYYY',
+	            LLL : 'D MMMM YYYY, A h:mm',
+	            LLLL : 'dddd, D MMMM YYYY, A h:mm'
+	        },
+	        calendar : {
+	            sameDay : '[ಇಂದು] LT',
+	            nextDay : '[ನಾಳೆ] LT',
+	            nextWeek : 'dddd, LT',
+	            lastDay : '[ನಿನ್ನೆ] LT',
+	            lastWeek : '[ಕೊನೆಯ] dddd, LT',
+	            sameElse : 'L'
+	        },
+	        relativeTime : {
+	            future : '%s ನಂತರ',
+	            past : '%s ಹಿಂದೆ',
+	            s : 'ಕೆಲವು ಕ್ಷಣಗಳು',
+	            ss : '%d ಸೆಕೆಂಡುಗಳು',
+	            m : 'ಒಂದು ನಿಮಿಷ',
+	            mm : '%d ನಿಮಿಷ',
+	            h : 'ಒಂದು ಗಂಟೆ',
+	            hh : '%d ಗಂಟೆ',
+	            d : 'ಒಂದು ದಿನ',
+	            dd : '%d ದಿನ',
+	            M : 'ಒಂದು ತಿಂಗಳು',
+	            MM : '%d ತಿಂಗಳು',
+	            y : 'ಒಂದು ವರ್ಷ',
+	            yy : '%d ವರ್ಷ'
+	        },
+	        preparse: function (string) {
+	            return string.replace(/[೧೨೩೪೫೬೭೮೯೦]/g, function (match) {
+	                return numberMap[match];
+	            });
+	        },
+	        postformat: function (string) {
+	            return string.replace(/\d/g, function (match) {
+	                return symbolMap[match];
+	            });
+	        },
+	        meridiemParse: /ರಾತ್ರಿ|ಬೆಳಿಗ್ಗೆ|ಮಧ್ಯಾಹ್ನ|ಸಂಜೆ/,
+	        meridiemHour : function (hour, meridiem) {
+	            if (hour === 12) {
+	                hour = 0;
+	            }
+	            if (meridiem === 'ರಾತ್ರಿ') {
+	                return hour < 4 ? hour : hour + 12;
+	            } else if (meridiem === 'ಬೆಳಿಗ್ಗೆ') {
+	                return hour;
+	            } else if (meridiem === 'ಮಧ್ಯಾಹ್ನ') {
+	                return hour >= 10 ? hour : hour + 12;
+	            } else if (meridiem === 'ಸಂಜೆ') {
+	                return hour + 12;
+	            }
+	        },
+	        meridiem : function (hour, minute, isLower) {
+	            if (hour < 4) {
+	                return 'ರಾತ್ರಿ';
+	            } else if (hour < 10) {
+	                return 'ಬೆಳಿಗ್ಗೆ';
+	            } else if (hour < 17) {
+	                return 'ಮಧ್ಯಾಹ್ನ';
+	            } else if (hour < 20) {
+	                return 'ಸಂಜೆ';
+	            } else {
+	                return 'ರಾತ್ರಿ';
+	            }
+	        },
+	        dayOfMonthOrdinalParse: /\d{1,2}(ನೇ)/,
+	        ordinal : function (number) {
+	            return number + 'ನೇ';
+	        },
+	        week : {
+	            dow : 0, // Sunday is the first day of the week.
+	            doy : 6  // The week that contains Jan 1st is the first week of the year.
+	        }
+	    });
+
+	    return kn;
+
+	})));
+
+
+/***/ }),
+/* 73 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
 
 
 	    var ko = moment.defineLocale('ko', {
@@ -30628,12 +32439,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        weekdaysShort : '일_월_화_수_목_금_토'.split('_'),
 	        weekdaysMin : '일_월_화_수_목_금_토'.split('_'),
 	        longDateFormat : {
-	            LT : 'A h시 m분',
-	            LTS : 'A h시 m분 s초',
-	            L : 'YYYY.MM.DD',
+	            LT : 'A h:mm',
+	            LTS : 'A h:mm:ss',
+	            L : 'YYYY.MM.DD.',
 	            LL : 'YYYY년 MMMM D일',
-	            LLL : 'YYYY년 MMMM D일 A h시 m분',
-	            LLLL : 'YYYY년 MMMM D일 dddd A h시 m분'
+	            LLL : 'YYYY년 MMMM D일 A h:mm',
+	            LLLL : 'YYYY년 MMMM D일 dddd A h:mm',
+	            l : 'YYYY.MM.DD.',
+	            ll : 'YYYY년 MMMM D일',
+	            lll : 'YYYY년 MMMM D일 A h:mm',
+	            llll : 'YYYY년 MMMM D일 dddd A h:mm'
 	        },
 	        calendar : {
 	            sameDay : '오늘 LT',
@@ -30648,7 +32463,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            past : '%s 전',
 	            s : '몇 초',
 	            ss : '%d초',
-	            m : '일분',
+	            m : '1분',
 	            mm : '%d분',
 	            h : '한 시간',
 	            hh : '%d시간',
@@ -30659,8 +32474,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : '일 년',
 	            yy : '%d년'
 	        },
-	        ordinalParse : /\d{1,2}일/,
-	        ordinal : '%d일',
+	        dayOfMonthOrdinalParse : /\d{1,2}(일|월|주)/,
+	        ordinal : function (number, period) {
+	            switch (period) {
+	                case 'd':
+	                case 'D':
+	                case 'DDD':
+	                    return number + '일';
+	                case 'M':
+	                    return number + '월';
+	                case 'w':
+	                case 'W':
+	                    return number + '주';
+	                default:
+	                    return number;
+	            }
+	        },
 	        meridiemParse : /오전|오후/,
 	        isPM : function (token) {
 	            return token === '오후';
@@ -30672,22 +32501,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return ko;
 
-	}));
+	})));
 
-/***/ },
-/* 63 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 74 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : kyrgyz (ky)
-	//! author : Chyngyz Arystan uulu : https://github.com/chyngyz
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
-
+	}(this, (function (moment) { 'use strict';
 
 
 	    var suffixes = {
@@ -30739,6 +32566,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : '%s ичинде',
 	            past : '%s мурун',
 	            s : 'бирнече секунд',
+	            ss : '%d секунд',
 	            m : 'бир мүнөт',
 	            mm : '%d мүнөт',
 	            h : 'бир саат',
@@ -30750,7 +32578,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'бир жыл',
 	            yy : '%d жыл'
 	        },
-	        ordinalParse: /\d{1,2}-(чи|чы|чү|чу)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}-(чи|чы|чү|чу)/,
 	        ordinal : function (number) {
 	            var a = number % 10,
 	                b = number >= 100 ? 100 : null;
@@ -30764,21 +32592,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return ky;
 
-	}));
+	})));
 
-/***/ },
-/* 64 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 75 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Luxembourgish (lb)
-	//! author : mweimerskirch : https://github.com/mweimerskirch, David Raison : https://github.com/kwisatz
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    function processRelativeTime(number, withoutSuffix, key, isFuture) {
@@ -30883,6 +32710,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : processFutureTime,
 	            past : processPastTime,
 	            s : 'e puer Sekonnen',
+	            ss : '%d Sekonnen',
 	            m : processRelativeTime,
 	            mm : '%d Minutten',
 	            h : processRelativeTime,
@@ -30894,7 +32722,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : processRelativeTime,
 	            yy : '%d Joer'
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal: '%d.',
 	        week: {
 	            dow: 1, // Monday is the first day of the week.
@@ -30904,21 +32732,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return lb;
 
-	}));
+	})));
 
-/***/ },
-/* 65 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 76 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : lao (lo)
-	//! author : Ryan Hart : https://github.com/ryanhart2
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var lo = moment.defineLocale('lo', {
@@ -30959,6 +32786,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'ອີກ %s',
 	            past : '%sຜ່ານມາ',
 	            s : 'ບໍ່ເທົ່າໃດວິນາທີ',
+	            ss : '%d ວິນາທີ' ,
 	            m : '1 ນາທີ',
 	            mm : '%d ນາທີ',
 	            h : '1 ຊົ່ວໂມງ',
@@ -30970,7 +32798,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : '1 ປີ',
 	            yy : '%d ປີ'
 	        },
-	        ordinalParse: /(ທີ່)\d{1,2}/,
+	        dayOfMonthOrdinalParse: /(ທີ່)\d{1,2}/,
 	        ordinal : function (number) {
 	            return 'ທີ່' + number;
 	        }
@@ -30978,24 +32806,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return lo;
 
-	}));
+	})));
 
-/***/ },
-/* 66 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 77 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Lithuanian (lt)
-	//! author : Mindaugas Mozūras : https://github.com/mmozuras
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var units = {
+	        'ss' : 'sekundė_sekundžių_sekundes',
 	        'm' : 'minutė_minutės_minutę',
 	        'mm': 'minutės_minučių_minutes',
 	        'h' : 'valanda_valandos_valandą',
@@ -31040,7 +32868,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    var lt = moment.defineLocale('lt', {
 	        months : {
 	            format: 'sausio_vasario_kovo_balandžio_gegužės_birželio_liepos_rugpjūčio_rugsėjo_spalio_lapkričio_gruodžio'.split('_'),
-	            standalone: 'sausis_vasaris_kovas_balandis_gegužė_birželis_liepa_rugpjūtis_rugsėjis_spalis_lapkritis_gruodis'.split('_')
+	            standalone: 'sausis_vasaris_kovas_balandis_gegužė_birželis_liepa_rugpjūtis_rugsėjis_spalis_lapkritis_gruodis'.split('_'),
+	            isFormat: /D[oD]?(\[[^\[\]]*\]|\s)+MMMM?|MMMM?(\[[^\[\]]*\]|\s)+D[oD]?/
 	        },
 	        monthsShort : 'sau_vas_kov_bal_geg_bir_lie_rgp_rgs_spa_lap_grd'.split('_'),
 	        weekdays : {
@@ -31075,6 +32904,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'po %s',
 	            past : 'prieš %s',
 	            s : translateSeconds,
+	            ss : translate,
 	            m : translateSingular,
 	            mm : translate,
 	            h : translateSingular,
@@ -31086,7 +32916,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : translateSingular,
 	            yy : translate
 	        },
-	        ordinalParse: /\d{1,2}-oji/,
+	        dayOfMonthOrdinalParse: /\d{1,2}-oji/,
 	        ordinal : function (number) {
 	            return number + '-oji';
 	        },
@@ -31098,25 +32928,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return lt;
 
-	}));
+	})));
 
-/***/ },
-/* 67 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 78 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : latvian (lv)
-	//! author : Kristaps Karlsons : https://github.com/skakri
-	//! author : Jānis Elmeris : https://github.com/JanisE
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var units = {
+	        'ss': 'sekundes_sekundēm_sekunde_sekundes'.split('_'),
 	        'm': 'minūtes_minūtēm_minūte_minūtes'.split('_'),
 	        'mm': 'minūtes_minūtēm_minūte_minūtes'.split('_'),
 	        'h': 'stundas_stundām_stunda_stundas'.split('_'),
@@ -31134,11 +32963,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    function format(forms, number, withoutSuffix) {
 	        if (withoutSuffix) {
 	            // E.g. "21 minūte", "3 minūtes".
-	            return number % 10 === 1 && number !== 11 ? forms[2] : forms[3];
+	            return number % 10 === 1 && number % 100 !== 11 ? forms[2] : forms[3];
 	        } else {
 	            // E.g. "21 minūtes" as in "pēc 21 minūtes".
 	            // E.g. "3 minūtēm" as in "pēc 3 minūtēm".
-	            return number % 10 === 1 && number !== 11 ? forms[0] : forms[1];
+	            return number % 10 === 1 && number % 100 !== 11 ? forms[0] : forms[1];
 	        }
 	    }
 	    function relativeTimeWithPlural(number, withoutSuffix, key) {
@@ -31178,6 +33007,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'pēc %s',
 	            past : 'pirms %s',
 	            s : relativeSeconds,
+	            ss : relativeTimeWithPlural,
 	            m : relativeTimeWithSingular,
 	            mm : relativeTimeWithPlural,
 	            h : relativeTimeWithSingular,
@@ -31189,7 +33019,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : relativeTimeWithSingular,
 	            yy : relativeTimeWithPlural
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -31199,25 +33029,25 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return lv;
 
-	}));
+	})));
 
-/***/ },
-/* 68 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 79 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Montenegrin (me)
-	//! author : Miodrag Nikač <miodrag@restartit.me> : https://github.com/miodragnikac
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var translator = {
 	        words: { //Different grammatical cases
+	            ss: ['sekund', 'sekunda', 'sekundi'],
 	            m: ['jedan minut', 'jednog minuta'],
 	            mm: ['minut', 'minuta', 'minuta'],
 	            h: ['jedan sat', 'jednog sata'],
@@ -31250,7 +33080,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        longDateFormat: {
 	            LT: 'H:mm',
 	            LTS : 'H:mm:ss',
-	            L: 'DD. MM. YYYY',
+	            L: 'DD.MM.YYYY',
 	            LL: 'D. MMMM YYYY',
 	            LLL: 'D. MMMM YYYY H:mm',
 	            LLLL: 'dddd, D. MMMM YYYY H:mm'
@@ -31261,17 +33091,17 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	            nextWeek: function () {
 	                switch (this.day()) {
-	                case 0:
-	                    return '[u] [nedjelju] [u] LT';
-	                case 3:
-	                    return '[u] [srijedu] [u] LT';
-	                case 6:
-	                    return '[u] [subotu] [u] LT';
-	                case 1:
-	                case 2:
-	                case 4:
-	                case 5:
-	                    return '[u] dddd [u] LT';
+	                    case 0:
+	                        return '[u] [nedjelju] [u] LT';
+	                    case 3:
+	                        return '[u] [srijedu] [u] LT';
+	                    case 6:
+	                        return '[u] [subotu] [u] LT';
+	                    case 1:
+	                    case 2:
+	                    case 4:
+	                    case 5:
+	                        return '[u] dddd [u] LT';
 	                }
 	            },
 	            lastDay  : '[juče u] LT',
@@ -31293,6 +33123,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'za %s',
 	            past   : 'prije %s',
 	            s      : 'nekoliko sekundi',
+	            ss     : translator.translate,
 	            m      : translator.translate,
 	            mm     : translator.translate,
 	            h      : translator.translate,
@@ -31304,7 +33135,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y      : 'godinu',
 	            yy     : translator.translate
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -31314,21 +33145,88 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return me;
 
-	}));
+	})));
 
-/***/ },
-/* 69 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 80 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : macedonian (mk)
-	//! author : Borislav Mickov : https://github.com/B0k0
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
+
+
+	    var mi = moment.defineLocale('mi', {
+	        months: 'Kohi-tāte_Hui-tanguru_Poutū-te-rangi_Paenga-whāwhā_Haratua_Pipiri_Hōngoingoi_Here-turi-kōkā_Mahuru_Whiringa-ā-nuku_Whiringa-ā-rangi_Hakihea'.split('_'),
+	        monthsShort: 'Kohi_Hui_Pou_Pae_Hara_Pipi_Hōngoi_Here_Mahu_Whi-nu_Whi-ra_Haki'.split('_'),
+	        monthsRegex: /(?:['a-z\u0101\u014D\u016B]+\-?){1,3}/i,
+	        monthsStrictRegex: /(?:['a-z\u0101\u014D\u016B]+\-?){1,3}/i,
+	        monthsShortRegex: /(?:['a-z\u0101\u014D\u016B]+\-?){1,3}/i,
+	        monthsShortStrictRegex: /(?:['a-z\u0101\u014D\u016B]+\-?){1,2}/i,
+	        weekdays: 'Rātapu_Mane_Tūrei_Wenerei_Tāite_Paraire_Hātarei'.split('_'),
+	        weekdaysShort: 'Ta_Ma_Tū_We_Tāi_Pa_Hā'.split('_'),
+	        weekdaysMin: 'Ta_Ma_Tū_We_Tāi_Pa_Hā'.split('_'),
+	        longDateFormat: {
+	            LT: 'HH:mm',
+	            LTS: 'HH:mm:ss',
+	            L: 'DD/MM/YYYY',
+	            LL: 'D MMMM YYYY',
+	            LLL: 'D MMMM YYYY [i] HH:mm',
+	            LLLL: 'dddd, D MMMM YYYY [i] HH:mm'
+	        },
+	        calendar: {
+	            sameDay: '[i teie mahana, i] LT',
+	            nextDay: '[apopo i] LT',
+	            nextWeek: 'dddd [i] LT',
+	            lastDay: '[inanahi i] LT',
+	            lastWeek: 'dddd [whakamutunga i] LT',
+	            sameElse: 'L'
+	        },
+	        relativeTime: {
+	            future: 'i roto i %s',
+	            past: '%s i mua',
+	            s: 'te hēkona ruarua',
+	            ss: '%d hēkona',
+	            m: 'he meneti',
+	            mm: '%d meneti',
+	            h: 'te haora',
+	            hh: '%d haora',
+	            d: 'he ra',
+	            dd: '%d ra',
+	            M: 'he marama',
+	            MM: '%d marama',
+	            y: 'he tau',
+	            yy: '%d tau'
+	        },
+	        dayOfMonthOrdinalParse: /\d{1,2}º/,
+	        ordinal: '%dº',
+	        week : {
+	            dow : 1, // Monday is the first day of the week.
+	            doy : 4  // The week that contains Jan 4th is the first week of the year.
+	        }
+	    });
+
+	    return mi;
+
+	})));
+
+
+/***/ }),
+/* 81 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
 
 
 	    var mk = moment.defineLocale('mk', {
@@ -31352,15 +33250,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            lastDay : '[Вчера во] LT',
 	            lastWeek : function () {
 	                switch (this.day()) {
-	                case 0:
-	                case 3:
-	                case 6:
-	                    return '[Изминатата] dddd [во] LT';
-	                case 1:
-	                case 2:
-	                case 4:
-	                case 5:
-	                    return '[Изминатиот] dddd [во] LT';
+	                    case 0:
+	                    case 3:
+	                    case 6:
+	                        return '[Изминатата] dddd [во] LT';
+	                    case 1:
+	                    case 2:
+	                    case 4:
+	                    case 5:
+	                        return '[Изминатиот] dddd [во] LT';
 	                }
 	            },
 	            sameElse : 'L'
@@ -31369,6 +33267,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'после %s',
 	            past : 'пред %s',
 	            s : 'неколку секунди',
+	            ss : '%d секунди',
 	            m : 'минута',
 	            mm : '%d минути',
 	            h : 'час',
@@ -31380,7 +33279,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'година',
 	            yy : '%d години'
 	        },
-	        ordinalParse: /\d{1,2}-(ев|ен|ти|ви|ри|ми)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}-(ев|ен|ти|ви|ри|ми)/,
 	        ordinal : function (number) {
 	            var lastDigit = number % 10,
 	                last2Digits = number % 100;
@@ -31408,21 +33307,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return mk;
 
-	}));
+	})));
 
-/***/ },
-/* 70 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 82 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : malayalam (ml)
-	//! author : Floyd Pink : https://github.com/floydpink
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var ml = moment.defineLocale('ml', {
@@ -31452,6 +33350,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : '%s കഴിഞ്ഞ്',
 	            past : '%s മുൻപ്',
 	            s : 'അൽപ നിമിഷങ്ങൾ',
+	            ss : '%d സെക്കൻഡ്',
 	            m : 'ഒരു മിനിറ്റ്',
 	            mm : '%d മിനിറ്റ്',
 	            h : 'ഒരു മണിക്കൂർ',
@@ -31493,22 +33392,128 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return ml;
 
-	}));
+	})));
 
-/***/ },
-/* 71 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 83 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Marathi (mr)
-	//! author : Harshad Kale : https://github.com/kalehv
-	//! author : Vivek Athalye : https://github.com/vnathalye
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
+
+
+	    function translate(number, withoutSuffix, key, isFuture) {
+	        switch (key) {
+	            case 's':
+	                return withoutSuffix ? 'хэдхэн секунд' : 'хэдхэн секундын';
+	            case 'ss':
+	                return number + (withoutSuffix ? ' секунд' : ' секундын');
+	            case 'm':
+	            case 'mm':
+	                return number + (withoutSuffix ? ' минут' : ' минутын');
+	            case 'h':
+	            case 'hh':
+	                return number + (withoutSuffix ? ' цаг' : ' цагийн');
+	            case 'd':
+	            case 'dd':
+	                return number + (withoutSuffix ? ' өдөр' : ' өдрийн');
+	            case 'M':
+	            case 'MM':
+	                return number + (withoutSuffix ? ' сар' : ' сарын');
+	            case 'y':
+	            case 'yy':
+	                return number + (withoutSuffix ? ' жил' : ' жилийн');
+	            default:
+	                return number;
+	        }
+	    }
+
+	    var mn = moment.defineLocale('mn', {
+	        months : 'Нэгдүгээр сар_Хоёрдугаар сар_Гуравдугаар сар_Дөрөвдүгээр сар_Тавдугаар сар_Зургадугаар сар_Долдугаар сар_Наймдугаар сар_Есдүгээр сар_Аравдугаар сар_Арван нэгдүгээр сар_Арван хоёрдугаар сар'.split('_'),
+	        monthsShort : '1 сар_2 сар_3 сар_4 сар_5 сар_6 сар_7 сар_8 сар_9 сар_10 сар_11 сар_12 сар'.split('_'),
+	        monthsParseExact : true,
+	        weekdays : 'Ням_Даваа_Мягмар_Лхагва_Пүрэв_Баасан_Бямба'.split('_'),
+	        weekdaysShort : 'Ням_Дав_Мяг_Лха_Пүр_Баа_Бям'.split('_'),
+	        weekdaysMin : 'Ня_Да_Мя_Лх_Пү_Ба_Бя'.split('_'),
+	        weekdaysParseExact : true,
+	        longDateFormat : {
+	            LT : 'HH:mm',
+	            LTS : 'HH:mm:ss',
+	            L : 'YYYY-MM-DD',
+	            LL : 'YYYY оны MMMMын D',
+	            LLL : 'YYYY оны MMMMын D HH:mm',
+	            LLLL : 'dddd, YYYY оны MMMMын D HH:mm'
+	        },
+	        meridiemParse: /ҮӨ|ҮХ/i,
+	        isPM : function (input) {
+	            return input === 'ҮХ';
+	        },
+	        meridiem : function (hour, minute, isLower) {
+	            if (hour < 12) {
+	                return 'ҮӨ';
+	            } else {
+	                return 'ҮХ';
+	            }
+	        },
+	        calendar : {
+	            sameDay : '[Өнөөдөр] LT',
+	            nextDay : '[Маргааш] LT',
+	            nextWeek : '[Ирэх] dddd LT',
+	            lastDay : '[Өчигдөр] LT',
+	            lastWeek : '[Өнгөрсөн] dddd LT',
+	            sameElse : 'L'
+	        },
+	        relativeTime : {
+	            future : '%s дараа',
+	            past : '%s өмнө',
+	            s : translate,
+	            ss : translate,
+	            m : translate,
+	            mm : translate,
+	            h : translate,
+	            hh : translate,
+	            d : translate,
+	            dd : translate,
+	            M : translate,
+	            MM : translate,
+	            y : translate,
+	            yy : translate
+	        },
+	        dayOfMonthOrdinalParse: /\d{1,2} өдөр/,
+	        ordinal : function (number, period) {
+	            switch (period) {
+	                case 'd':
+	                case 'D':
+	                case 'DDD':
+	                    return number + ' өдөр';
+	                default:
+	                    return number;
+	            }
+	        }
+	    });
+
+	    return mn;
+
+	})));
+
+
+/***/ }),
+/* 84 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
 
 
 	    var symbolMap = {
@@ -31542,6 +33547,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        if (withoutSuffix) {
 	            switch (string) {
 	                case 's': output = 'काही सेकंद'; break;
+	                case 'ss': output = '%d सेकंद'; break;
 	                case 'm': output = 'एक मिनिट'; break;
 	                case 'mm': output = '%d मिनिटे'; break;
 	                case 'h': output = 'एक तास'; break;
@@ -31557,6 +33563,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        else {
 	            switch (string) {
 	                case 's': output = 'काही सेकंदां'; break;
+	                case 'ss': output = '%d सेकंदां'; break;
 	                case 'm': output = 'एका मिनिटा'; break;
 	                case 'mm': output = '%d मिनिटां'; break;
 	                case 'h': output = 'एका तासा'; break;
@@ -31599,6 +33606,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future: '%sमध्ये',
 	            past: '%sपूर्वी',
 	            s: relativeTimeMr,
+	            ss: relativeTimeMr,
 	            m: relativeTimeMr,
 	            mm: relativeTimeMr,
 	            h: relativeTimeMr,
@@ -31656,21 +33664,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return mr;
 
-	}));
+	})));
 
-/***/ },
-/* 72 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 85 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Bahasa Malaysia (ms-MY)
-	//! author : Weldan Jamili : https://github.com/weldan
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var ms = moment.defineLocale('ms', {
@@ -31723,6 +33730,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'dalam %s',
 	            past : '%s yang lepas',
 	            s : 'beberapa saat',
+	            ss : '%d saat',
 	            m : 'seminit',
 	            mm : '%d minit',
 	            h : 'sejam',
@@ -31742,24 +33750,23 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return ms;
 
-	}));
+	})));
 
-/***/ },
-/* 73 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 86 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Bahasa Malaysia (ms-MY)
-	//! author : Weldan Jamili : https://github.com/weldan
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
-	    var ms_my = moment.defineLocale('ms-my', {
+	    var msMy = moment.defineLocale('ms-my', {
 	        months : 'Januari_Februari_Mac_April_Mei_Jun_Julai_Ogos_September_Oktober_November_Disember'.split('_'),
 	        monthsShort : 'Jan_Feb_Mac_Apr_Mei_Jun_Jul_Ogs_Sep_Okt_Nov_Dis'.split('_'),
 	        weekdays : 'Ahad_Isnin_Selasa_Rabu_Khamis_Jumaat_Sabtu'.split('_'),
@@ -31809,6 +33816,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'dalam %s',
 	            past : '%s yang lepas',
 	            s : 'beberapa saat',
+	            ss : '%d saat',
 	            m : 'seminit',
 	            mm : '%d minit',
 	            h : 'sejam',
@@ -31826,23 +33834,86 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	    });
 
-	    return ms_my;
+	    return msMy;
 
-	}));
+	})));
 
-/***/ },
-/* 74 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 87 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Burmese (my)
-	//! author : Squar team, mysquar.com
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
+
+
+	    var mt = moment.defineLocale('mt', {
+	        months : 'Jannar_Frar_Marzu_April_Mejju_Ġunju_Lulju_Awwissu_Settembru_Ottubru_Novembru_Diċembru'.split('_'),
+	        monthsShort : 'Jan_Fra_Mar_Apr_Mej_Ġun_Lul_Aww_Set_Ott_Nov_Diċ'.split('_'),
+	        weekdays : 'Il-Ħadd_It-Tnejn_It-Tlieta_L-Erbgħa_Il-Ħamis_Il-Ġimgħa_Is-Sibt'.split('_'),
+	        weekdaysShort : 'Ħad_Tne_Tli_Erb_Ħam_Ġim_Sib'.split('_'),
+	        weekdaysMin : 'Ħa_Tn_Tl_Er_Ħa_Ġi_Si'.split('_'),
+	        longDateFormat : {
+	            LT : 'HH:mm',
+	            LTS : 'HH:mm:ss',
+	            L : 'DD/MM/YYYY',
+	            LL : 'D MMMM YYYY',
+	            LLL : 'D MMMM YYYY HH:mm',
+	            LLLL : 'dddd, D MMMM YYYY HH:mm'
+	        },
+	        calendar : {
+	            sameDay : '[Illum fil-]LT',
+	            nextDay : '[Għada fil-]LT',
+	            nextWeek : 'dddd [fil-]LT',
+	            lastDay : '[Il-bieraħ fil-]LT',
+	            lastWeek : 'dddd [li għadda] [fil-]LT',
+	            sameElse : 'L'
+	        },
+	        relativeTime : {
+	            future : 'f’ %s',
+	            past : '%s ilu',
+	            s : 'ftit sekondi',
+	            ss : '%d sekondi',
+	            m : 'minuta',
+	            mm : '%d minuti',
+	            h : 'siegħa',
+	            hh : '%d siegħat',
+	            d : 'ġurnata',
+	            dd : '%d ġranet',
+	            M : 'xahar',
+	            MM : '%d xhur',
+	            y : 'sena',
+	            yy : '%d sni'
+	        },
+	        dayOfMonthOrdinalParse : /\d{1,2}º/,
+	        ordinal: '%dº',
+	        week : {
+	            dow : 1, // Monday is the first day of the week.
+	            doy : 4  // The week that contains Jan 4th is the first week of the year.
+	        }
+	    });
+
+	    return mt;
+
+	})));
+
+
+/***/ }),
+/* 88 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
 
 
 	    var symbolMap = {
@@ -31896,6 +33967,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future: 'လာမည့် %s မှာ',
 	            past: 'လွန်ခဲ့သော %s က',
 	            s: 'စက္ကန်.အနည်းငယ်',
+	            ss : '%d စက္ကန့်',
 	            m: 'တစ်မိနစ်',
 	            mm: '%d မိနစ်',
 	            h: 'တစ်နာရီ',
@@ -31925,22 +33997,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return my;
 
-	}));
+	})));
 
-/***/ },
-/* 75 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 89 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : norwegian bokmål (nb)
-	//! authors : Espen Hovlandsdal : https://github.com/rexxars
-	//!           Sigurd Gartmann : https://github.com/sigurdga
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var nb = moment.defineLocale('nb', {
@@ -31971,6 +34041,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'om %s',
 	            past : '%s siden',
 	            s : 'noen sekunder',
+	            ss : '%d sekunder',
 	            m : 'ett minutt',
 	            mm : '%d minutter',
 	            h : 'en time',
@@ -31982,7 +34053,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'ett år',
 	            yy : '%d år'
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -31992,21 +34063,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return nb;
 
-	}));
+	})));
 
-/***/ },
-/* 76 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 90 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : nepali/nepalese
-	//! author : suvash : https://github.com/suvash
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var symbolMap = {
@@ -32100,6 +34170,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : '%sमा',
 	            past : '%s अगाडि',
 	            s : 'केही क्षण',
+	            ss : '%d सेकेण्ड',
 	            m : 'एक मिनेट',
 	            mm : '%d मिनेट',
 	            h : 'एक घण्टा',
@@ -32119,39 +34190,52 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return ne;
 
-	}));
+	})));
 
-/***/ },
-/* 77 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 91 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : dutch (nl)
-	//! author : Joris Röling : https://github.com/jjupiter
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var monthsShortWithDots = 'jan._feb._mrt._apr._mei_jun._jul._aug._sep._okt._nov._dec.'.split('_'),
 	        monthsShortWithoutDots = 'jan_feb_mrt_apr_mei_jun_jul_aug_sep_okt_nov_dec'.split('_');
 
+	    var monthsParse = [/^jan/i, /^feb/i, /^maart|mrt.?$/i, /^apr/i, /^mei$/i, /^jun[i.]?$/i, /^jul[i.]?$/i, /^aug/i, /^sep/i, /^okt/i, /^nov/i, /^dec/i];
+	    var monthsRegex = /^(januari|februari|maart|april|mei|april|ju[nl]i|augustus|september|oktober|november|december|jan\.?|feb\.?|mrt\.?|apr\.?|ju[nl]\.?|aug\.?|sep\.?|okt\.?|nov\.?|dec\.?)/i;
+
 	    var nl = moment.defineLocale('nl', {
 	        months : 'januari_februari_maart_april_mei_juni_juli_augustus_september_oktober_november_december'.split('_'),
 	        monthsShort : function (m, format) {
-	            if (/-MMM-/.test(format)) {
+	            if (!m) {
+	                return monthsShortWithDots;
+	            } else if (/-MMM-/.test(format)) {
 	                return monthsShortWithoutDots[m.month()];
 	            } else {
 	                return monthsShortWithDots[m.month()];
 	            }
 	        },
-	        monthsParseExact : true,
+
+	        monthsRegex: monthsRegex,
+	        monthsShortRegex: monthsRegex,
+	        monthsStrictRegex: /^(januari|februari|maart|mei|ju[nl]i|april|augustus|september|oktober|november|december)/i,
+	        monthsShortStrictRegex: /^(jan\.?|feb\.?|mrt\.?|apr\.?|mei|ju[nl]\.?|aug\.?|sep\.?|okt\.?|nov\.?|dec\.?)/i,
+
+	        monthsParse : monthsParse,
+	        longMonthsParse : monthsParse,
+	        shortMonthsParse : monthsParse,
+
 	        weekdays : 'zondag_maandag_dinsdag_woensdag_donderdag_vrijdag_zaterdag'.split('_'),
 	        weekdaysShort : 'zo._ma._di._wo._do._vr._za.'.split('_'),
-	        weekdaysMin : 'Zo_Ma_Di_Wo_Do_Vr_Za'.split('_'),
+	        weekdaysMin : 'zo_ma_di_wo_do_vr_za'.split('_'),
 	        weekdaysParseExact : true,
 	        longDateFormat : {
 	            LT : 'HH:mm',
@@ -32173,6 +34257,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'over %s',
 	            past : '%s geleden',
 	            s : 'een paar seconden',
+	            ss : '%d seconden',
 	            m : 'één minuut',
 	            mm : '%d minuten',
 	            h : 'één uur',
@@ -32184,7 +34269,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'één jaar',
 	            yy : '%d jaar'
 	        },
-	        ordinalParse: /\d{1,2}(ste|de)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}(ste|de)/,
 	        ordinal : function (number) {
 	            return number + ((number === 1 || number === 8 || number >= 20) ? 'ste' : 'de');
 	        },
@@ -32196,21 +34281,111 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return nl;
 
-	}));
+	})));
 
-/***/ },
-/* 78 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 92 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : norwegian nynorsk (nn)
-	//! author : https://github.com/mechuwind
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
+
+
+	    var monthsShortWithDots = 'jan._feb._mrt._apr._mei_jun._jul._aug._sep._okt._nov._dec.'.split('_'),
+	        monthsShortWithoutDots = 'jan_feb_mrt_apr_mei_jun_jul_aug_sep_okt_nov_dec'.split('_');
+
+	    var monthsParse = [/^jan/i, /^feb/i, /^maart|mrt.?$/i, /^apr/i, /^mei$/i, /^jun[i.]?$/i, /^jul[i.]?$/i, /^aug/i, /^sep/i, /^okt/i, /^nov/i, /^dec/i];
+	    var monthsRegex = /^(januari|februari|maart|april|mei|april|ju[nl]i|augustus|september|oktober|november|december|jan\.?|feb\.?|mrt\.?|apr\.?|ju[nl]\.?|aug\.?|sep\.?|okt\.?|nov\.?|dec\.?)/i;
+
+	    var nlBe = moment.defineLocale('nl-be', {
+	        months : 'januari_februari_maart_april_mei_juni_juli_augustus_september_oktober_november_december'.split('_'),
+	        monthsShort : function (m, format) {
+	            if (!m) {
+	                return monthsShortWithDots;
+	            } else if (/-MMM-/.test(format)) {
+	                return monthsShortWithoutDots[m.month()];
+	            } else {
+	                return monthsShortWithDots[m.month()];
+	            }
+	        },
+
+	        monthsRegex: monthsRegex,
+	        monthsShortRegex: monthsRegex,
+	        monthsStrictRegex: /^(januari|februari|maart|mei|ju[nl]i|april|augustus|september|oktober|november|december)/i,
+	        monthsShortStrictRegex: /^(jan\.?|feb\.?|mrt\.?|apr\.?|mei|ju[nl]\.?|aug\.?|sep\.?|okt\.?|nov\.?|dec\.?)/i,
+
+	        monthsParse : monthsParse,
+	        longMonthsParse : monthsParse,
+	        shortMonthsParse : monthsParse,
+
+	        weekdays : 'zondag_maandag_dinsdag_woensdag_donderdag_vrijdag_zaterdag'.split('_'),
+	        weekdaysShort : 'zo._ma._di._wo._do._vr._za.'.split('_'),
+	        weekdaysMin : 'zo_ma_di_wo_do_vr_za'.split('_'),
+	        weekdaysParseExact : true,
+	        longDateFormat : {
+	            LT : 'HH:mm',
+	            LTS : 'HH:mm:ss',
+	            L : 'DD/MM/YYYY',
+	            LL : 'D MMMM YYYY',
+	            LLL : 'D MMMM YYYY HH:mm',
+	            LLLL : 'dddd D MMMM YYYY HH:mm'
+	        },
+	        calendar : {
+	            sameDay: '[vandaag om] LT',
+	            nextDay: '[morgen om] LT',
+	            nextWeek: 'dddd [om] LT',
+	            lastDay: '[gisteren om] LT',
+	            lastWeek: '[afgelopen] dddd [om] LT',
+	            sameElse: 'L'
+	        },
+	        relativeTime : {
+	            future : 'over %s',
+	            past : '%s geleden',
+	            s : 'een paar seconden',
+	            ss : '%d seconden',
+	            m : 'één minuut',
+	            mm : '%d minuten',
+	            h : 'één uur',
+	            hh : '%d uur',
+	            d : 'één dag',
+	            dd : '%d dagen',
+	            M : 'één maand',
+	            MM : '%d maanden',
+	            y : 'één jaar',
+	            yy : '%d jaar'
+	        },
+	        dayOfMonthOrdinalParse: /\d{1,2}(ste|de)/,
+	        ordinal : function (number) {
+	            return number + ((number === 1 || number === 8 || number >= 20) ? 'ste' : 'de');
+	        },
+	        week : {
+	            dow : 1, // Monday is the first day of the week.
+	            doy : 4  // The week that contains Jan 4th is the first week of the year.
+	        }
+	    });
+
+	    return nlBe;
+
+	})));
+
+
+/***/ }),
+/* 93 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
 
 
 	    var nn = moment.defineLocale('nn', {
@@ -32239,6 +34414,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'om %s',
 	            past : '%s sidan',
 	            s : 'nokre sekund',
+	            ss : '%d sekund',
 	            m : 'eit minutt',
 	            mm : '%d minutt',
 	            h : 'ein time',
@@ -32250,7 +34426,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'eit år',
 	            yy : '%d år'
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -32260,21 +34436,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return nn;
 
-	}));
+	})));
 
-/***/ },
-/* 79 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 94 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : punjabi india (pa-in)
-	//! author : Harpreet Singh : https://github.com/harpreetkhalsagtbit
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var symbolMap = {
@@ -32302,7 +34477,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        '੦': '0'
 	    };
 
-	    var pa_in = moment.defineLocale('pa-in', {
+	    var paIn = moment.defineLocale('pa-in', {
 	        // There are months name as per Nanakshahi Calender but they are not used as rigidly in modern Punjabi.
 	        months : 'ਜਨਵਰੀ_ਫ਼ਰਵਰੀ_ਮਾਰਚ_ਅਪ੍ਰੈਲ_ਮਈ_ਜੂਨ_ਜੁਲਾਈ_ਅਗਸਤ_ਸਤੰਬਰ_ਅਕਤੂਬਰ_ਨਵੰਬਰ_ਦਸੰਬਰ'.split('_'),
 	        monthsShort : 'ਜਨਵਰੀ_ਫ਼ਰਵਰੀ_ਮਾਰਚ_ਅਪ੍ਰੈਲ_ਮਈ_ਜੂਨ_ਜੁਲਾਈ_ਅਗਸਤ_ਸਤੰਬਰ_ਅਕਤੂਬਰ_ਨਵੰਬਰ_ਦਸੰਬਰ'.split('_'),
@@ -32320,7 +34495,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        calendar : {
 	            sameDay : '[ਅਜ] LT',
 	            nextDay : '[ਕਲ] LT',
-	            nextWeek : 'dddd, LT',
+	            nextWeek : '[ਅਗਲਾ] dddd, LT',
 	            lastDay : '[ਕਲ] LT',
 	            lastWeek : '[ਪਿਛਲੇ] dddd, LT',
 	            sameElse : 'L'
@@ -32329,6 +34504,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : '%s ਵਿੱਚ',
 	            past : '%s ਪਿਛਲੇ',
 	            s : 'ਕੁਝ ਸਕਿੰਟ',
+	            ss : '%d ਸਕਿੰਟ',
 	            m : 'ਇਕ ਮਿੰਟ',
 	            mm : '%d ਮਿੰਟ',
 	            h : 'ਇੱਕ ਘੰਟਾ',
@@ -32386,23 +34562,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	    });
 
-	    return pa_in;
+	    return paIn;
 
-	}));
+	})));
 
-/***/ },
-/* 80 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 95 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : polish (pl)
-	//! author : Rafal Hirsz : https://github.com/evoL
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var monthsNominative = 'styczeń_luty_marzec_kwiecień_maj_czerwiec_lipiec_sierpień_wrzesień_październik_listopad_grudzień'.split('_'),
@@ -32413,24 +34588,28 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    function translate(number, withoutSuffix, key) {
 	        var result = number + ' ';
 	        switch (key) {
-	        case 'm':
-	            return withoutSuffix ? 'minuta' : 'minutę';
-	        case 'mm':
-	            return result + (plural(number) ? 'minuty' : 'minut');
-	        case 'h':
-	            return withoutSuffix  ? 'godzina'  : 'godzinę';
-	        case 'hh':
-	            return result + (plural(number) ? 'godziny' : 'godzin');
-	        case 'MM':
-	            return result + (plural(number) ? 'miesiące' : 'miesięcy');
-	        case 'yy':
-	            return result + (plural(number) ? 'lata' : 'lat');
+	            case 'ss':
+	                return result + (plural(number) ? 'sekundy' : 'sekund');
+	            case 'm':
+	                return withoutSuffix ? 'minuta' : 'minutę';
+	            case 'mm':
+	                return result + (plural(number) ? 'minuty' : 'minut');
+	            case 'h':
+	                return withoutSuffix  ? 'godzina'  : 'godzinę';
+	            case 'hh':
+	                return result + (plural(number) ? 'godziny' : 'godzin');
+	            case 'MM':
+	                return result + (plural(number) ? 'miesiące' : 'miesięcy');
+	            case 'yy':
+	                return result + (plural(number) ? 'lata' : 'lat');
 	        }
 	    }
 
 	    var pl = moment.defineLocale('pl', {
 	        months : function (momentToFormat, format) {
-	            if (format === '') {
+	            if (!momentToFormat) {
+	                return monthsNominative;
+	            } else if (format === '') {
 	                // Hack: if format empty we know this is used to generate
 	                // RegExp by moment. Give then back both valid forms of months
 	                // in RegExp ready format.
@@ -32443,7 +34622,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        },
 	        monthsShort : 'sty_lut_mar_kwi_maj_cze_lip_sie_wrz_paź_lis_gru'.split('_'),
 	        weekdays : 'niedziela_poniedziałek_wtorek_środa_czwartek_piątek_sobota'.split('_'),
-	        weekdaysShort : 'nie_pon_wt_śr_czw_pt_sb'.split('_'),
+	        weekdaysShort : 'ndz_pon_wt_śr_czw_pt_sob'.split('_'),
 	        weekdaysMin : 'Nd_Pn_Wt_Śr_Cz_Pt_So'.split('_'),
 	        longDateFormat : {
 	            LT : 'HH:mm',
@@ -32456,18 +34635,35 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        calendar : {
 	            sameDay: '[Dziś o] LT',
 	            nextDay: '[Jutro o] LT',
-	            nextWeek: '[W] dddd [o] LT',
+	            nextWeek: function () {
+	                switch (this.day()) {
+	                    case 0:
+	                        return '[W niedzielę o] LT';
+
+	                    case 2:
+	                        return '[We wtorek o] LT';
+
+	                    case 3:
+	                        return '[W środę o] LT';
+
+	                    case 6:
+	                        return '[W sobotę o] LT';
+
+	                    default:
+	                        return '[W] dddd [o] LT';
+	                }
+	            },
 	            lastDay: '[Wczoraj o] LT',
 	            lastWeek: function () {
 	                switch (this.day()) {
-	                case 0:
-	                    return '[W zeszłą niedzielę o] LT';
-	                case 3:
-	                    return '[W zeszłą środę o] LT';
-	                case 6:
-	                    return '[W zeszłą sobotę o] LT';
-	                default:
-	                    return '[W zeszły] dddd [o] LT';
+	                    case 0:
+	                        return '[W zeszłą niedzielę o] LT';
+	                    case 3:
+	                        return '[W zeszłą środę o] LT';
+	                    case 6:
+	                        return '[W zeszłą sobotę o] LT';
+	                    default:
+	                        return '[W zeszły] dddd [o] LT';
 	                }
 	            },
 	            sameElse: 'L'
@@ -32476,6 +34672,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'za %s',
 	            past : '%s temu',
 	            s : 'kilka sekund',
+	            ss : translate,
 	            m : translate,
 	            mm : translate,
 	            h : translate,
@@ -32487,7 +34684,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'rok',
 	            yy : translate
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -32497,29 +34694,28 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return pl;
 
-	}));
+	})));
 
-/***/ },
-/* 81 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 96 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : portuguese (pt)
-	//! author : Jefferson : https://github.com/jalex79
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var pt = moment.defineLocale('pt', {
-	        months : 'Janeiro_Fevereiro_Março_Abril_Maio_Junho_Julho_Agosto_Setembro_Outubro_Novembro_Dezembro'.split('_'),
-	        monthsShort : 'Jan_Fev_Mar_Abr_Mai_Jun_Jul_Ago_Set_Out_Nov_Dez'.split('_'),
-	        weekdays : 'Domingo_Segunda-Feira_Terça-Feira_Quarta-Feira_Quinta-Feira_Sexta-Feira_Sábado'.split('_'),
+	        months : 'janeiro_fevereiro_março_abril_maio_junho_julho_agosto_setembro_outubro_novembro_dezembro'.split('_'),
+	        monthsShort : 'jan_fev_mar_abr_mai_jun_jul_ago_set_out_nov_dez'.split('_'),
+	        weekdays : 'Domingo_Segunda-feira_Terça-feira_Quarta-feira_Quinta-feira_Sexta-feira_Sábado'.split('_'),
 	        weekdaysShort : 'Dom_Seg_Ter_Qua_Qui_Sex_Sáb'.split('_'),
-	        weekdaysMin : 'Dom_2ª_3ª_4ª_5ª_6ª_Sáb'.split('_'),
+	        weekdaysMin : 'Do_2ª_3ª_4ª_5ª_6ª_Sá'.split('_'),
 	        weekdaysParseExact : true,
 	        longDateFormat : {
 	            LT : 'HH:mm',
@@ -32545,6 +34741,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'em %s',
 	            past : 'há %s',
 	            s : 'segundos',
+	            ss : '%d segundos',
 	            m : 'um minuto',
 	            mm : '%d minutos',
 	            h : 'uma hora',
@@ -32556,7 +34753,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'um ano',
 	            yy : '%d anos'
 	        },
-	        ordinalParse: /\d{1,2}º/,
+	        dayOfMonthOrdinalParse: /\d{1,2}º/,
 	        ordinal : '%dº',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -32566,29 +34763,28 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return pt;
 
-	}));
+	})));
 
-/***/ },
-/* 82 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 97 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : brazilian portuguese (pt-br)
-	//! author : Caio Ribeiro Pereira : https://github.com/caio-ribeiro-pereira
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
-	    var pt_br = moment.defineLocale('pt-br', {
-	        months : 'Janeiro_Fevereiro_Março_Abril_Maio_Junho_Julho_Agosto_Setembro_Outubro_Novembro_Dezembro'.split('_'),
-	        monthsShort : 'Jan_Fev_Mar_Abr_Mai_Jun_Jul_Ago_Set_Out_Nov_Dez'.split('_'),
+	    var ptBr = moment.defineLocale('pt-br', {
+	        months : 'janeiro_fevereiro_março_abril_maio_junho_julho_agosto_setembro_outubro_novembro_dezembro'.split('_'),
+	        monthsShort : 'jan_fev_mar_abr_mai_jun_jul_ago_set_out_nov_dez'.split('_'),
 	        weekdays : 'Domingo_Segunda-feira_Terça-feira_Quarta-feira_Quinta-feira_Sexta-feira_Sábado'.split('_'),
 	        weekdaysShort : 'Dom_Seg_Ter_Qua_Qui_Sex_Sáb'.split('_'),
-	        weekdaysMin : 'Dom_2ª_3ª_4ª_5ª_6ª_Sáb'.split('_'),
+	        weekdaysMin : 'Do_2ª_3ª_4ª_5ª_6ª_Sá'.split('_'),
 	        weekdaysParseExact : true,
 	        longDateFormat : {
 	            LT : 'HH:mm',
@@ -32612,8 +34808,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        },
 	        relativeTime : {
 	            future : 'em %s',
-	            past : '%s atrás',
+	            past : 'há %s',
 	            s : 'poucos segundos',
+	            ss : '%d segundos',
 	            m : 'um minuto',
 	            mm : '%d minutos',
 	            h : 'uma hora',
@@ -32625,32 +34822,31 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'um ano',
 	            yy : '%d anos'
 	        },
-	        ordinalParse: /\d{1,2}º/,
+	        dayOfMonthOrdinalParse: /\d{1,2}º/,
 	        ordinal : '%dº'
 	    });
 
-	    return pt_br;
+	    return ptBr;
 
-	}));
+	})));
 
-/***/ },
-/* 83 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 98 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : romanian (ro)
-	//! author : Vlad Gurdiga : https://github.com/gurdiga
-	//! author : Valentin Agachi : https://github.com/avaly
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    function relativeTimeWithPlural(number, withoutSuffix, key) {
 	        var format = {
+	                'ss': 'secunde',
 	                'mm': 'minute',
 	                'hh': 'ore',
 	                'dd': 'zile',
@@ -32691,6 +34887,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'peste %s',
 	            past : '%s în urmă',
 	            s : 'câteva secunde',
+	            ss : relativeTimeWithPlural,
 	            m : 'un minut',
 	            mm : relativeTimeWithPlural,
 	            h : 'o oră',
@@ -32710,23 +34907,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return ro;
 
-	}));
+	})));
 
-/***/ },
-/* 84 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 99 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : russian (ru)
-	//! author : Viktorminator : https://github.com/Viktorminator
-	//! Author : Menelion Elensúle : https://github.com/Oire
-	//! author : Коренберг Марк : https://github.com/socketpair
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    function plural(word, num) {
@@ -32735,6 +34929,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 	    function relativeTimeWithPlural(number, withoutSuffix, key) {
 	        var format = {
+	            'ss': withoutSuffix ? 'секунда_секунды_секунд' : 'секунду_секунды_секунд',
 	            'mm': withoutSuffix ? 'минута_минуты_минут' : 'минуту_минуты_минут',
 	            'hh': 'час_часа_часов',
 	            'dd': 'день_дня_дней',
@@ -32773,63 +34968,71 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        monthsParse : monthsParse,
 	        longMonthsParse : monthsParse,
 	        shortMonthsParse : monthsParse,
-	        monthsRegex: /^(сентябр[яь]|октябр[яь]|декабр[яь]|феврал[яь]|январ[яь]|апрел[яь]|августа?|ноябр[яь]|сент\.|февр\.|нояб\.|июнь|янв.|июль|дек.|авг.|апр.|марта|мар[.т]|окт.|июн[яь]|июл[яь]|ма[яй])/i,
-	        monthsShortRegex: /^(сентябр[яь]|октябр[яь]|декабр[яь]|феврал[яь]|январ[яь]|апрел[яь]|августа?|ноябр[яь]|сент\.|февр\.|нояб\.|июнь|янв.|июль|дек.|авг.|апр.|марта|мар[.т]|окт.|июн[яь]|июл[яь]|ма[яй])/i,
-	        monthsStrictRegex: /^(сентябр[яь]|октябр[яь]|декабр[яь]|феврал[яь]|январ[яь]|апрел[яь]|августа?|ноябр[яь]|марта?|июн[яь]|июл[яь]|ма[яй])/i,
-	        monthsShortStrictRegex: /^(нояб\.|февр\.|сент\.|июль|янв\.|июн[яь]|мар[.т]|авг\.|апр\.|окт\.|дек\.|ма[яй])/i,
+
+	        // полные названия с падежами, по три буквы, для некоторых, по 4 буквы, сокращения с точкой и без точки
+	        monthsRegex: /^(январ[ья]|янв\.?|феврал[ья]|февр?\.?|марта?|мар\.?|апрел[ья]|апр\.?|ма[йя]|июн[ья]|июн\.?|июл[ья]|июл\.?|августа?|авг\.?|сентябр[ья]|сент?\.?|октябр[ья]|окт\.?|ноябр[ья]|нояб?\.?|декабр[ья]|дек\.?)/i,
+
+	        // копия предыдущего
+	        monthsShortRegex: /^(январ[ья]|янв\.?|феврал[ья]|февр?\.?|марта?|мар\.?|апрел[ья]|апр\.?|ма[йя]|июн[ья]|июн\.?|июл[ья]|июл\.?|августа?|авг\.?|сентябр[ья]|сент?\.?|октябр[ья]|окт\.?|ноябр[ья]|нояб?\.?|декабр[ья]|дек\.?)/i,
+
+	        // полные названия с падежами
+	        monthsStrictRegex: /^(январ[яь]|феврал[яь]|марта?|апрел[яь]|ма[яй]|июн[яь]|июл[яь]|августа?|сентябр[яь]|октябр[яь]|ноябр[яь]|декабр[яь])/i,
+
+	        // Выражение, которое соотвествует только сокращённым формам
+	        monthsShortStrictRegex: /^(янв\.|февр?\.|мар[т.]|апр\.|ма[яй]|июн[ья.]|июл[ья.]|авг\.|сент?\.|окт\.|нояб?\.|дек\.)/i,
 	        longDateFormat : {
-	            LT : 'HH:mm',
-	            LTS : 'HH:mm:ss',
+	            LT : 'H:mm',
+	            LTS : 'H:mm:ss',
 	            L : 'DD.MM.YYYY',
 	            LL : 'D MMMM YYYY г.',
-	            LLL : 'D MMMM YYYY г., HH:mm',
-	            LLLL : 'dddd, D MMMM YYYY г., HH:mm'
+	            LLL : 'D MMMM YYYY г., H:mm',
+	            LLLL : 'dddd, D MMMM YYYY г., H:mm'
 	        },
 	        calendar : {
-	            sameDay: '[Сегодня в] LT',
-	            nextDay: '[Завтра в] LT',
-	            lastDay: '[Вчера в] LT',
+	            sameDay: '[Сегодня, в] LT',
+	            nextDay: '[Завтра, в] LT',
+	            lastDay: '[Вчера, в] LT',
 	            nextWeek: function (now) {
 	                if (now.week() !== this.week()) {
 	                    switch (this.day()) {
-	                    case 0:
-	                        return '[В следующее] dddd [в] LT';
-	                    case 1:
-	                    case 2:
-	                    case 4:
-	                        return '[В следующий] dddd [в] LT';
-	                    case 3:
-	                    case 5:
-	                    case 6:
-	                        return '[В следующую] dddd [в] LT';
+	                        case 0:
+	                            return '[В следующее] dddd, [в] LT';
+	                        case 1:
+	                        case 2:
+	                        case 4:
+	                            return '[В следующий] dddd, [в] LT';
+	                        case 3:
+	                        case 5:
+	                        case 6:
+	                            return '[В следующую] dddd, [в] LT';
 	                    }
 	                } else {
 	                    if (this.day() === 2) {
-	                        return '[Во] dddd [в] LT';
+	                        return '[Во] dddd, [в] LT';
 	                    } else {
-	                        return '[В] dddd [в] LT';
+	                        return '[В] dddd, [в] LT';
 	                    }
 	                }
 	            },
 	            lastWeek: function (now) {
 	                if (now.week() !== this.week()) {
 	                    switch (this.day()) {
-	                    case 0:
-	                        return '[В прошлое] dddd [в] LT';
-	                    case 1:
-	                    case 2:
-	                    case 4:
-	                        return '[В прошлый] dddd [в] LT';
-	                    case 3:
-	                    case 5:
-	                    case 6:
-	                        return '[В прошлую] dddd [в] LT';
+	                        case 0:
+	                            return '[В прошлое] dddd, [в] LT';
+	                        case 1:
+	                        case 2:
+	                        case 4:
+	                            return '[В прошлый] dddd, [в] LT';
+	                        case 3:
+	                        case 5:
+	                        case 6:
+	                            return '[В прошлую] dddd, [в] LT';
 	                    }
 	                } else {
 	                    if (this.day() === 2) {
-	                        return '[Во] dddd [в] LT';
+	                        return '[Во] dddd, [в] LT';
 	                    } else {
-	                        return '[В] dddd [в] LT';
+	                        return '[В] dddd, [в] LT';
 	                    }
 	                }
 	            },
@@ -32839,6 +35042,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'через %s',
 	            past : '%s назад',
 	            s : 'несколько секунд',
+	            ss : relativeTimeWithPlural,
 	            m : relativeTimeWithPlural,
 	            mm : relativeTimeWithPlural,
 	            h : 'час',
@@ -32865,46 +35069,146 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                return 'вечера';
 	            }
 	        },
-	        ordinalParse: /\d{1,2}-(й|го|я)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}-(й|го|я)/,
 	        ordinal: function (number, period) {
 	            switch (period) {
-	            case 'M':
-	            case 'd':
-	            case 'DDD':
-	                return number + '-й';
-	            case 'D':
-	                return number + '-го';
-	            case 'w':
-	            case 'W':
-	                return number + '-я';
-	            default:
-	                return number;
+	                case 'M':
+	                case 'd':
+	                case 'DDD':
+	                    return number + '-й';
+	                case 'D':
+	                    return number + '-го';
+	                case 'w':
+	                case 'W':
+	                    return number + '-я';
+	                default:
+	                    return number;
 	            }
 	        },
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
-	            doy : 7  // The week that contains Jan 1st is the first week of the year.
+	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
 
 	    return ru;
 
-	}));
+	})));
 
-/***/ },
-/* 85 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 100 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Northern Sami (se)
-	//! authors : Bård Rolstad Henriksen : https://github.com/karamell
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
+
+	    var months = [
+	        'جنوري',
+	        'فيبروري',
+	        'مارچ',
+	        'اپريل',
+	        'مئي',
+	        'جون',
+	        'جولاءِ',
+	        'آگسٽ',
+	        'سيپٽمبر',
+	        'آڪٽوبر',
+	        'نومبر',
+	        'ڊسمبر'
+	    ];
+	    var days = [
+	        'آچر',
+	        'سومر',
+	        'اڱارو',
+	        'اربع',
+	        'خميس',
+	        'جمع',
+	        'ڇنڇر'
+	    ];
+
+	    var sd = moment.defineLocale('sd', {
+	        months : months,
+	        monthsShort : months,
+	        weekdays : days,
+	        weekdaysShort : days,
+	        weekdaysMin : days,
+	        longDateFormat : {
+	            LT : 'HH:mm',
+	            LTS : 'HH:mm:ss',
+	            L : 'DD/MM/YYYY',
+	            LL : 'D MMMM YYYY',
+	            LLL : 'D MMMM YYYY HH:mm',
+	            LLLL : 'dddd، D MMMM YYYY HH:mm'
+	        },
+	        meridiemParse: /صبح|شام/,
+	        isPM : function (input) {
+	            return 'شام' === input;
+	        },
+	        meridiem : function (hour, minute, isLower) {
+	            if (hour < 12) {
+	                return 'صبح';
+	            }
+	            return 'شام';
+	        },
+	        calendar : {
+	            sameDay : '[اڄ] LT',
+	            nextDay : '[سڀاڻي] LT',
+	            nextWeek : 'dddd [اڳين هفتي تي] LT',
+	            lastDay : '[ڪالهه] LT',
+	            lastWeek : '[گزريل هفتي] dddd [تي] LT',
+	            sameElse : 'L'
+	        },
+	        relativeTime : {
+	            future : '%s پوء',
+	            past : '%s اڳ',
+	            s : 'چند سيڪنڊ',
+	            ss : '%d سيڪنڊ',
+	            m : 'هڪ منٽ',
+	            mm : '%d منٽ',
+	            h : 'هڪ ڪلاڪ',
+	            hh : '%d ڪلاڪ',
+	            d : 'هڪ ڏينهن',
+	            dd : '%d ڏينهن',
+	            M : 'هڪ مهينو',
+	            MM : '%d مهينا',
+	            y : 'هڪ سال',
+	            yy : '%d سال'
+	        },
+	        preparse: function (string) {
+	            return string.replace(/،/g, ',');
+	        },
+	        postformat: function (string) {
+	            return string.replace(/,/g, '،');
+	        },
+	        week : {
+	            dow : 1, // Monday is the first day of the week.
+	            doy : 4  // The week that contains Jan 4th is the first week of the year.
+	        }
+	    });
+
+	    return sd;
+
+	})));
+
+
+/***/ }),
+/* 101 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
 
 
 	    var se = moment.defineLocale('se', {
@@ -32933,6 +35237,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : '%s geažes',
 	            past : 'maŋit %s',
 	            s : 'moadde sekunddat',
+	            ss: '%d sekunddat',
 	            m : 'okta minuhta',
 	            mm : '%d minuhtat',
 	            h : 'okta diimmu',
@@ -32944,7 +35249,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'okta jahki',
 	            yy : '%d jagit'
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -32954,21 +35259,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return se;
 
-	}));
+	})));
 
-/***/ },
-/* 86 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 102 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Sinhalese (si)
-	//! author : Sampath Sitinamaluwa : https://github.com/sampathsris
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    /*jshint -W100*/
@@ -32999,6 +35303,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : '%sකින්',
 	            past : '%sකට පෙර',
 	            s : 'තත්පර කිහිපය',
+	            ss : 'තත්පර %d',
 	            m : 'මිනිත්තුව',
 	            mm : 'මිනිත්තු %d',
 	            h : 'පැය',
@@ -33010,7 +35315,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'වසර',
 	            yy : 'වසර %d'
 	        },
-	        ordinalParse: /\d{1,2} වැනි/,
+	        dayOfMonthOrdinalParse: /\d{1,2} වැනි/,
 	        ordinal : function (number) {
 	            return number + ' වැනි';
 	        },
@@ -33029,22 +35334,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return si;
 
-	}));
+	})));
 
-/***/ },
-/* 87 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 103 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : slovak (sk)
-	//! author : Martin Minka : https://github.com/k2s
-	//! based on work of petrbela : https://github.com/petrbela
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var months = 'január_február_marec_apríl_máj_jún_júl_august_september_október_november_december'.split('_'),
@@ -33055,53 +35358,60 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    function translate(number, withoutSuffix, key, isFuture) {
 	        var result = number + ' ';
 	        switch (key) {
-	        case 's':  // a few seconds / in a few seconds / a few seconds ago
-	            return (withoutSuffix || isFuture) ? 'pár sekúnd' : 'pár sekundami';
-	        case 'm':  // a minute / in a minute / a minute ago
-	            return withoutSuffix ? 'minúta' : (isFuture ? 'minútu' : 'minútou');
-	        case 'mm': // 9 minutes / in 9 minutes / 9 minutes ago
-	            if (withoutSuffix || isFuture) {
-	                return result + (plural(number) ? 'minúty' : 'minút');
-	            } else {
-	                return result + 'minútami';
-	            }
-	            break;
-	        case 'h':  // an hour / in an hour / an hour ago
-	            return withoutSuffix ? 'hodina' : (isFuture ? 'hodinu' : 'hodinou');
-	        case 'hh': // 9 hours / in 9 hours / 9 hours ago
-	            if (withoutSuffix || isFuture) {
-	                return result + (plural(number) ? 'hodiny' : 'hodín');
-	            } else {
-	                return result + 'hodinami';
-	            }
-	            break;
-	        case 'd':  // a day / in a day / a day ago
-	            return (withoutSuffix || isFuture) ? 'deň' : 'dňom';
-	        case 'dd': // 9 days / in 9 days / 9 days ago
-	            if (withoutSuffix || isFuture) {
-	                return result + (plural(number) ? 'dni' : 'dní');
-	            } else {
-	                return result + 'dňami';
-	            }
-	            break;
-	        case 'M':  // a month / in a month / a month ago
-	            return (withoutSuffix || isFuture) ? 'mesiac' : 'mesiacom';
-	        case 'MM': // 9 months / in 9 months / 9 months ago
-	            if (withoutSuffix || isFuture) {
-	                return result + (plural(number) ? 'mesiace' : 'mesiacov');
-	            } else {
-	                return result + 'mesiacmi';
-	            }
-	            break;
-	        case 'y':  // a year / in a year / a year ago
-	            return (withoutSuffix || isFuture) ? 'rok' : 'rokom';
-	        case 'yy': // 9 years / in 9 years / 9 years ago
-	            if (withoutSuffix || isFuture) {
-	                return result + (plural(number) ? 'roky' : 'rokov');
-	            } else {
-	                return result + 'rokmi';
-	            }
-	            break;
+	            case 's':  // a few seconds / in a few seconds / a few seconds ago
+	                return (withoutSuffix || isFuture) ? 'pár sekúnd' : 'pár sekundami';
+	            case 'ss': // 9 seconds / in 9 seconds / 9 seconds ago
+	                if (withoutSuffix || isFuture) {
+	                    return result + (plural(number) ? 'sekundy' : 'sekúnd');
+	                } else {
+	                    return result + 'sekundami';
+	                }
+	                break;
+	            case 'm':  // a minute / in a minute / a minute ago
+	                return withoutSuffix ? 'minúta' : (isFuture ? 'minútu' : 'minútou');
+	            case 'mm': // 9 minutes / in 9 minutes / 9 minutes ago
+	                if (withoutSuffix || isFuture) {
+	                    return result + (plural(number) ? 'minúty' : 'minút');
+	                } else {
+	                    return result + 'minútami';
+	                }
+	                break;
+	            case 'h':  // an hour / in an hour / an hour ago
+	                return withoutSuffix ? 'hodina' : (isFuture ? 'hodinu' : 'hodinou');
+	            case 'hh': // 9 hours / in 9 hours / 9 hours ago
+	                if (withoutSuffix || isFuture) {
+	                    return result + (plural(number) ? 'hodiny' : 'hodín');
+	                } else {
+	                    return result + 'hodinami';
+	                }
+	                break;
+	            case 'd':  // a day / in a day / a day ago
+	                return (withoutSuffix || isFuture) ? 'deň' : 'dňom';
+	            case 'dd': // 9 days / in 9 days / 9 days ago
+	                if (withoutSuffix || isFuture) {
+	                    return result + (plural(number) ? 'dni' : 'dní');
+	                } else {
+	                    return result + 'dňami';
+	                }
+	                break;
+	            case 'M':  // a month / in a month / a month ago
+	                return (withoutSuffix || isFuture) ? 'mesiac' : 'mesiacom';
+	            case 'MM': // 9 months / in 9 months / 9 months ago
+	                if (withoutSuffix || isFuture) {
+	                    return result + (plural(number) ? 'mesiace' : 'mesiacov');
+	                } else {
+	                    return result + 'mesiacmi';
+	                }
+	                break;
+	            case 'y':  // a year / in a year / a year ago
+	                return (withoutSuffix || isFuture) ? 'rok' : 'rokom';
+	            case 'yy': // 9 years / in 9 years / 9 years ago
+	                if (withoutSuffix || isFuture) {
+	                    return result + (plural(number) ? 'roky' : 'rokov');
+	                } else {
+	                    return result + 'rokmi';
+	                }
+	                break;
 	        }
 	    }
 
@@ -33124,36 +35434,36 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            nextDay: '[zajtra o] LT',
 	            nextWeek: function () {
 	                switch (this.day()) {
-	                case 0:
-	                    return '[v nedeľu o] LT';
-	                case 1:
-	                case 2:
-	                    return '[v] dddd [o] LT';
-	                case 3:
-	                    return '[v stredu o] LT';
-	                case 4:
-	                    return '[vo štvrtok o] LT';
-	                case 5:
-	                    return '[v piatok o] LT';
-	                case 6:
-	                    return '[v sobotu o] LT';
+	                    case 0:
+	                        return '[v nedeľu o] LT';
+	                    case 1:
+	                    case 2:
+	                        return '[v] dddd [o] LT';
+	                    case 3:
+	                        return '[v stredu o] LT';
+	                    case 4:
+	                        return '[vo štvrtok o] LT';
+	                    case 5:
+	                        return '[v piatok o] LT';
+	                    case 6:
+	                        return '[v sobotu o] LT';
 	                }
 	            },
 	            lastDay: '[včera o] LT',
 	            lastWeek: function () {
 	                switch (this.day()) {
-	                case 0:
-	                    return '[minulú nedeľu o] LT';
-	                case 1:
-	                case 2:
-	                    return '[minulý] dddd [o] LT';
-	                case 3:
-	                    return '[minulú stredu o] LT';
-	                case 4:
-	                case 5:
-	                    return '[minulý] dddd [o] LT';
-	                case 6:
-	                    return '[minulú sobotu o] LT';
+	                    case 0:
+	                        return '[minulú nedeľu o] LT';
+	                    case 1:
+	                    case 2:
+	                        return '[minulý] dddd [o] LT';
+	                    case 3:
+	                        return '[minulú stredu o] LT';
+	                    case 4:
+	                    case 5:
+	                        return '[minulý] dddd [o] LT';
+	                    case 6:
+	                        return '[minulú sobotu o] LT';
 	                }
 	            },
 	            sameElse: 'L'
@@ -33162,6 +35472,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'za %s',
 	            past : 'pred %s',
 	            s : translate,
+	            ss : translate,
 	            m : translate,
 	            mm : translate,
 	            h : translate,
@@ -33173,7 +35484,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : translate,
 	            yy : translate
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -33183,91 +35494,101 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return sk;
 
-	}));
+	})));
 
-/***/ },
-/* 88 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 104 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : slovenian (sl)
-	//! author : Robert Sedovšek : https://github.com/sedovsek
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    function processRelativeTime(number, withoutSuffix, key, isFuture) {
 	        var result = number + ' ';
 	        switch (key) {
-	        case 's':
-	            return withoutSuffix || isFuture ? 'nekaj sekund' : 'nekaj sekundami';
-	        case 'm':
-	            return withoutSuffix ? 'ena minuta' : 'eno minuto';
-	        case 'mm':
-	            if (number === 1) {
-	                result += withoutSuffix ? 'minuta' : 'minuto';
-	            } else if (number === 2) {
-	                result += withoutSuffix || isFuture ? 'minuti' : 'minutama';
-	            } else if (number < 5) {
-	                result += withoutSuffix || isFuture ? 'minute' : 'minutami';
-	            } else {
-	                result += withoutSuffix || isFuture ? 'minut' : 'minutami';
-	            }
-	            return result;
-	        case 'h':
-	            return withoutSuffix ? 'ena ura' : 'eno uro';
-	        case 'hh':
-	            if (number === 1) {
-	                result += withoutSuffix ? 'ura' : 'uro';
-	            } else if (number === 2) {
-	                result += withoutSuffix || isFuture ? 'uri' : 'urama';
-	            } else if (number < 5) {
-	                result += withoutSuffix || isFuture ? 'ure' : 'urami';
-	            } else {
-	                result += withoutSuffix || isFuture ? 'ur' : 'urami';
-	            }
-	            return result;
-	        case 'd':
-	            return withoutSuffix || isFuture ? 'en dan' : 'enim dnem';
-	        case 'dd':
-	            if (number === 1) {
-	                result += withoutSuffix || isFuture ? 'dan' : 'dnem';
-	            } else if (number === 2) {
-	                result += withoutSuffix || isFuture ? 'dni' : 'dnevoma';
-	            } else {
-	                result += withoutSuffix || isFuture ? 'dni' : 'dnevi';
-	            }
-	            return result;
-	        case 'M':
-	            return withoutSuffix || isFuture ? 'en mesec' : 'enim mesecem';
-	        case 'MM':
-	            if (number === 1) {
-	                result += withoutSuffix || isFuture ? 'mesec' : 'mesecem';
-	            } else if (number === 2) {
-	                result += withoutSuffix || isFuture ? 'meseca' : 'mesecema';
-	            } else if (number < 5) {
-	                result += withoutSuffix || isFuture ? 'mesece' : 'meseci';
-	            } else {
-	                result += withoutSuffix || isFuture ? 'mesecev' : 'meseci';
-	            }
-	            return result;
-	        case 'y':
-	            return withoutSuffix || isFuture ? 'eno leto' : 'enim letom';
-	        case 'yy':
-	            if (number === 1) {
-	                result += withoutSuffix || isFuture ? 'leto' : 'letom';
-	            } else if (number === 2) {
-	                result += withoutSuffix || isFuture ? 'leti' : 'letoma';
-	            } else if (number < 5) {
-	                result += withoutSuffix || isFuture ? 'leta' : 'leti';
-	            } else {
-	                result += withoutSuffix || isFuture ? 'let' : 'leti';
-	            }
-	            return result;
+	            case 's':
+	                return withoutSuffix || isFuture ? 'nekaj sekund' : 'nekaj sekundami';
+	            case 'ss':
+	                if (number === 1) {
+	                    result += withoutSuffix ? 'sekundo' : 'sekundi';
+	                } else if (number === 2) {
+	                    result += withoutSuffix || isFuture ? 'sekundi' : 'sekundah';
+	                } else if (number < 5) {
+	                    result += withoutSuffix || isFuture ? 'sekunde' : 'sekundah';
+	                } else {
+	                    result += withoutSuffix || isFuture ? 'sekund' : 'sekund';
+	                }
+	                return result;
+	            case 'm':
+	                return withoutSuffix ? 'ena minuta' : 'eno minuto';
+	            case 'mm':
+	                if (number === 1) {
+	                    result += withoutSuffix ? 'minuta' : 'minuto';
+	                } else if (number === 2) {
+	                    result += withoutSuffix || isFuture ? 'minuti' : 'minutama';
+	                } else if (number < 5) {
+	                    result += withoutSuffix || isFuture ? 'minute' : 'minutami';
+	                } else {
+	                    result += withoutSuffix || isFuture ? 'minut' : 'minutami';
+	                }
+	                return result;
+	            case 'h':
+	                return withoutSuffix ? 'ena ura' : 'eno uro';
+	            case 'hh':
+	                if (number === 1) {
+	                    result += withoutSuffix ? 'ura' : 'uro';
+	                } else if (number === 2) {
+	                    result += withoutSuffix || isFuture ? 'uri' : 'urama';
+	                } else if (number < 5) {
+	                    result += withoutSuffix || isFuture ? 'ure' : 'urami';
+	                } else {
+	                    result += withoutSuffix || isFuture ? 'ur' : 'urami';
+	                }
+	                return result;
+	            case 'd':
+	                return withoutSuffix || isFuture ? 'en dan' : 'enim dnem';
+	            case 'dd':
+	                if (number === 1) {
+	                    result += withoutSuffix || isFuture ? 'dan' : 'dnem';
+	                } else if (number === 2) {
+	                    result += withoutSuffix || isFuture ? 'dni' : 'dnevoma';
+	                } else {
+	                    result += withoutSuffix || isFuture ? 'dni' : 'dnevi';
+	                }
+	                return result;
+	            case 'M':
+	                return withoutSuffix || isFuture ? 'en mesec' : 'enim mesecem';
+	            case 'MM':
+	                if (number === 1) {
+	                    result += withoutSuffix || isFuture ? 'mesec' : 'mesecem';
+	                } else if (number === 2) {
+	                    result += withoutSuffix || isFuture ? 'meseca' : 'mesecema';
+	                } else if (number < 5) {
+	                    result += withoutSuffix || isFuture ? 'mesece' : 'meseci';
+	                } else {
+	                    result += withoutSuffix || isFuture ? 'mesecev' : 'meseci';
+	                }
+	                return result;
+	            case 'y':
+	                return withoutSuffix || isFuture ? 'eno leto' : 'enim letom';
+	            case 'yy':
+	                if (number === 1) {
+	                    result += withoutSuffix || isFuture ? 'leto' : 'letom';
+	                } else if (number === 2) {
+	                    result += withoutSuffix || isFuture ? 'leti' : 'letoma';
+	                } else if (number < 5) {
+	                    result += withoutSuffix || isFuture ? 'leta' : 'leti';
+	                } else {
+	                    result += withoutSuffix || isFuture ? 'let' : 'leti';
+	                }
+	                return result;
 	        }
 	    }
 
@@ -33282,7 +35603,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        longDateFormat : {
 	            LT : 'H:mm',
 	            LTS : 'H:mm:ss',
-	            L : 'DD. MM. YYYY',
+	            L : 'DD.MM.YYYY',
 	            LL : 'D. MMMM YYYY',
 	            LLL : 'D. MMMM YYYY H:mm',
 	            LLLL : 'dddd, D. MMMM YYYY H:mm'
@@ -33293,33 +35614,33 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	            nextWeek : function () {
 	                switch (this.day()) {
-	                case 0:
-	                    return '[v] [nedeljo] [ob] LT';
-	                case 3:
-	                    return '[v] [sredo] [ob] LT';
-	                case 6:
-	                    return '[v] [soboto] [ob] LT';
-	                case 1:
-	                case 2:
-	                case 4:
-	                case 5:
-	                    return '[v] dddd [ob] LT';
+	                    case 0:
+	                        return '[v] [nedeljo] [ob] LT';
+	                    case 3:
+	                        return '[v] [sredo] [ob] LT';
+	                    case 6:
+	                        return '[v] [soboto] [ob] LT';
+	                    case 1:
+	                    case 2:
+	                    case 4:
+	                    case 5:
+	                        return '[v] dddd [ob] LT';
 	                }
 	            },
 	            lastDay  : '[včeraj ob] LT',
 	            lastWeek : function () {
 	                switch (this.day()) {
-	                case 0:
-	                    return '[prejšnjo] [nedeljo] [ob] LT';
-	                case 3:
-	                    return '[prejšnjo] [sredo] [ob] LT';
-	                case 6:
-	                    return '[prejšnjo] [soboto] [ob] LT';
-	                case 1:
-	                case 2:
-	                case 4:
-	                case 5:
-	                    return '[prejšnji] dddd [ob] LT';
+	                    case 0:
+	                        return '[prejšnjo] [nedeljo] [ob] LT';
+	                    case 3:
+	                        return '[prejšnjo] [sredo] [ob] LT';
+	                    case 6:
+	                        return '[prejšnjo] [soboto] [ob] LT';
+	                    case 1:
+	                    case 2:
+	                    case 4:
+	                    case 5:
+	                        return '[prejšnji] dddd [ob] LT';
 	                }
 	            },
 	            sameElse : 'L'
@@ -33328,6 +35649,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'čez %s',
 	            past   : 'pred %s',
 	            s      : processRelativeTime,
+	            ss     : processRelativeTime,
 	            m      : processRelativeTime,
 	            mm     : processRelativeTime,
 	            h      : processRelativeTime,
@@ -33339,7 +35661,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y      : processRelativeTime,
 	            yy     : processRelativeTime
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -33349,23 +35671,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return sl;
 
-	}));
+	})));
 
-/***/ },
-/* 89 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 105 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Albanian (sq)
-	//! author : Flakërim Ismani : https://github.com/flakerimi
-	//! author: Menelion Elensúle: https://github.com/Oire (tests)
-	//! author : Oerd Cukalla : https://github.com/oerd (fixes)
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var sq = moment.defineLocale('sq', {
@@ -33402,6 +35721,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'në %s',
 	            past : '%s më parë',
 	            s : 'disa sekonda',
+	            ss : '%d sekonda',
 	            m : 'një minutë',
 	            mm : '%d minuta',
 	            h : 'një orë',
@@ -33413,7 +35733,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'një vit',
 	            yy : '%d vite'
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -33423,25 +35743,25 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return sq;
 
-	}));
+	})));
 
-/***/ },
-/* 90 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 106 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Serbian-latin (sr)
-	//! author : Milan Janačković<milanjanackovic@gmail.com> : https://github.com/milan-j
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var translator = {
 	        words: { //Different grammatical cases
+	            ss: ['sekunda', 'sekunde', 'sekundi'],
 	            m: ['jedan minut', 'jedne minute'],
 	            mm: ['minut', 'minute', 'minuta'],
 	            h: ['jedan sat', 'jednog sata'],
@@ -33474,7 +35794,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        longDateFormat: {
 	            LT: 'H:mm',
 	            LTS : 'H:mm:ss',
-	            L: 'DD. MM. YYYY',
+	            L: 'DD.MM.YYYY',
 	            LL: 'D. MMMM YYYY',
 	            LLL: 'D. MMMM YYYY H:mm',
 	            LLLL: 'dddd, D. MMMM YYYY H:mm'
@@ -33484,17 +35804,17 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            nextDay: '[sutra u] LT',
 	            nextWeek: function () {
 	                switch (this.day()) {
-	                case 0:
-	                    return '[u] [nedelju] [u] LT';
-	                case 3:
-	                    return '[u] [sredu] [u] LT';
-	                case 6:
-	                    return '[u] [subotu] [u] LT';
-	                case 1:
-	                case 2:
-	                case 4:
-	                case 5:
-	                    return '[u] dddd [u] LT';
+	                    case 0:
+	                        return '[u] [nedelju] [u] LT';
+	                    case 3:
+	                        return '[u] [sredu] [u] LT';
+	                    case 6:
+	                        return '[u] [subotu] [u] LT';
+	                    case 1:
+	                    case 2:
+	                    case 4:
+	                    case 5:
+	                        return '[u] dddd [u] LT';
 	                }
 	            },
 	            lastDay  : '[juče u] LT',
@@ -33516,6 +35836,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'za %s',
 	            past   : 'pre %s',
 	            s      : 'nekoliko sekundi',
+	            ss     : translator.translate,
 	            m      : translator.translate,
 	            mm     : translator.translate,
 	            h      : translator.translate,
@@ -33527,7 +35848,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y      : 'godinu',
 	            yy     : translator.translate
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -33537,25 +35858,25 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return sr;
 
-	}));
+	})));
 
-/***/ },
-/* 91 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 107 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Serbian-cyrillic (sr-cyrl)
-	//! author : Milan Janačković<milanjanackovic@gmail.com> : https://github.com/milan-j
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var translator = {
 	        words: { //Different grammatical cases
+	            ss: ['секунда', 'секунде', 'секунди'],
 	            m: ['један минут', 'једне минуте'],
 	            mm: ['минут', 'минуте', 'минута'],
 	            h: ['један сат', 'једног сата'],
@@ -33577,7 +35898,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	    };
 
-	    var sr_cyrl = moment.defineLocale('sr-cyrl', {
+	    var srCyrl = moment.defineLocale('sr-cyrl', {
 	        months: 'јануар_фебруар_март_април_мај_јун_јул_август_септембар_октобар_новембар_децембар'.split('_'),
 	        monthsShort: 'јан._феб._мар._апр._мај_јун_јул_авг._сеп._окт._нов._дец.'.split('_'),
 	        monthsParseExact: true,
@@ -33588,7 +35909,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        longDateFormat: {
 	            LT: 'H:mm',
 	            LTS : 'H:mm:ss',
-	            L: 'DD. MM. YYYY',
+	            L: 'DD.MM.YYYY',
 	            LL: 'D. MMMM YYYY',
 	            LLL: 'D. MMMM YYYY H:mm',
 	            LLLL: 'dddd, D. MMMM YYYY H:mm'
@@ -33598,17 +35919,17 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            nextDay: '[сутра у] LT',
 	            nextWeek: function () {
 	                switch (this.day()) {
-	                case 0:
-	                    return '[у] [недељу] [у] LT';
-	                case 3:
-	                    return '[у] [среду] [у] LT';
-	                case 6:
-	                    return '[у] [суботу] [у] LT';
-	                case 1:
-	                case 2:
-	                case 4:
-	                case 5:
-	                    return '[у] dddd [у] LT';
+	                    case 0:
+	                        return '[у] [недељу] [у] LT';
+	                    case 3:
+	                        return '[у] [среду] [у] LT';
+	                    case 6:
+	                        return '[у] [суботу] [у] LT';
+	                    case 1:
+	                    case 2:
+	                    case 4:
+	                    case 5:
+	                        return '[у] dddd [у] LT';
 	                }
 	            },
 	            lastDay  : '[јуче у] LT',
@@ -33630,6 +35951,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'за %s',
 	            past   : 'пре %s',
 	            s      : 'неколико секунди',
+	            ss     : translator.translate,
 	            m      : translator.translate,
 	            mm     : translator.translate,
 	            h      : translator.translate,
@@ -33641,7 +35963,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y      : 'годину',
 	            yy     : translator.translate
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -33649,24 +35971,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	    });
 
-	    return sr_cyrl;
+	    return srCyrl;
 
-	}));
+	})));
 
-/***/ },
-/* 92 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 108 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : siSwati (ss)
-	//! author : Nicolai Davies<mail@nicolai.io> : https://github.com/nicolaidavies
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
-
+	}(this, (function (moment) { 'use strict';
 
 
 	    var ss = moment.defineLocale('ss', {
@@ -33696,6 +36016,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'nga %s',
 	            past : 'wenteka nga %s',
 	            s : 'emizuzwana lomcane',
+	            ss : '%d mzuzwana',
 	            m : 'umzuzu',
 	            mm : '%d emizuzu',
 	            h : 'lihora',
@@ -33734,7 +36055,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                return hour + 12;
 	            }
 	        },
-	        ordinalParse: /\d{1,2}/,
+	        dayOfMonthOrdinalParse: /\d{1,2}/,
 	        ordinal : '%d',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -33744,21 +36065,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return ss;
 
-	}));
+	})));
 
-/***/ },
-/* 93 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 109 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : swedish (sv)
-	//! author : Jens Alm : https://github.com/ulmus
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var sv = moment.defineLocale('sv', {
@@ -33789,6 +36109,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'om %s',
 	            past : 'för %s sedan',
 	            s : 'några sekunder',
+	            ss : '%d sekunder',
 	            m : 'en minut',
 	            mm : '%d minuter',
 	            h : 'en timme',
@@ -33800,7 +36121,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'ett år',
 	            yy : '%d år'
 	        },
-	        ordinalParse: /\d{1,2}(e|a)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}(e|a)/,
 	        ordinal : function (number) {
 	            var b = number % 10,
 	                output = (~~(number % 100 / 10) === 1) ? 'e' :
@@ -33817,21 +36138,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return sv;
 
-	}));
+	})));
 
-/***/ },
-/* 94 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 110 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : swahili (sw)
-	//! author : Fahad Kassim : https://github.com/fadsel
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var sw = moment.defineLocale('sw', {
@@ -33861,6 +36181,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : '%s baadaye',
 	            past : 'tokea %s',
 	            s : 'hivi punde',
+	            ss : 'sekunde %d',
 	            m : 'dakika moja',
 	            mm : 'dakika %d',
 	            h : 'saa limoja',
@@ -33880,21 +36201,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return sw;
 
-	}));
+	})));
 
-/***/ },
-/* 95 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 111 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : tamil (ta)
-	//! author : Arjunkumar Krishnamoorthy : https://github.com/tk120404
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var symbolMap = {
@@ -33947,6 +36267,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : '%s இல்',
 	            past : '%s முன்',
 	            s : 'ஒரு சில விநாடிகள்',
+	            ss : '%d விநாடிகள்',
 	            m : 'ஒரு நிமிடம்',
 	            mm : '%d நிமிடங்கள்',
 	            h : 'ஒரு மணி நேரம்',
@@ -33958,7 +36279,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'ஒரு வருடம்',
 	            yy : '%d ஆண்டுகள்'
 	        },
-	        ordinalParse: /\d{1,2}வது/,
+	        dayOfMonthOrdinalParse: /\d{1,2}வது/,
 	        ordinal : function (number) {
 	            return number + 'வது';
 	        },
@@ -34013,21 +36334,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return ta;
 
-	}));
+	})));
 
-/***/ },
-/* 96 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 112 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : telugu (te)
-	//! author : Krishna Chaitanya Thota : https://github.com/kcthota
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var te = moment.defineLocale('te', {
@@ -34057,6 +36377,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : '%s లో',
 	            past : '%s క్రితం',
 	            s : 'కొన్ని క్షణాలు',
+	            ss : '%d సెకన్లు',
 	            m : 'ఒక నిమిషం',
 	            mm : '%d నిమిషాలు',
 	            h : 'ఒక గంట',
@@ -34068,7 +36389,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'ఒక సంవత్సరం',
 	            yy : '%d సంవత్సరాలు'
 	        },
-	        ordinalParse : /\d{1,2}వ/,
+	        dayOfMonthOrdinalParse : /\d{1,2}వ/,
 	        ordinal : '%dవ',
 	        meridiemParse: /రాత్రి|ఉదయం|మధ్యాహ్నం|సాయంత్రం/,
 	        meridiemHour : function (hour, meridiem) {
@@ -34106,38 +36427,228 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return te;
 
-	}));
+	})));
 
-/***/ },
-/* 97 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 113 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : thai (th)
-	//! author : Kridsada Thanabulpong : https://github.com/sirn
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
+
+
+	    var tet = moment.defineLocale('tet', {
+	        months : 'Janeiru_Fevereiru_Marsu_Abril_Maiu_Juñu_Jullu_Agustu_Setembru_Outubru_Novembru_Dezembru'.split('_'),
+	        monthsShort : 'Jan_Fev_Mar_Abr_Mai_Jun_Jul_Ago_Set_Out_Nov_Dez'.split('_'),
+	        weekdays : 'Domingu_Segunda_Tersa_Kuarta_Kinta_Sesta_Sabadu'.split('_'),
+	        weekdaysShort : 'Dom_Seg_Ters_Kua_Kint_Sest_Sab'.split('_'),
+	        weekdaysMin : 'Do_Seg_Te_Ku_Ki_Ses_Sa'.split('_'),
+	        longDateFormat : {
+	            LT : 'HH:mm',
+	            LTS : 'HH:mm:ss',
+	            L : 'DD/MM/YYYY',
+	            LL : 'D MMMM YYYY',
+	            LLL : 'D MMMM YYYY HH:mm',
+	            LLLL : 'dddd, D MMMM YYYY HH:mm'
+	        },
+	        calendar : {
+	            sameDay: '[Ohin iha] LT',
+	            nextDay: '[Aban iha] LT',
+	            nextWeek: 'dddd [iha] LT',
+	            lastDay: '[Horiseik iha] LT',
+	            lastWeek: 'dddd [semana kotuk] [iha] LT',
+	            sameElse: 'L'
+	        },
+	        relativeTime : {
+	            future : 'iha %s',
+	            past : '%s liuba',
+	            s : 'minutu balun',
+	            ss : 'minutu %d',
+	            m : 'minutu ida',
+	            mm : 'minutu %d',
+	            h : 'oras ida',
+	            hh : 'oras %d',
+	            d : 'loron ida',
+	            dd : 'loron %d',
+	            M : 'fulan ida',
+	            MM : 'fulan %d',
+	            y : 'tinan ida',
+	            yy : 'tinan %d'
+	        },
+	        dayOfMonthOrdinalParse: /\d{1,2}(st|nd|rd|th)/,
+	        ordinal : function (number) {
+	            var b = number % 10,
+	                output = (~~(number % 100 / 10) === 1) ? 'th' :
+	                (b === 1) ? 'st' :
+	                (b === 2) ? 'nd' :
+	                (b === 3) ? 'rd' : 'th';
+	            return number + output;
+	        },
+	        week : {
+	            dow : 1, // Monday is the first day of the week.
+	            doy : 4  // The week that contains Jan 4th is the first week of the year.
+	        }
+	    });
+
+	    return tet;
+
+	})));
+
+
+/***/ }),
+/* 114 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
+
+
+	    var suffixes = {
+	        0: '-ум',
+	        1: '-ум',
+	        2: '-юм',
+	        3: '-юм',
+	        4: '-ум',
+	        5: '-ум',
+	        6: '-ум',
+	        7: '-ум',
+	        8: '-ум',
+	        9: '-ум',
+	        10: '-ум',
+	        12: '-ум',
+	        13: '-ум',
+	        20: '-ум',
+	        30: '-юм',
+	        40: '-ум',
+	        50: '-ум',
+	        60: '-ум',
+	        70: '-ум',
+	        80: '-ум',
+	        90: '-ум',
+	        100: '-ум'
+	    };
+
+	    var tg = moment.defineLocale('tg', {
+	        months : 'январ_феврал_март_апрел_май_июн_июл_август_сентябр_октябр_ноябр_декабр'.split('_'),
+	        monthsShort : 'янв_фев_мар_апр_май_июн_июл_авг_сен_окт_ноя_дек'.split('_'),
+	        weekdays : 'якшанбе_душанбе_сешанбе_чоршанбе_панҷшанбе_ҷумъа_шанбе'.split('_'),
+	        weekdaysShort : 'яшб_дшб_сшб_чшб_пшб_ҷум_шнб'.split('_'),
+	        weekdaysMin : 'яш_дш_сш_чш_пш_ҷм_шб'.split('_'),
+	        longDateFormat : {
+	            LT : 'HH:mm',
+	            LTS : 'HH:mm:ss',
+	            L : 'DD/MM/YYYY',
+	            LL : 'D MMMM YYYY',
+	            LLL : 'D MMMM YYYY HH:mm',
+	            LLLL : 'dddd, D MMMM YYYY HH:mm'
+	        },
+	        calendar : {
+	            sameDay : '[Имрӯз соати] LT',
+	            nextDay : '[Пагоҳ соати] LT',
+	            lastDay : '[Дирӯз соати] LT',
+	            nextWeek : 'dddd[и] [ҳафтаи оянда соати] LT',
+	            lastWeek : 'dddd[и] [ҳафтаи гузашта соати] LT',
+	            sameElse : 'L'
+	        },
+	        relativeTime : {
+	            future : 'баъди %s',
+	            past : '%s пеш',
+	            s : 'якчанд сония',
+	            m : 'як дақиқа',
+	            mm : '%d дақиқа',
+	            h : 'як соат',
+	            hh : '%d соат',
+	            d : 'як рӯз',
+	            dd : '%d рӯз',
+	            M : 'як моҳ',
+	            MM : '%d моҳ',
+	            y : 'як сол',
+	            yy : '%d сол'
+	        },
+	        meridiemParse: /шаб|субҳ|рӯз|бегоҳ/,
+	        meridiemHour: function (hour, meridiem) {
+	            if (hour === 12) {
+	                hour = 0;
+	            }
+	            if (meridiem === 'шаб') {
+	                return hour < 4 ? hour : hour + 12;
+	            } else if (meridiem === 'субҳ') {
+	                return hour;
+	            } else if (meridiem === 'рӯз') {
+	                return hour >= 11 ? hour : hour + 12;
+	            } else if (meridiem === 'бегоҳ') {
+	                return hour + 12;
+	            }
+	        },
+	        meridiem: function (hour, minute, isLower) {
+	            if (hour < 4) {
+	                return 'шаб';
+	            } else if (hour < 11) {
+	                return 'субҳ';
+	            } else if (hour < 16) {
+	                return 'рӯз';
+	            } else if (hour < 19) {
+	                return 'бегоҳ';
+	            } else {
+	                return 'шаб';
+	            }
+	        },
+	        dayOfMonthOrdinalParse: /\d{1,2}-(ум|юм)/,
+	        ordinal: function (number) {
+	            var a = number % 10,
+	                b = number >= 100 ? 100 : null;
+	            return number + (suffixes[number] || suffixes[a] || suffixes[b]);
+	        },
+	        week : {
+	            dow : 1, // Monday is the first day of the week.
+	            doy : 7  // The week that contains Jan 1th is the first week of the year.
+	        }
+	    });
+
+	    return tg;
+
+	})));
+
+
+/***/ }),
+/* 115 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
 
 
 	    var th = moment.defineLocale('th', {
 	        months : 'มกราคม_กุมภาพันธ์_มีนาคม_เมษายน_พฤษภาคม_มิถุนายน_กรกฎาคม_สิงหาคม_กันยายน_ตุลาคม_พฤศจิกายน_ธันวาคม'.split('_'),
-	        monthsShort : 'มกรา_กุมภา_มีนา_เมษา_พฤษภา_มิถุนา_กรกฎา_สิงหา_กันยา_ตุลา_พฤศจิกา_ธันวา'.split('_'),
+	        monthsShort : 'ม.ค._ก.พ._มี.ค._เม.ย._พ.ค._มิ.ย._ก.ค._ส.ค._ก.ย._ต.ค._พ.ย._ธ.ค.'.split('_'),
 	        monthsParseExact: true,
 	        weekdays : 'อาทิตย์_จันทร์_อังคาร_พุธ_พฤหัสบดี_ศุกร์_เสาร์'.split('_'),
 	        weekdaysShort : 'อาทิตย์_จันทร์_อังคาร_พุธ_พฤหัส_ศุกร์_เสาร์'.split('_'), // yes, three characters difference
 	        weekdaysMin : 'อา._จ._อ._พ._พฤ._ศ._ส.'.split('_'),
 	        weekdaysParseExact : true,
 	        longDateFormat : {
-	            LT : 'H นาฬิกา m นาที',
-	            LTS : 'H นาฬิกา m นาที s วินาที',
-	            L : 'YYYY/MM/DD',
+	            LT : 'H:mm',
+	            LTS : 'H:mm:ss',
+	            L : 'DD/MM/YYYY',
 	            LL : 'D MMMM YYYY',
-	            LLL : 'D MMMM YYYY เวลา H นาฬิกา m นาที',
-	            LLLL : 'วันddddที่ D MMMM YYYY เวลา H นาฬิกา m นาที'
+	            LLL : 'D MMMM YYYY เวลา H:mm',
+	            LLLL : 'วันddddที่ D MMMM YYYY เวลา H:mm'
 	        },
 	        meridiemParse: /ก่อนเที่ยง|หลังเที่ยง/,
 	        isPM: function (input) {
@@ -34162,6 +36673,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'อีก %s',
 	            past : '%sที่แล้ว',
 	            s : 'ไม่กี่วินาที',
+	            ss : '%d วินาที',
 	            m : '1 นาที',
 	            mm : '%d นาที',
 	            h : '1 ชั่วโมง',
@@ -34177,24 +36689,23 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return th;
 
-	}));
+	})));
 
-/***/ },
-/* 98 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 116 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Tagalog/Filipino (tl-ph)
-	//! author : Dan Hagman
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
-	    var tl_ph = moment.defineLocale('tl-ph', {
+	    var tlPh = moment.defineLocale('tl-ph', {
 	        months : 'Enero_Pebrero_Marso_Abril_Mayo_Hunyo_Hulyo_Agosto_Setyembre_Oktubre_Nobyembre_Disyembre'.split('_'),
 	        monthsShort : 'Ene_Peb_Mar_Abr_May_Hun_Hul_Ago_Set_Okt_Nob_Dis'.split('_'),
 	        weekdays : 'Linggo_Lunes_Martes_Miyerkules_Huwebes_Biyernes_Sabado'.split('_'),
@@ -34209,17 +36720,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            LLLL : 'dddd, MMMM DD, YYYY HH:mm'
 	        },
 	        calendar : {
-	            sameDay: '[Ngayon sa] LT',
-	            nextDay: '[Bukas sa] LT',
-	            nextWeek: 'dddd [sa] LT',
-	            lastDay: '[Kahapon sa] LT',
-	            lastWeek: 'dddd [huling linggo] LT',
+	            sameDay: 'LT [ngayong araw]',
+	            nextDay: '[Bukas ng] LT',
+	            nextWeek: 'LT [sa susunod na] dddd',
+	            lastDay: 'LT [kahapon]',
+	            lastWeek: 'LT [noong nakaraang] dddd',
 	            sameElse: 'L'
 	        },
 	        relativeTime : {
 	            future : 'sa loob ng %s',
 	            past : '%s ang nakalipas',
 	            s : 'ilang segundo',
+	            ss : '%d segundo',
 	            m : 'isang minuto',
 	            mm : '%d minuto',
 	            h : 'isang oras',
@@ -34231,7 +36743,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'isang taon',
 	            yy : '%d taon'
 	        },
-	        ordinalParse: /\d{1,2}/,
+	        dayOfMonthOrdinalParse: /\d{1,2}/,
 	        ordinal : function (number) {
 	            return number;
 	        },
@@ -34241,23 +36753,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	    });
 
-	    return tl_ph;
+	    return tlPh;
 
-	}));
+	})));
 
-/***/ },
-/* 99 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 117 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Klingon (tlh)
-	//! author : Dominika Kruk : https://github.com/amaranthrose
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var numbersNouns = 'pagh_wa’_cha’_wej_loS_vagh_jav_Soch_chorgh_Hut'.split('_');
@@ -34265,30 +36776,32 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    function translateFuture(output) {
 	        var time = output;
 	        time = (output.indexOf('jaj') !== -1) ?
-	    	time.slice(0, -3) + 'leS' :
-	    	(output.indexOf('jar') !== -1) ?
-	    	time.slice(0, -3) + 'waQ' :
-	    	(output.indexOf('DIS') !== -1) ?
-	    	time.slice(0, -3) + 'nem' :
-	    	time + ' pIq';
+	        time.slice(0, -3) + 'leS' :
+	        (output.indexOf('jar') !== -1) ?
+	        time.slice(0, -3) + 'waQ' :
+	        (output.indexOf('DIS') !== -1) ?
+	        time.slice(0, -3) + 'nem' :
+	        time + ' pIq';
 	        return time;
 	    }
 
 	    function translatePast(output) {
 	        var time = output;
 	        time = (output.indexOf('jaj') !== -1) ?
-	    	time.slice(0, -3) + 'Hu’' :
-	    	(output.indexOf('jar') !== -1) ?
-	    	time.slice(0, -3) + 'wen' :
-	    	(output.indexOf('DIS') !== -1) ?
-	    	time.slice(0, -3) + 'ben' :
-	    	time + ' ret';
+	        time.slice(0, -3) + 'Hu’' :
+	        (output.indexOf('jar') !== -1) ?
+	        time.slice(0, -3) + 'wen' :
+	        (output.indexOf('DIS') !== -1) ?
+	        time.slice(0, -3) + 'ben' :
+	        time + ' ret';
 	        return time;
 	    }
 
 	    function translate(number, withoutSuffix, string, isFuture) {
 	        var numberNoun = numberAsNoun(number);
 	        switch (string) {
+	            case 'ss':
+	                return numberNoun + ' lup';
 	            case 'mm':
 	                return numberNoun + ' tup';
 	            case 'hh':
@@ -34304,9 +36817,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    function numberAsNoun(number) {
 	        var hundred = Math.floor((number % 1000) / 100),
-	    	ten = Math.floor((number % 100) / 10),
-	    	one = number % 10,
-	    	word = '';
+	        ten = Math.floor((number % 100) / 10),
+	        one = number % 10,
+	        word = '';
 	        if (hundred > 0) {
 	            word += numbersNouns[hundred] + 'vatlh';
 	        }
@@ -34346,6 +36859,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : translateFuture,
 	            past : translatePast,
 	            s : 'puS lup',
+	            ss : translate,
 	            m : 'wa’ tup',
 	            mm : translate,
 	            h : 'wa’ rep',
@@ -34357,7 +36871,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'wa’ DIS',
 	            yy : translate
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -34367,23 +36881,19 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return tlh;
 
-	}));
+	})));
 
-/***/ },
-/* 100 */
-/***/ function(module, exports, __webpack_require__) {
 
-	//! moment.js locale configuration
-	//! locale : turkish (tr)
-	//! authors : Erhan Gundogan : https://github.com/erhangundogan,
-	//!           Burak Yiğit Kaya: https://github.com/BYK
+/***/ }),
+/* 118 */
+/***/ (function(module, exports, __webpack_require__) {
 
+	
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
-
+	}(this, (function (moment) { 'use strict';
 
 	    var suffixes = {
 	        1: '\'inci',
@@ -34423,15 +36933,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        calendar : {
 	            sameDay : '[bugün saat] LT',
 	            nextDay : '[yarın saat] LT',
-	            nextWeek : '[haftaya] dddd [saat] LT',
+	            nextWeek : '[gelecek] dddd [saat] LT',
 	            lastDay : '[dün] LT',
-	            lastWeek : '[geçen hafta] dddd [saat] LT',
+	            lastWeek : '[geçen] dddd [saat] LT',
 	            sameElse : 'L'
 	        },
 	        relativeTime : {
 	            future : '%s sonra',
 	            past : '%s önce',
 	            s : 'birkaç saniye',
+	            ss : '%d saniye',
 	            m : 'bir dakika',
 	            mm : '%d dakika',
 	            h : 'bir saat',
@@ -34443,15 +36954,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'bir yıl',
 	            yy : '%d yıl'
 	        },
-	        ordinalParse: /\d{1,2}'(inci|nci|üncü|ncı|uncu|ıncı)/,
-	        ordinal : function (number) {
-	            if (number === 0) {  // special case for zero
-	                return number + '\'ıncı';
+	        ordinal: function (number, period) {
+	            switch (period) {
+	                case 'd':
+	                case 'D':
+	                case 'Do':
+	                case 'DD':
+	                    return number;
+	                default:
+	                    if (number === 0) {  // special case for zero
+	                        return number + '\'ıncı';
+	                    }
+	                    var a = number % 10,
+	                        b = number % 100 - a,
+	                        c = number >= 100 ? 100 : null;
+	                    return number + (suffixes[a] || suffixes[b] || suffixes[c]);
 	            }
-	            var a = number % 10,
-	                b = number % 100 - a,
-	                c = number >= 100 ? 100 : null;
-	            return number + (suffixes[a] || suffixes[b] || suffixes[c]);
 	        },
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -34461,22 +36979,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return tr;
 
-	}));
+	})));
 
-/***/ },
-/* 101 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 119 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : talossan (tzl)
-	//! author : Robin van der Vliet : https://github.com/robin0van0der0v with the help of Iustì Canun
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
-
+	}(this, (function (moment) { 'use strict';
 
 
 	    // After the year there should be a slash and the amount of years since December 26, 1979 in Roman numerals.
@@ -34518,6 +37034,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'osprei %s',
 	            past : 'ja%s',
 	            s : processRelativeTime,
+	            ss : processRelativeTime,
 	            m : processRelativeTime,
 	            mm : processRelativeTime,
 	            h : processRelativeTime,
@@ -34529,7 +37046,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : processRelativeTime,
 	            yy : processRelativeTime
 	        },
-	        ordinalParse: /\d{1,2}\./,
+	        dayOfMonthOrdinalParse: /\d{1,2}\./,
 	        ordinal : '%d.',
 	        week : {
 	            dow : 1, // Monday is the first day of the week.
@@ -34540,6 +37057,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    function processRelativeTime(number, withoutSuffix, key, isFuture) {
 	        var format = {
 	            's': ['viensas secunds', '\'iensas secunds'],
+	            'ss': [number + ' secunds', '' + number + ' secunds'],
 	            'm': ['\'n míut', '\'iens míut'],
 	            'mm': [number + ' míuts', '' + number + ' míuts'],
 	            'h': ['\'n þora', '\'iensa þora'],
@@ -34556,21 +37074,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return tzl;
 
-	}));
+	})));
 
-/***/ },
-/* 102 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 120 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Morocco Central Atlas Tamaziɣt (tzm)
-	//! author : Abdel Said : https://github.com/abdelsaid
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
 	    var tzm = moment.defineLocale('tzm', {
@@ -34599,6 +37116,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'ⴷⴰⴷⵅ ⵙ ⵢⴰⵏ %s',
 	            past : 'ⵢⴰⵏ %s',
 	            s : 'ⵉⵎⵉⴽ',
+	            ss : '%d ⵉⵎⵉⴽ',
 	            m : 'ⵎⵉⵏⵓⴺ',
 	            mm : '%d ⵎⵉⵏⵓⴺ',
 	            h : 'ⵙⴰⵄⴰ',
@@ -34618,24 +37136,23 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return tzm;
 
-	}));
+	})));
 
-/***/ },
-/* 103 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 121 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : Morocco Central Atlas Tamaziɣt in Latin (tzm-latn)
-	//! author : Abdel Said : https://github.com/abdelsaid
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
-	    var tzm_latn = moment.defineLocale('tzm-latn', {
+	    var tzmLatn = moment.defineLocale('tzm-latn', {
 	        months : 'innayr_brˤayrˤ_marˤsˤ_ibrir_mayyw_ywnyw_ywlywz_ɣwšt_šwtanbir_ktˤwbrˤ_nwwanbir_dwjnbir'.split('_'),
 	        monthsShort : 'innayr_brˤayrˤ_marˤsˤ_ibrir_mayyw_ywnyw_ywlywz_ɣwšt_šwtanbir_ktˤwbrˤ_nwwanbir_dwjnbir'.split('_'),
 	        weekdays : 'asamas_aynas_asinas_akras_akwas_asimwas_asiḍyas'.split('_'),
@@ -34661,6 +37178,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'dadkh s yan %s',
 	            past : 'yan %s',
 	            s : 'imik',
+	            ss : '%d imik',
 	            m : 'minuḍ',
 	            mm : '%d minuḍ',
 	            h : 'saɛa',
@@ -34678,24 +37196,145 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	    });
 
-	    return tzm_latn;
+	    return tzmLatn;
 
-	}));
+	})));
 
-/***/ },
-/* 104 */
-/***/ function(module, exports, __webpack_require__) {
 
-	//! moment.js locale configuration
-	//! locale : ukrainian (uk)
-	//! author : zemlanin : https://github.com/zemlanin
-	//! Author : Menelion Elensúle : https://github.com/Oire
+/***/ }),
+/* 122 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js language configuration
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
+
+
+	    var ugCn = moment.defineLocale('ug-cn', {
+	        months: 'يانۋار_فېۋرال_مارت_ئاپرېل_ماي_ئىيۇن_ئىيۇل_ئاۋغۇست_سېنتەبىر_ئۆكتەبىر_نويابىر_دېكابىر'.split(
+	            '_'
+	        ),
+	        monthsShort: 'يانۋار_فېۋرال_مارت_ئاپرېل_ماي_ئىيۇن_ئىيۇل_ئاۋغۇست_سېنتەبىر_ئۆكتەبىر_نويابىر_دېكابىر'.split(
+	            '_'
+	        ),
+	        weekdays: 'يەكشەنبە_دۈشەنبە_سەيشەنبە_چارشەنبە_پەيشەنبە_جۈمە_شەنبە'.split(
+	            '_'
+	        ),
+	        weekdaysShort: 'يە_دۈ_سە_چا_پە_جۈ_شە'.split('_'),
+	        weekdaysMin: 'يە_دۈ_سە_چا_پە_جۈ_شە'.split('_'),
+	        longDateFormat: {
+	            LT: 'HH:mm',
+	            LTS: 'HH:mm:ss',
+	            L: 'YYYY-MM-DD',
+	            LL: 'YYYY-يىلىM-ئاينىڭD-كۈنى',
+	            LLL: 'YYYY-يىلىM-ئاينىڭD-كۈنى، HH:mm',
+	            LLLL: 'dddd، YYYY-يىلىM-ئاينىڭD-كۈنى، HH:mm'
+	        },
+	        meridiemParse: /يېرىم كېچە|سەھەر|چۈشتىن بۇرۇن|چۈش|چۈشتىن كېيىن|كەچ/,
+	        meridiemHour: function (hour, meridiem) {
+	            if (hour === 12) {
+	                hour = 0;
+	            }
+	            if (
+	                meridiem === 'يېرىم كېچە' ||
+	                meridiem === 'سەھەر' ||
+	                meridiem === 'چۈشتىن بۇرۇن'
+	            ) {
+	                return hour;
+	            } else if (meridiem === 'چۈشتىن كېيىن' || meridiem === 'كەچ') {
+	                return hour + 12;
+	            } else {
+	                return hour >= 11 ? hour : hour + 12;
+	            }
+	        },
+	        meridiem: function (hour, minute, isLower) {
+	            var hm = hour * 100 + minute;
+	            if (hm < 600) {
+	                return 'يېرىم كېچە';
+	            } else if (hm < 900) {
+	                return 'سەھەر';
+	            } else if (hm < 1130) {
+	                return 'چۈشتىن بۇرۇن';
+	            } else if (hm < 1230) {
+	                return 'چۈش';
+	            } else if (hm < 1800) {
+	                return 'چۈشتىن كېيىن';
+	            } else {
+	                return 'كەچ';
+	            }
+	        },
+	        calendar: {
+	            sameDay: '[بۈگۈن سائەت] LT',
+	            nextDay: '[ئەتە سائەت] LT',
+	            nextWeek: '[كېلەركى] dddd [سائەت] LT',
+	            lastDay: '[تۆنۈگۈن] LT',
+	            lastWeek: '[ئالدىنقى] dddd [سائەت] LT',
+	            sameElse: 'L'
+	        },
+	        relativeTime: {
+	            future: '%s كېيىن',
+	            past: '%s بۇرۇن',
+	            s: 'نەچچە سېكونت',
+	            ss: '%d سېكونت',
+	            m: 'بىر مىنۇت',
+	            mm: '%d مىنۇت',
+	            h: 'بىر سائەت',
+	            hh: '%d سائەت',
+	            d: 'بىر كۈن',
+	            dd: '%d كۈن',
+	            M: 'بىر ئاي',
+	            MM: '%d ئاي',
+	            y: 'بىر يىل',
+	            yy: '%d يىل'
+	        },
+
+	        dayOfMonthOrdinalParse: /\d{1,2}(-كۈنى|-ئاي|-ھەپتە)/,
+	        ordinal: function (number, period) {
+	            switch (period) {
+	                case 'd':
+	                case 'D':
+	                case 'DDD':
+	                    return number + '-كۈنى';
+	                case 'w':
+	                case 'W':
+	                    return number + '-ھەپتە';
+	                default:
+	                    return number;
+	            }
+	        },
+	        preparse: function (string) {
+	            return string.replace(/،/g, ',');
+	        },
+	        postformat: function (string) {
+	            return string.replace(/,/g, '،');
+	        },
+	        week: {
+	            // GB/T 7408-1994《数据元和交换格式·信息交换·日期和时间表示法》与ISO 8601:1988等效
+	            dow: 1, // Monday is the first day of the week.
+	            doy: 7 // The week that contains Jan 1st is the first week of the year.
+	        }
+	    });
+
+	    return ugCn;
+
+	})));
+
+
+/***/ }),
+/* 123 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
 
 
 	    function plural(word, num) {
@@ -34704,6 +37343,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 	    function relativeTimeWithPlural(number, withoutSuffix, key) {
 	        var format = {
+	            'ss': withoutSuffix ? 'секунда_секунди_секунд' : 'секунду_секунди_секунд',
 	            'mm': withoutSuffix ? 'хвилина_хвилини_хвилин' : 'хвилину_хвилини_хвилин',
 	            'hh': withoutSuffix ? 'година_години_годин' : 'годину_години_годин',
 	            'dd': 'день_дні_днів',
@@ -34725,8 +37365,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            'nominative': 'неділя_понеділок_вівторок_середа_четвер_п’ятниця_субота'.split('_'),
 	            'accusative': 'неділю_понеділок_вівторок_середу_четвер_п’ятницю_суботу'.split('_'),
 	            'genitive': 'неділі_понеділка_вівторка_середи_четверга_п’ятниці_суботи'.split('_')
-	        },
-	        nounCase = (/(\[[ВвУу]\]) ?dddd/).test(format) ?
+	        };
+
+	        if (!m) {
+	            return weekdays['nominative'];
+	        }
+
+	        var nounCase = (/(\[[ВвУу]\]) ?dddd/).test(format) ?
 	            'accusative' :
 	            ((/\[?(?:минулої|наступної)? ?\] ?dddd/).test(format) ?
 	                'genitive' :
@@ -34763,15 +37408,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            nextWeek: processHoursFunction('[У] dddd ['),
 	            lastWeek: function () {
 	                switch (this.day()) {
-	                case 0:
-	                case 3:
-	                case 5:
-	                case 6:
-	                    return processHoursFunction('[Минулої] dddd [').call(this);
-	                case 1:
-	                case 2:
-	                case 4:
-	                    return processHoursFunction('[Минулого] dddd [').call(this);
+	                    case 0:
+	                    case 3:
+	                    case 5:
+	                    case 6:
+	                        return processHoursFunction('[Минулої] dddd [').call(this);
+	                    case 1:
+	                    case 2:
+	                    case 4:
+	                        return processHoursFunction('[Минулого] dddd [').call(this);
 	                }
 	            },
 	            sameElse: 'L'
@@ -34780,6 +37425,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'за %s',
 	            past : '%s тому',
 	            s : 'декілька секунд',
+	            ss : relativeTimeWithPlural,
 	            m : relativeTimeWithPlural,
 	            mm : relativeTimeWithPlural,
 	            h : 'годину',
@@ -34807,19 +37453,19 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                return 'вечора';
 	            }
 	        },
-	        ordinalParse: /\d{1,2}-(й|го)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}-(й|го)/,
 	        ordinal: function (number, period) {
 	            switch (period) {
-	            case 'M':
-	            case 'd':
-	            case 'DDD':
-	            case 'w':
-	            case 'W':
-	                return number + '-й';
-	            case 'D':
-	                return number + '-го';
-	            default:
-	                return number;
+	                case 'M':
+	                case 'd':
+	                case 'DDD':
+	                case 'w':
+	                case 'W':
+	                    return number + '-й';
+	                case 'D':
+	                    return number + '-го';
+	                default:
+	                    return number;
 	            }
 	        },
 	        week : {
@@ -34830,21 +37476,122 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return uk;
 
-	}));
+	})));
 
-/***/ },
-/* 105 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 124 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : uzbek (uz)
-	//! author : Sardor Muminov : https://github.com/muminoff
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
+
+
+	    var months = [
+	        'جنوری',
+	        'فروری',
+	        'مارچ',
+	        'اپریل',
+	        'مئی',
+	        'جون',
+	        'جولائی',
+	        'اگست',
+	        'ستمبر',
+	        'اکتوبر',
+	        'نومبر',
+	        'دسمبر'
+	    ];
+	    var days = [
+	        'اتوار',
+	        'پیر',
+	        'منگل',
+	        'بدھ',
+	        'جمعرات',
+	        'جمعہ',
+	        'ہفتہ'
+	    ];
+
+	    var ur = moment.defineLocale('ur', {
+	        months : months,
+	        monthsShort : months,
+	        weekdays : days,
+	        weekdaysShort : days,
+	        weekdaysMin : days,
+	        longDateFormat : {
+	            LT : 'HH:mm',
+	            LTS : 'HH:mm:ss',
+	            L : 'DD/MM/YYYY',
+	            LL : 'D MMMM YYYY',
+	            LLL : 'D MMMM YYYY HH:mm',
+	            LLLL : 'dddd، D MMMM YYYY HH:mm'
+	        },
+	        meridiemParse: /صبح|شام/,
+	        isPM : function (input) {
+	            return 'شام' === input;
+	        },
+	        meridiem : function (hour, minute, isLower) {
+	            if (hour < 12) {
+	                return 'صبح';
+	            }
+	            return 'شام';
+	        },
+	        calendar : {
+	            sameDay : '[آج بوقت] LT',
+	            nextDay : '[کل بوقت] LT',
+	            nextWeek : 'dddd [بوقت] LT',
+	            lastDay : '[گذشتہ روز بوقت] LT',
+	            lastWeek : '[گذشتہ] dddd [بوقت] LT',
+	            sameElse : 'L'
+	        },
+	        relativeTime : {
+	            future : '%s بعد',
+	            past : '%s قبل',
+	            s : 'چند سیکنڈ',
+	            ss : '%d سیکنڈ',
+	            m : 'ایک منٹ',
+	            mm : '%d منٹ',
+	            h : 'ایک گھنٹہ',
+	            hh : '%d گھنٹے',
+	            d : 'ایک دن',
+	            dd : '%d دن',
+	            M : 'ایک ماہ',
+	            MM : '%d ماہ',
+	            y : 'ایک سال',
+	            yy : '%d سال'
+	        },
+	        preparse: function (string) {
+	            return string.replace(/،/g, ',');
+	        },
+	        postformat: function (string) {
+	            return string.replace(/,/g, '،');
+	        },
+	        week : {
+	            dow : 1, // Monday is the first day of the week.
+	            doy : 4  // The week that contains Jan 4th is the first week of the year.
+	        }
+	    });
+
+	    return ur;
+
+	})));
+
+
+/***/ }),
+/* 125 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
 
 
 	    var uz = moment.defineLocale('uz', {
@@ -34873,6 +37620,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'Якин %s ичида',
 	            past : 'Бир неча %s олдин',
 	            s : 'фурсат',
+	            ss : '%d фурсат',
 	            m : 'бир дакика',
 	            mm : '%d дакика',
 	            h : 'бир соат',
@@ -34892,21 +37640,82 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return uz;
 
-	}));
+	})));
 
-/***/ },
-/* 106 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 126 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : vietnamese (vi)
-	//! author : Bang Nguyen : https://github.com/bangnk
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
+
+
+	    var uzLatn = moment.defineLocale('uz-latn', {
+	        months : 'Yanvar_Fevral_Mart_Aprel_May_Iyun_Iyul_Avgust_Sentabr_Oktabr_Noyabr_Dekabr'.split('_'),
+	        monthsShort : 'Yan_Fev_Mar_Apr_May_Iyun_Iyul_Avg_Sen_Okt_Noy_Dek'.split('_'),
+	        weekdays : 'Yakshanba_Dushanba_Seshanba_Chorshanba_Payshanba_Juma_Shanba'.split('_'),
+	        weekdaysShort : 'Yak_Dush_Sesh_Chor_Pay_Jum_Shan'.split('_'),
+	        weekdaysMin : 'Ya_Du_Se_Cho_Pa_Ju_Sha'.split('_'),
+	        longDateFormat : {
+	            LT : 'HH:mm',
+	            LTS : 'HH:mm:ss',
+	            L : 'DD/MM/YYYY',
+	            LL : 'D MMMM YYYY',
+	            LLL : 'D MMMM YYYY HH:mm',
+	            LLLL : 'D MMMM YYYY, dddd HH:mm'
+	        },
+	        calendar : {
+	            sameDay : '[Bugun soat] LT [da]',
+	            nextDay : '[Ertaga] LT [da]',
+	            nextWeek : 'dddd [kuni soat] LT [da]',
+	            lastDay : '[Kecha soat] LT [da]',
+	            lastWeek : '[O\'tgan] dddd [kuni soat] LT [da]',
+	            sameElse : 'L'
+	        },
+	        relativeTime : {
+	            future : 'Yaqin %s ichida',
+	            past : 'Bir necha %s oldin',
+	            s : 'soniya',
+	            ss : '%d soniya',
+	            m : 'bir daqiqa',
+	            mm : '%d daqiqa',
+	            h : 'bir soat',
+	            hh : '%d soat',
+	            d : 'bir kun',
+	            dd : '%d kun',
+	            M : 'bir oy',
+	            MM : '%d oy',
+	            y : 'bir yil',
+	            yy : '%d yil'
+	        },
+	        week : {
+	            dow : 1, // Monday is the first day of the week.
+	            doy : 7  // The week that contains Jan 1st is the first week of the year.
+	        }
+	    });
+
+	    return uzLatn;
+
+	})));
+
+
+/***/ }),
+/* 127 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
 
 
 	    var vi = moment.defineLocale('vi', {
@@ -34952,6 +37761,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : '%s tới',
 	            past : '%s trước',
 	            s : 'vài giây',
+	            ss : '%d giây' ,
 	            m : 'một phút',
 	            mm : '%d phút',
 	            h : 'một giờ',
@@ -34963,7 +37773,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'một năm',
 	            yy : '%d năm'
 	        },
-	        ordinalParse: /\d{1,2}/,
+	        dayOfMonthOrdinalParse: /\d{1,2}/,
 	        ordinal : function (number) {
 	            return number;
 	        },
@@ -34975,24 +37785,23 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    return vi;
 
-	}));
+	})));
 
-/***/ },
-/* 107 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 128 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : pseudo (x-pseudo)
-	//! author : Andrew Hood : https://github.com/andrewhood125
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
-	    var x_pseudo = moment.defineLocale('x-pseudo', {
+	    var xPseudo = moment.defineLocale('x-pseudo', {
 	        months : 'J~áñúá~rý_F~ébrú~árý_~Márc~h_Áp~ríl_~Máý_~Júñé~_Júl~ý_Áú~gúst~_Sép~témb~ér_Ó~ctób~ér_Ñ~óvém~bér_~Décé~mbér'.split('_'),
 	        monthsShort : 'J~áñ_~Féb_~Már_~Ápr_~Máý_~Júñ_~Júl_~Áúg_~Sép_~Óct_~Ñóv_~Déc'.split('_'),
 	        monthsParseExact : true,
@@ -35019,6 +37828,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            future : 'í~ñ %s',
 	            past : '%s á~gó',
 	            s : 'á ~féw ~sécó~ñds',
+	            ss : '%d s~écóñ~ds',
 	            m : 'á ~míñ~úté',
 	            mm : '%d m~íñú~tés',
 	            h : 'á~ñ hó~úr',
@@ -35030,7 +37840,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            y : 'á ~ýéár',
 	            yy : '%d ý~éárs'
 	        },
-	        ordinalParse: /\d{1,2}(th|st|nd|rd)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}(th|st|nd|rd)/,
 	        ordinal : function (number) {
 	            var b = number % 10,
 	                output = (~~(number % 100 / 10) === 1) ? 'th' :
@@ -35045,43 +37855,105 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	    });
 
-	    return x_pseudo;
+	    return xPseudo;
 
-	}));
+	})));
 
-/***/ },
-/* 108 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 129 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : chinese (zh-cn)
-	//! author : suupic : https://github.com/suupic
-	//! author : Zeno Zeng : https://github.com/zenozeng
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
-	    var zh_cn = moment.defineLocale('zh-cn', {
+	    var yo = moment.defineLocale('yo', {
+	        months : 'Sẹ́rẹ́_Èrèlè_Ẹrẹ̀nà_Ìgbé_Èbibi_Òkùdu_Agẹmo_Ògún_Owewe_Ọ̀wàrà_Bélú_Ọ̀pẹ̀̀'.split('_'),
+	        monthsShort : 'Sẹ́r_Èrl_Ẹrn_Ìgb_Èbi_Òkù_Agẹ_Ògú_Owe_Ọ̀wà_Bél_Ọ̀pẹ̀̀'.split('_'),
+	        weekdays : 'Àìkú_Ajé_Ìsẹ́gun_Ọjọ́rú_Ọjọ́bọ_Ẹtì_Àbámẹ́ta'.split('_'),
+	        weekdaysShort : 'Àìk_Ajé_Ìsẹ́_Ọjr_Ọjb_Ẹtì_Àbá'.split('_'),
+	        weekdaysMin : 'Àì_Aj_Ìs_Ọr_Ọb_Ẹt_Àb'.split('_'),
+	        longDateFormat : {
+	            LT : 'h:mm A',
+	            LTS : 'h:mm:ss A',
+	            L : 'DD/MM/YYYY',
+	            LL : 'D MMMM YYYY',
+	            LLL : 'D MMMM YYYY h:mm A',
+	            LLLL : 'dddd, D MMMM YYYY h:mm A'
+	        },
+	        calendar : {
+	            sameDay : '[Ònì ni] LT',
+	            nextDay : '[Ọ̀la ni] LT',
+	            nextWeek : 'dddd [Ọsẹ̀ tón\'bọ] [ni] LT',
+	            lastDay : '[Àna ni] LT',
+	            lastWeek : 'dddd [Ọsẹ̀ tólọ́] [ni] LT',
+	            sameElse : 'L'
+	        },
+	        relativeTime : {
+	            future : 'ní %s',
+	            past : '%s kọjá',
+	            s : 'ìsẹjú aayá die',
+	            ss :'aayá %d',
+	            m : 'ìsẹjú kan',
+	            mm : 'ìsẹjú %d',
+	            h : 'wákati kan',
+	            hh : 'wákati %d',
+	            d : 'ọjọ́ kan',
+	            dd : 'ọjọ́ %d',
+	            M : 'osù kan',
+	            MM : 'osù %d',
+	            y : 'ọdún kan',
+	            yy : 'ọdún %d'
+	        },
+	        dayOfMonthOrdinalParse : /ọjọ́\s\d{1,2}/,
+	        ordinal : 'ọjọ́ %d',
+	        week : {
+	            dow : 1, // Monday is the first day of the week.
+	            doy : 4 // The week that contains Jan 4th is the first week of the year.
+	        }
+	    });
+
+	    return yo;
+
+	})));
+
+
+/***/ }),
+/* 130 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
+
+
+	    var zhCn = moment.defineLocale('zh-cn', {
 	        months : '一月_二月_三月_四月_五月_六月_七月_八月_九月_十月_十一月_十二月'.split('_'),
 	        monthsShort : '1月_2月_3月_4月_5月_6月_7月_8月_9月_10月_11月_12月'.split('_'),
 	        weekdays : '星期日_星期一_星期二_星期三_星期四_星期五_星期六'.split('_'),
 	        weekdaysShort : '周日_周一_周二_周三_周四_周五_周六'.split('_'),
 	        weekdaysMin : '日_一_二_三_四_五_六'.split('_'),
 	        longDateFormat : {
-	            LT : 'Ah点mm分',
-	            LTS : 'Ah点m分s秒',
-	            L : 'YYYY-MM-DD',
-	            LL : 'YYYY年MMMD日',
-	            LLL : 'YYYY年MMMD日Ah点mm分',
-	            LLLL : 'YYYY年MMMD日ddddAh点mm分',
-	            l : 'YYYY-MM-DD',
-	            ll : 'YYYY年MMMD日',
-	            lll : 'YYYY年MMMD日Ah点mm分',
-	            llll : 'YYYY年MMMD日ddddAh点mm分'
+	            LT : 'HH:mm',
+	            LTS : 'HH:mm:ss',
+	            L : 'YYYY/MM/DD',
+	            LL : 'YYYY年M月D日',
+	            LLL : 'YYYY年M月D日Ah点mm分',
+	            LLLL : 'YYYY年M月D日ddddAh点mm分',
+	            l : 'YYYY/M/D',
+	            ll : 'YYYY年M月D日',
+	            lll : 'YYYY年M月D日 HH:mm',
+	            llll : 'YYYY年M月D日dddd HH:mm'
 	        },
 	        meridiemParse: /凌晨|早上|上午|中午|下午|晚上/,
 	        meridiemHour: function (hour, meridiem) {
@@ -35115,49 +37987,34 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            }
 	        },
 	        calendar : {
-	            sameDay : function () {
-	                return this.minutes() === 0 ? '[今天]Ah[点整]' : '[今天]LT';
-	            },
-	            nextDay : function () {
-	                return this.minutes() === 0 ? '[明天]Ah[点整]' : '[明天]LT';
-	            },
-	            lastDay : function () {
-	                return this.minutes() === 0 ? '[昨天]Ah[点整]' : '[昨天]LT';
-	            },
-	            nextWeek : function () {
-	                var startOfWeek, prefix;
-	                startOfWeek = moment().startOf('week');
-	                prefix = this.diff(startOfWeek, 'days') >= 7 ? '[下]' : '[本]';
-	                return this.minutes() === 0 ? prefix + 'dddAh点整' : prefix + 'dddAh点mm';
-	            },
-	            lastWeek : function () {
-	                var startOfWeek, prefix;
-	                startOfWeek = moment().startOf('week');
-	                prefix = this.unix() < startOfWeek.unix()  ? '[上]' : '[本]';
-	                return this.minutes() === 0 ? prefix + 'dddAh点整' : prefix + 'dddAh点mm';
-	            },
-	            sameElse : 'LL'
+	            sameDay : '[今天]LT',
+	            nextDay : '[明天]LT',
+	            nextWeek : '[下]ddddLT',
+	            lastDay : '[昨天]LT',
+	            lastWeek : '[上]ddddLT',
+	            sameElse : 'L'
 	        },
-	        ordinalParse: /\d{1,2}(日|月|周)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}(日|月|周)/,
 	        ordinal : function (number, period) {
 	            switch (period) {
-	            case 'd':
-	            case 'D':
-	            case 'DDD':
-	                return number + '日';
-	            case 'M':
-	                return number + '月';
-	            case 'w':
-	            case 'W':
-	                return number + '周';
-	            default:
-	                return number;
+	                case 'd':
+	                case 'D':
+	                case 'DDD':
+	                    return number + '日';
+	                case 'M':
+	                    return number + '月';
+	                case 'w':
+	                case 'W':
+	                    return number + '周';
+	                default:
+	                    return number;
 	            }
 	        },
 	        relativeTime : {
 	            future : '%s内',
 	            past : '%s前',
 	            s : '几秒',
+	            ss : '%d 秒',
 	            m : '1 分钟',
 	            mm : '%d 分钟',
 	            h : '1 小时',
@@ -35176,49 +38033,48 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	    });
 
-	    return zh_cn;
+	    return zhCn;
 
-	}));
+	})));
 
-/***/ },
-/* 109 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 131 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-	//! locale : traditional chinese (zh-tw)
-	//! author : Ben : https://github.com/ben-lin
 
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(7)) :
-	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
-	}(this, function (moment) { 'use strict';
+	}(this, (function (moment) { 'use strict';
 
 
-	    var zh_tw = moment.defineLocale('zh-tw', {
+	    var zhHk = moment.defineLocale('zh-hk', {
 	        months : '一月_二月_三月_四月_五月_六月_七月_八月_九月_十月_十一月_十二月'.split('_'),
 	        monthsShort : '1月_2月_3月_4月_5月_6月_7月_8月_9月_10月_11月_12月'.split('_'),
 	        weekdays : '星期日_星期一_星期二_星期三_星期四_星期五_星期六'.split('_'),
 	        weekdaysShort : '週日_週一_週二_週三_週四_週五_週六'.split('_'),
 	        weekdaysMin : '日_一_二_三_四_五_六'.split('_'),
 	        longDateFormat : {
-	            LT : 'Ah點mm分',
-	            LTS : 'Ah點m分s秒',
-	            L : 'YYYY年MMMD日',
-	            LL : 'YYYY年MMMD日',
-	            LLL : 'YYYY年MMMD日Ah點mm分',
-	            LLLL : 'YYYY年MMMD日ddddAh點mm分',
-	            l : 'YYYY年MMMD日',
-	            ll : 'YYYY年MMMD日',
-	            lll : 'YYYY年MMMD日Ah點mm分',
-	            llll : 'YYYY年MMMD日ddddAh點mm分'
+	            LT : 'HH:mm',
+	            LTS : 'HH:mm:ss',
+	            L : 'YYYY/MM/DD',
+	            LL : 'YYYY年M月D日',
+	            LLL : 'YYYY年M月D日 HH:mm',
+	            LLLL : 'YYYY年M月D日dddd HH:mm',
+	            l : 'YYYY/M/D',
+	            ll : 'YYYY年M月D日',
+	            lll : 'YYYY年M月D日 HH:mm',
+	            llll : 'YYYY年M月D日dddd HH:mm'
 	        },
-	        meridiemParse: /早上|上午|中午|下午|晚上/,
+	        meridiemParse: /凌晨|早上|上午|中午|下午|晚上/,
 	        meridiemHour : function (hour, meridiem) {
 	            if (hour === 12) {
 	                hour = 0;
 	            }
-	            if (meridiem === '早上' || meridiem === '上午') {
+	            if (meridiem === '凌晨' || meridiem === '早上' || meridiem === '上午') {
 	                return hour;
 	            } else if (meridiem === '中午') {
 	                return hour >= 11 ? hour : hour + 12;
@@ -35228,7 +38084,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        },
 	        meridiem : function (hour, minute, isLower) {
 	            var hm = hour * 100 + minute;
-	            if (hm < 900) {
+	            if (hm < 600) {
+	                return '凌晨';
+	            } else if (hm < 900) {
 	                return '早上';
 	            } else if (hm < 1130) {
 	                return '上午';
@@ -35248,56 +38106,165 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            lastWeek : '[上]ddddLT',
 	            sameElse : 'L'
 	        },
-	        ordinalParse: /\d{1,2}(日|月|週)/,
+	        dayOfMonthOrdinalParse: /\d{1,2}(日|月|週)/,
 	        ordinal : function (number, period) {
 	            switch (period) {
-	            case 'd' :
-	            case 'D' :
-	            case 'DDD' :
-	                return number + '日';
-	            case 'M' :
-	                return number + '月';
-	            case 'w' :
-	            case 'W' :
-	                return number + '週';
-	            default :
-	                return number;
+	                case 'd' :
+	                case 'D' :
+	                case 'DDD' :
+	                    return number + '日';
+	                case 'M' :
+	                    return number + '月';
+	                case 'w' :
+	                case 'W' :
+	                    return number + '週';
+	                default :
+	                    return number;
 	            }
 	        },
 	        relativeTime : {
 	            future : '%s內',
 	            past : '%s前',
 	            s : '幾秒',
-	            m : '1分鐘',
-	            mm : '%d分鐘',
-	            h : '1小時',
-	            hh : '%d小時',
-	            d : '1天',
-	            dd : '%d天',
-	            M : '1個月',
-	            MM : '%d個月',
-	            y : '1年',
-	            yy : '%d年'
+	            ss : '%d 秒',
+	            m : '1 分鐘',
+	            mm : '%d 分鐘',
+	            h : '1 小時',
+	            hh : '%d 小時',
+	            d : '1 天',
+	            dd : '%d 天',
+	            M : '1 個月',
+	            MM : '%d 個月',
+	            y : '1 年',
+	            yy : '%d 年'
 	        }
 	    });
 
-	    return zh_tw;
+	    return zhHk;
 
-	}));
+	})));
 
-/***/ },
-/* 110 */
-/***/ function(module, exports, __webpack_require__) {
+
+/***/ }),
+/* 132 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	//! moment.js locale configuration
+
+	;(function (global, factory) {
+	    true ? factory(__webpack_require__(8)) :
+	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
+	   factory(global.moment)
+	}(this, (function (moment) { 'use strict';
+
+
+	    var zhTw = moment.defineLocale('zh-tw', {
+	        months : '一月_二月_三月_四月_五月_六月_七月_八月_九月_十月_十一月_十二月'.split('_'),
+	        monthsShort : '1月_2月_3月_4月_5月_6月_7月_8月_9月_10月_11月_12月'.split('_'),
+	        weekdays : '星期日_星期一_星期二_星期三_星期四_星期五_星期六'.split('_'),
+	        weekdaysShort : '週日_週一_週二_週三_週四_週五_週六'.split('_'),
+	        weekdaysMin : '日_一_二_三_四_五_六'.split('_'),
+	        longDateFormat : {
+	            LT : 'HH:mm',
+	            LTS : 'HH:mm:ss',
+	            L : 'YYYY/MM/DD',
+	            LL : 'YYYY年M月D日',
+	            LLL : 'YYYY年M月D日 HH:mm',
+	            LLLL : 'YYYY年M月D日dddd HH:mm',
+	            l : 'YYYY/M/D',
+	            ll : 'YYYY年M月D日',
+	            lll : 'YYYY年M月D日 HH:mm',
+	            llll : 'YYYY年M月D日dddd HH:mm'
+	        },
+	        meridiemParse: /凌晨|早上|上午|中午|下午|晚上/,
+	        meridiemHour : function (hour, meridiem) {
+	            if (hour === 12) {
+	                hour = 0;
+	            }
+	            if (meridiem === '凌晨' || meridiem === '早上' || meridiem === '上午') {
+	                return hour;
+	            } else if (meridiem === '中午') {
+	                return hour >= 11 ? hour : hour + 12;
+	            } else if (meridiem === '下午' || meridiem === '晚上') {
+	                return hour + 12;
+	            }
+	        },
+	        meridiem : function (hour, minute, isLower) {
+	            var hm = hour * 100 + minute;
+	            if (hm < 600) {
+	                return '凌晨';
+	            } else if (hm < 900) {
+	                return '早上';
+	            } else if (hm < 1130) {
+	                return '上午';
+	            } else if (hm < 1230) {
+	                return '中午';
+	            } else if (hm < 1800) {
+	                return '下午';
+	            } else {
+	                return '晚上';
+	            }
+	        },
+	        calendar : {
+	            sameDay : '[今天] LT',
+	            nextDay : '[明天] LT',
+	            nextWeek : '[下]dddd LT',
+	            lastDay : '[昨天] LT',
+	            lastWeek : '[上]dddd LT',
+	            sameElse : 'L'
+	        },
+	        dayOfMonthOrdinalParse: /\d{1,2}(日|月|週)/,
+	        ordinal : function (number, period) {
+	            switch (period) {
+	                case 'd' :
+	                case 'D' :
+	                case 'DDD' :
+	                    return number + '日';
+	                case 'M' :
+	                    return number + '月';
+	                case 'w' :
+	                case 'W' :
+	                    return number + '週';
+	                default :
+	                    return number;
+	            }
+	        },
+	        relativeTime : {
+	            future : '%s內',
+	            past : '%s前',
+	            s : '幾秒',
+	            ss : '%d 秒',
+	            m : '1 分鐘',
+	            mm : '%d 分鐘',
+	            h : '1 小時',
+	            hh : '%d 小時',
+	            d : '1 天',
+	            dd : '%d 天',
+	            M : '1 個月',
+	            MM : '%d 個月',
+	            y : '1 年',
+	            yy : '%d 年'
+	        }
+	    });
+
+	    return zhTw;
+
+	})));
+
+
+/***/ }),
+/* 133 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
 	var jQuery = __webpack_require__(1);
 
 	/* ========================================================================
-	 * Bootstrap: tooltip.js v3.3.6
+	 * Bootstrap: tooltip.js v3.3.7
 	 * http://getbootstrap.com/javascript/#tooltip
 	 * Inspired by the original jQuery.tipsy by Jason Frame
 	 * ========================================================================
-	 * Copyright 2011-2015 Twitter, Inc.
+	 * Copyright 2011-2016 Twitter, Inc.
 	 * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
 	 * ======================================================================== */
 
@@ -35320,7 +38287,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    this.init('tooltip', element, options)
 	  }
 
-	  Tooltip.VERSION  = '3.3.6'
+	  Tooltip.VERSION  = '3.3.7'
 
 	  Tooltip.TRANSITION_DURATION = 150
 
@@ -35611,9 +38578,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    function complete() {
 	      if (that.hoverState != 'in') $tip.detach()
-	      that.$element
-	        .removeAttr('aria-describedby')
-	        .trigger('hidden.bs.' + that.type)
+	      if (that.$element) { // TODO: Check whether guarding this code with this `if` is really necessary.
+	        that.$element
+	          .removeAttr('aria-describedby')
+	          .trigger('hidden.bs.' + that.type)
+	      }
 	      callback && callback()
 	    }
 
@@ -35656,7 +38625,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      // width and height are missing in IE8, so compute them manually; see https://github.com/twbs/bootstrap/issues/14093
 	      elRect = $.extend({}, elRect, { width: elRect.right - elRect.left, height: elRect.bottom - elRect.top })
 	    }
-	    var elOffset  = isBody ? { top: 0, left: 0 } : $element.offset()
+	    var isSvg = window.SVGElement && el instanceof window.SVGElement
+	    // Avoid using $.offset() on SVGs since it gives incorrect results in jQuery 3.
+	    // See https://github.com/twbs/bootstrap/issues/20280
+	    var elOffset  = isBody ? { top: 0, left: 0 } : (isSvg ? null : $element.offset())
 	    var scroll    = { scroll: isBody ? document.documentElement.scrollTop || document.body.scrollTop : $element.scrollTop() }
 	    var outerDims = isBody ? { width: $(window).width(), height: $(window).height() } : null
 
@@ -35772,6 +38744,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      that.$tip = null
 	      that.$arrow = null
 	      that.$viewport = null
+	      that.$element = null
 	    })
 	  }
 
@@ -35809,5 +38782,5 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 
-/***/ }
+/***/ })
 /******/ ])});;

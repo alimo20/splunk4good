@@ -5,12 +5,16 @@ import pandas as pd
 from sklearn.linear_model import SGDClassifier as _SGDClassifier
 from sklearn.preprocessing import StandardScaler
 
+import cexc
 from base import ClassifierMixin, BaseAlgo
 from codec import codecs_manager
 from codec.codecs import NoopCodec
 from util import df_util
 from util.param_util import convert_params
-from util.algo_util import add_missing_attr
+from util.algo_util import add_missing_attr, get_kfold_cross_validation
+
+
+messages = cexc.get_messages_logger()
 
 
 class SGDClassifier(ClassifierMixin, BaseAlgo):
@@ -25,6 +29,15 @@ class SGDClassifier(ClassifierMixin, BaseAlgo):
             floats=['l1_ratio', 'alpha', 'eta0', 'power_t'],
             strs=['loss', 'penalty', 'learning_rate'],
         )
+
+        if 'eta0' in out_params and out_params['eta0'] < 0:
+            raise RuntimeError('eta0 must be equal to or greater than zero')
+
+        if 'learning_rate' in out_params:
+            if out_params['learning_rate'] in ("constant", "invscaling"):
+                if 'eta0' not in out_params:
+                    out_params['eta0'] = 0.1
+                    messages.warn('eta0 is not specified for learning_rate={}, defaulting to 0.1'.format(out_params['learning_rate']))
 
         if 'loss' in out_params:
             try:
@@ -55,8 +68,22 @@ class SGDClassifier(ClassifierMixin, BaseAlgo):
         )
 
         scaled_X = self.scaler.fit_transform(X.values)
+
+        # Return cross_validation scores if kfold_cv is set.
+        kfolds = options.get('kfold_cv')
+        if kfolds is not None:
+            scoring = ['f1_weighted', 'accuracy', 'precision_weighted', 'recall_weighted']
+            cv_df = get_kfold_cross_validation(
+                estimator=self.estimator,
+                X=scaled_X,
+                y=y.values,
+                scoring=scoring,
+                kfolds=kfolds,
+                )
+            return cv_df
+
         self.estimator.fit(scaled_X, y.values)
-        self.classes = np.unique(self.target_variable)
+        self.classes = np.unique(y)
 
     def partial_fit(self, df, options):
         # Handle backwards compatibility.

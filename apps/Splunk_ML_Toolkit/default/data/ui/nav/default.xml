@@ -3,7 +3,7 @@
   <view name="experiments"/>
   <view name="search"/>
   <view name="models"/>
-  <collection label="Legacy">
+  <collection label="Classic">
      <view name="alerts"/>
      <a href="reports">Scheduled Training</a>
      <collection label="Assistants">
@@ -18,6 +18,7 @@
        <view name="showcase_clustering"></view>
     </collection>
   </collection>
+  <view name="settings"/>
   <a href="http://docs.splunk.com/Documentation/MLApp">Docs</a>
   <a href="http://tiny.cc/splunkmlvideos">Video Tutorials</a>
 </nav>

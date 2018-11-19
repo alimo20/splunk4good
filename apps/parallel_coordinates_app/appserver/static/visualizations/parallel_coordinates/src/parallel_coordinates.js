@@ -39,6 +39,9 @@ define([
             this.$el = $(this.el);
             this.$el.attr('id', 'viz-' + _.uniqueId());
             this.$el.addClass('splunk-parcoords-viz');
+            if (vizUtils.getCurrentTheme && vizUtils.getCurrentTheme() === 'dark'){
+              this.$el.addClass('dark');
+            }
         },
 
         // Search data params
@@ -227,7 +230,8 @@ define([
                 .margin(margin)
                 .on('brush', _.debounce(function(d) {
                     that._updateShownDataLength(d.length, dataLength);
-                }, 50))
+                    that.$el.find('.foreground').addClass('faded');
+                }.bind(that), 50))
                 .shadows()
                 .mode(data.renderMode)
                 .render()
@@ -236,6 +240,7 @@ define([
             var $clearFilters = this.$clearFilters = $('<button class="clear-filters">Clear filters</button>')
                 .click(function() {
                     that.pc.brushReset();
+                    that.pc.unhighlight();
                     that._updateShownDataLength(dataLength, dataLength);
                 });
 

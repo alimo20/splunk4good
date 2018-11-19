@@ -9,7 +9,10 @@ from codec import codecs_manager
 from base import RegressorMixin, BaseAlgo
 from util.param_util import convert_params
 from util import df_util
-from util.algo_util import add_missing_attr
+from util.algo_util import add_missing_attr, get_kfold_cross_validation
+
+
+messages = cexc.get_messages_logger()
 
 
 class SGDRegressor(RegressorMixin, BaseAlgo):
@@ -24,6 +27,16 @@ class SGDRegressor(RegressorMixin, BaseAlgo):
             floats=['l1_ratio', 'alpha', 'eta0', 'power_t'],
             strs=['penalty', 'learning_rate'],
         )
+
+        if 'eta0' in out_params and out_params['eta0'] < 0:
+            raise RuntimeError('eta0 must be equal to or greater than zero')
+
+        if 'learning_rate' in out_params:
+            if out_params['learning_rate'] in ("constant", "invscaling"):
+                if 'eta0' not in out_params:
+                    out_params['eta0'] = 0.1
+                    messages.warn('eta0 is not specified for learning_rate={}, defaulting to 0.1'.format(out_params['learning_rate']))
+
 
         self.scaler = StandardScaler()
         self.estimator = _SGDRegressor(**out_params)
@@ -42,6 +55,19 @@ class SGDRegressor(RegressorMixin, BaseAlgo):
         )
 
         scaled_X = self.scaler.fit_transform(X.values)
+
+        # Return cross_validation scores if kfold_cv is set.
+        kfolds = options.get('kfold_cv')
+        if kfolds is not None:
+            cv_df = get_kfold_cross_validation(
+                estimator=self.estimator,
+                X=scaled_X,
+                y=y.values,
+                scoring=['r2', 'neg_mean_squared_error'],
+                kfolds=kfolds,
+                )
+            return cv_df
+
         self.estimator.fit(scaled_X, y.values)
 
     def partial_fit(self, df, options):

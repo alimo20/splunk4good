@@ -1,11 +1,10 @@
-from btool_util import get_algos_btool, get_mlspl_btool
-from exec_anaconda import get_apps_path
+from btool_util import get_algos_btool, get_mlspl_btool, get_scorings_btool
+from util.base_util import get_apps_path
 
 
 class BtoolProxy(object):
     """
-    A thin object wrapper around btool_utils for getting the algo configuration.
-
+    Thin object wrapper around btool_utils for getting the algo configuration.
     """
     def __init__(self, users_and_roles, app, target_dir):
         self.users_and_roles = users_and_roles
@@ -13,8 +12,7 @@ class BtoolProxy(object):
         self.target_dir = target_dir
 
     def get_algos(self):
-        """
-        Get algo information for all users and roles
+        """ Get algo information for all users and roles
 
         Returns:
             results (dict): Return value of get_algos_btool() for all users and roles.
@@ -29,8 +27,7 @@ class BtoolProxy(object):
         return algos
 
     def app_name_from_conf_path(self, conf_path):
-        """
-        Extract the app name from the conf_path
+        """ Extract the app name from the conf_path
 
         Args:
             conf_path (str): full path to the algos.conf file
@@ -61,3 +58,18 @@ class BtoolProxy(object):
 
         # We do not need the 'args' key
         return {k: v['args'] for k, v in settings.iteritems()}
+
+    def get_scorings(self):
+        """ Get scoring information for all users and roles
+
+        Returns:
+            results (dict): Return value of get_scorings_btool() for all users and roles.
+
+        """
+        scorings = {}
+
+        for user_or_role in self.users_and_roles:
+            scorings_for_role = get_scorings_btool(user_or_role, self.app, self.target_dir)
+            scorings.update(scorings_for_role)
+
+        return scorings

@@ -210,7 +210,14 @@ define([
 			for(c = 1; c < data.length; c++){
 				for(var d = 0; d < time_columns.length; d++){
 					var column = time_columns[d];
-					data[c][column] = String(new Date(data[c][column]).valueOf() / 1000);
+
+					// Try to convert the value to the epoch time
+					var converted_value = new Date(data[c][column]).valueOf() / 1000;
+
+					// If we couldn't convert it, then pass it through (see https://lukemurphey.net/issues/2262)
+					if(!isNaN(converted_value)){
+						data[c][column] = String(converted_value);
+					}
 				}
 			}
 
@@ -728,25 +735,6 @@ define([
         		minSpareCols: 0,
         		colHeaders: this.lookup_type === "kv" ? this.table_header : false,
 				columns: this.lookup_type === 'csv' ? null : this.getColumnsMetadata(),
-				/*
-				columns: [
-					{
-
-					},
-					{
-
-					},
-					{
-						'type': 'numeric',
-						'format': '$0,0.00'
-					},
-					{
-
-					},
-					{
-
-					},
-				],*/
 				
         		rowHeaders: true,
         		fixedRowsTop: this.lookup_type === "kv" ? 0 : 1,

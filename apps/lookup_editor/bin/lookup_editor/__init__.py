@@ -32,6 +32,39 @@ class LookupEditor(LookupBackups):
     def __init__(self, logger):
         super(LookupEditor, self).__init__(logger)
 
+    def get_kv_fields_from_transform(self, session_key, collection_name, namespace="lookup_editor", owner=None):
+        """
+        Get the list of fields for the given lookup from the transform.
+        """
+
+        response, content = splunk.rest.simpleRequest('/servicesNS/nobody/' + namespace +
+                                                      '/data/transforms/lookups',
+                                                      sessionKey=session_key,
+                                                      getargs={
+                                                          'output_mode': 'json',
+                                                          'search': 'collection=' + collection_name
+                                                        })
+
+        # Make sure we found something
+        if response.status < 200 or response.status > 300:
+            return None
+
+        # Parse the output
+        transforms = json.loads(content, object_pairs_hook=OrderedDict)
+        transform = None
+
+        # Make sure we got entries
+        if len(transforms['entry']) == 0:
+            return None
+        else:
+            transform = transforms['entry'][0]
+    
+        # If we got a match, then get the fields
+        if transform is not None and 'content' in transform and 'fields_array' in transform['content']:
+            return transform['content']['fields_array']
+        else:
+            return None
+
     def get_kv_lookup(self, session_key, lookup_file, namespace="lookup_editor", owner=None):
         """
         Get the contents of a KV store lookup.
@@ -61,6 +94,18 @@ class LookupEditor(LookupBackups):
             if field.startswith('field.'):
                 fields.append(field[6:])
 
+        # If we couldn't get fields from the collections config, try to get it from transforms.conf
+        if len(fields) <= 1:
+            fields = self.get_kv_fields_from_transform(session_key, lookup_file, namespace, owner)
+
+            # See if we got the fields from the transform. If we didn't, then just assume the _key field exists
+            if fields is None:
+                self.logger.info('Unable to get the fields list from lookup transforms', fields)
+                fields = ['_key']
+            else:
+                self.logger.info('Got fields list from the transform, fields=%r', fields)
+
+        # Add the fields as the first row
         lookup_contents.append(fields)
 
         # Get the contents
@@ -149,8 +194,8 @@ class LookupEditor(LookupBackups):
         correctly; this shouldn't be used for determining the path of a new file.
         """
 
-        # Strip out invalid characters like ".." so that this cannot be used to conduct an
-        # directory traversal
+        # Strip out invalid characters like ".." so that this cannot be used to conduct a
+        # directory traversal attack
         lookup_file = os.path.basename(lookup_file)
         namespace = os.path.basename(namespace)
 
@@ -336,12 +381,15 @@ class LookupEditor(LookupBackups):
 
         # Determine if the lookup file exists, create it if it doesn't
         if resolved_file_path is None:
-            shutil.move(temp_file_name, destination_lookup_full_path)
-            self.logger.info('Lookup created successfully, user=%s, namespace=%s, lookup_file=%s, path="%s"', user, namespace, lookup_file, destination_lookup_full_path)
+            self.logger.debug('Creating a new lookup file, user=%s, namespace=%s, lookup_file=%s, path="%s"', owner, namespace, lookup_file, temp_file_name)
+            
+            lookupfiles.create_lookup_table(filename=temp_file_name,
+                                            lookup_file=lookup_file,
+                                            namespace=namespace,
+                                            owner=owner,
+                                            key=session_key)
 
-            # If the file is new, then make sure that the list is reloaded so that the editors
-            # notice the change
-            lookupfiles.SplunkLookupTableFile.reload(session_key=session_key)
+            self.logger.info('Lookup created successfully, user=%s, namespace=%s, lookup_file=%s, path="%s"', user, namespace, lookup_file, destination_lookup_full_path)
 
         # Edit the existing lookup otherwise
         else:
@@ -367,5 +415,11 @@ class LookupEditor(LookupBackups):
             self.force_lookup_replication(namespace, lookup_file, session_key)
         except ResourceNotFound:
             self.logger.info("Unable to force replication of the lookup file to other search heads; upgrade Splunk to 6.2 or later in order to support CSV file replication")
+        except AuthorizationFailed:
+            self.logger.warn("Unable to force replication of the lookup file (not authorized), user=%s, namespace=%s, lookup_file=%s",
+                             user, namespace, lookup_file)
+        except:
+            self.logger.exception("Unable to force replication of the lookup file, user=%s, namespace=%s, lookup_file=%s",
+                                  user, namespace, lookup_file)
 
         return resolved_file_path

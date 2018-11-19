@@ -7,6 +7,7 @@ import os
 import conf
 from cStringIO import StringIO
 from util.param_util import is_truthy, parse_args, convert_params
+# from util.telemetry_util import log_uuid, log_fit_time, log_app_details, Timer
 from util import command_util
 
 import cexc
@@ -41,6 +42,8 @@ class FitCommand(cexc.BaseChunkHandler):
         raw_options = parse_args(getinfo['searchinfo']['raw_args'][1:])
         controller_options, partial_fit = FitCommand.handle_raw_options(raw_options)
         controller_options['algo_name'] = getinfo['searchinfo']['args'][0]
+
+        # log_app_details(getinfo['searchinfo'].get('app'))
         return controller_options, partial_fit
 
     @staticmethod
@@ -155,11 +158,10 @@ class FitCommand(cexc.BaseChunkHandler):
 
     def log_performance_timers(self):
         logger.debug(
-            "command=fit, read_time=%f, handle_time=%f, write_time=%f, csv_parse_time=%f, csv_render_time=%f" % (
+            "read_time=%f, handle_time=%f, write_time=%f, csv_parse_time=%f, csv_render_time=%f" % (
                 self._read_time, self._handle_time, self._write_time,
                 self.controller._csv_parse_time, self.controller._csv_render_time
             ))
-
 
 if __name__ == "__main__":
     logger.debug("Starting fit.py.")
@@ -172,6 +174,8 @@ if __name__ == "__main__":
         pr = cProfile.Profile()
         pr.enable()
 
+    # with Timer() as t:
+    #     FitCommand(handler_data=BaseChunkHandler.DATA_RAW).run()
     FitCommand(handler_data=BaseChunkHandler.DATA_RAW).run()
 
     if do_profile:
@@ -183,4 +187,7 @@ if __name__ == "__main__":
         ps.print_stats(10)
         logger.info("PROFILE: %s", s.getvalue())
 
+    # log_uuid()
+    # log_fit_time(t.interval)
     logger.debug("Exiting gracefully. Byee!!")
+

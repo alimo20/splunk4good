@@ -6,7 +6,7 @@ import cexc
 
 logger = cexc.get_logger(__name__)
 
-STANZA_REGEX = '^(?P<conf_path>.*\.conf)\s*\[(?P<stanza>[a-zA-Z_][a-zA-Z0-9_]*)\]'
+STANZA_REGEX = '^(?P<conf_path>.*\.conf)\s*\[(?P<stanza>[a-zA-Z_][a-zA-Z0-9_]*(:[a-zA-Z_][a-zA-Z0-9_]*)?)\]'
 ATTRIBUTE_REGEX = '^(?P<conf_path>.*\.conf)\s*(?P<attribute>[a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(?P<value>[^=]*)'
 MODEL_REGEX = '^(?P<file_path>.*__mlspl_[a-zA-Z_][a-zA-Z0-9_]*\.csv)\s*\[__mlspl_(?P<model_name>[a-zA-Z_][a-zA-Z0-9_]*)\.csv\]'
 EXP_REGEX = '^(?P<file_path>.*__mlsplexp_[a-zA-Z_][a-zA-Z0-9_]*\.csv)\s*\[__mlsplexp_(?P<exp_name>[a-zA-Z_][a-zA-Z0-9_]*)\.csv\]'
@@ -103,6 +103,13 @@ def get_mlspl_btool(user, app, target_dir=None):
     conf_file = 'mlspl'
     btool_results = btool(conf_file, user, app, target_dir)
     return parse_btool_stanzas(btool_results, conf_file)
+
+
+def get_scorings_btool(user, app, target_dir=None):
+    conf_file = 'scorings'
+    btool_results = btool(conf_file, user, app, target_dir)
+    return parse_btool_stanzas(btool_results, conf_file, allow_duplicate_stanzas=False)
+
 
 def parse_btool_stanzas(btool_results, conf_name, allow_duplicate_stanzas=True):
     """

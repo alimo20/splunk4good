@@ -2,7 +2,7 @@
   <label>Status Indicator Gallery</label>
   <row>
     <panel>
-      <title>Default, Number only</title>
+      <title>Default, Number only, Drilldown</title>
       <viz type="status_indicator_app.status_indicator">
         <search>
           <query>| inputlookup status_indicator_data.csv | head 1 | table value icon_value color_value</query>
@@ -18,6 +18,9 @@
         <option name="status_indicator_app.status_indicator.precision">0</option>
         <option name="status_indicator_app.status_indicator.useThousandSeparator">true</option>
         <option name="status_indicator_app.status_indicator.fillTarget">text</option>
+        <drilldown>
+          <link target="_blank">http://www.google.com?q=$row.value$</link>
+        </drilldown>
       </viz>
     </panel>
     <panel>
@@ -82,10 +85,10 @@
       <title>Status Indicator with Trellis Layout</title>
       <viz type="status_indicator_app.status_indicator">
         <search>
-          <query>| inputlookup status_indicator_data.csv 
-| head 10 
-| stats values(value) as value, values(icon_value), values(color_value) by category 
-| eval value = value % 1000 
+          <query>| inputlookup status_indicator_data.csv
+| head 10
+| stats values(value) as value, values(icon_value), values(color_value) by category
+| eval value = value % 1000
 | eval 3=3</query>
           <earliest>0</earliest>
           <latest></latest>

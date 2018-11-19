@@ -1,6 +1,42 @@
 # Generic utility functions
+import os
 import re
 import fnmatch
+
+
+# originally moved from exec_anaconda.py
+# Note: the following functions do NOT work with Search Head
+# Pooling/shared storage.
+def get_splunkhome_path():
+    return os.path.normpath(os.environ['SPLUNK_HOME'])
+
+
+def make_splunkhome_path(p):
+    return os.path.join(get_splunkhome_path(), *p)
+
+
+def get_etc_path():
+    return os.environ.get('SPLUNK_ETC', os.path.join(get_splunkhome_path(), 'etc'))
+
+
+def get_apps_path(bundle_path=None):
+    """
+    Get the full path to the 'apps' directory.
+
+    Args:
+        bundle_path: path of the search bundle that contains the 'apps' directory
+
+    Returns:
+        path to the apps directory
+
+    """
+    full_path_to_apps_dir = bundle_path if bundle_path else get_etc_path()
+    return os.path.normpath(os.path.join(full_path_to_apps_dir, 'apps'))
+
+
+def get_staging_area_path():
+    staging_path = os.path.join('var', 'run', 'splunk', 'lookup_tmp')
+    return os.path.normpath(os.path.join(get_splunkhome_path(), staging_path))
 
 
 def is_valid_identifier(name):

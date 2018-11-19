@@ -1,61 +1,11 @@
 import json
 
 import cexc
+from experiment.experiment_validation import experiment_history_valid_keys, json_keys
 from util.constants import EXPERIMENT_MODEL_PREFIX, EXPERMENT_DRAFT_MODEL_PREFIX
+from util.rest_url_util import make_splunk_url
 
 logger = cexc.get_logger(__name__)
-
-
-def convert_form_args_to_dict(form_args, key_whitelist=None, json_keys=None):
-    """Convert form args to a dictionary.
-
-    Args:
-        form_args (dict): a dictionary of the incoming form request
-        key_whitelist (list): a list to use for checking key validity
-        json_keys (list): a list of keys that are in a json string blob
-
-    Returns:
-        data (dict): the dictionary of processed form args
-    """
-    data = {}
-
-    if key_whitelist is None:
-        key_whitelist = []
-
-    if json_keys is None:
-        json_keys = []
-
-    for key, value in form_args.iteritems():
-        # Load json keys
-        if key in json_keys:
-            load_json_value(data, key, value)
-        # Load whitelist keys
-        elif key_whitelist:
-            if key in key_whitelist:
-                data[key] = value
-        else:
-            data[key] = value
-
-    return data
-
-
-def load_json_value(data, key, value):
-    """Take a dictionary and try to load json from a value into dict[key].
-
-    Args:
-        data (dict): dictionary of data we're updating
-        key (str): key to use in dictionary
-        value (str): presumably a json string
-
-    Raises:
-        ValueError when json is invalid
-    """
-    if value:
-        try:
-            data[key] = json.loads(value)
-        except ValueError as err:
-            logger.debug('json.loads(%s) : %s', value, err)
-            raise ValueError('Could not decode JSON: {}'.format(value))
 
 
 def get_experiment_draft_model_name(model_name):
@@ -69,3 +19,61 @@ def get_experiment_draft_model_name(model_name):
     """
     draft_position = model_name.index(EXPERIMENT_MODEL_PREFIX) + len(EXPERIMENT_MODEL_PREFIX)
     return model_name[:draft_position] + EXPERMENT_DRAFT_MODEL_PREFIX + model_name[draft_position:]
+
+
+def expand_nested_json_strings(experiment):
+    """
+    Bring JSON structures that are have been serialized into strings back to life.
+
+    Args:
+        experiment (dict): experiment object whose schema with some non-primitive nested fields
+                        (dataSource and searchStages) as strings.
+
+    Returns:
+        experiment (dict): the same experiment object with the non-primitive nested fields turned into their
+                        corresponding JSON structures.
+    """
+    for key in json_keys:
+        val = experiment.get(key)
+        if val:
+            experiment[key] = json.loads(val)
+    return experiment
+
+
+def get_experiment_by_id(rest_proxy, exp_id):
+    """
+    Fetch experiment via a REST call using the experiment ID
+
+    Args:
+        rest_proxy (SplunkRestProxy): SplunkRestProxy object to make the REST request with
+        exp_id (str): experiment ID
+
+    Returns:
+        experiment (dict): Fetched experiment object
+
+    Raises:
+        RuntimeError: if the returned REST response contains an error
+    """
+    url = make_splunk_url(rest_proxy, 'user', extra_url_parts=['mltk', 'experiments', exp_id])
+    resp = rest_proxy.make_rest_call('GET', url)
+    if resp['success']:
+        return expand_nested_json_strings(json.loads(resp['content'])['entry'][0]['content'])
+    else:
+        logger.error(resp)
+        raise RuntimeError("Failed to retrieve experiment with ID '{}'".format(exp_id))
+
+
+def get_history_fields_from_experiment(experiment):
+    """
+    Extract experiment history fields from an experiment object
+
+    Args:
+        experiment (dict): an experiment object
+
+    Returns:
+        (dict): a new object with fields from the given experiment object that should also
+                be written to experiment history
+    """
+    exp_hist_keys = experiment_history_valid_keys()
+    return {k: v for k, v in experiment.iteritems() if k in exp_hist_keys}
+

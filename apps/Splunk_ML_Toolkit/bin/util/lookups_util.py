@@ -180,10 +180,26 @@ def lookup_name_to_path_from_splunk(lookup_name, file_name, searchinfo, namespac
     return file_path
 
 
-def lookup_name_to_path_from_splunk_rest(file_name, searchinfo, namespace=None, lookup_type=None):
+def get_lookup_file_from_searchinfo(file_name, searchinfo, namespace):
+    """
+    file a GET request to /lookup-table-files/filename endpoint, return the reply
+
+    Args:
+        file_name (str) : file name of the existing lookup file
+        searchinfo (dict) : searchinfo
+        namespace (str) : lookup file namespace
+
+    Returns:
+        reply (dict) : the response from GET
+
+    """
     rest_proxy = rest_proxy_from_searchinfo(searchinfo)
     url = rest_url_util.make_get_lookup_url(rest_proxy, namespace=namespace, lookup_file=file_name)
-    reply = rest_proxy.make_rest_call('GET', url)
+    return rest_proxy.make_rest_call('GET', url)
+
+
+def lookup_name_to_path_from_splunk_rest(file_name, searchinfo, namespace=None, lookup_type=None):
+    reply = get_lookup_file_from_searchinfo(file_name, searchinfo, namespace=namespace)
     if lookup_type == 'model':
         json_content = parse_model_reply(reply)
     elif lookup_type == "experiment":
@@ -191,14 +207,7 @@ def lookup_name_to_path_from_splunk_rest(file_name, searchinfo, namespace=None, 
     else:
         json_content = lookups_parse_reply(reply)
 
-    try:
-        file_path = json_content['entry'][0]['content']['eai:data']
-    except Exception as e:
-        logger.debug(str(e))
-        logger.debug(json_content)
-        raise Exception("Please check mlspl.log for more details.")
-
-    return file_path
+    return get_file_path_from_content(json_content)
 
 
 def lookup_name_to_path_distributed(lookup_name, file_name, searchinfo, namespace, lookup_type):
@@ -261,3 +270,13 @@ def get_lookup_from_btool_result(btool_dict, lookup_name, file_name, user, app, 
         cexc.log_traceback()
         raise Exception("Please check mlspl.log for more details.")
     return merged_result
+
+
+def get_file_path_from_content(content):
+    try:
+        file_path = content['entry'][0]['content']['eai:data']
+    except Exception as e:
+        cexc.log_traceback()
+        raise Exception("Invalid JSON response from REST API, Please check mlspl.log for more details.")
+
+    return file_path

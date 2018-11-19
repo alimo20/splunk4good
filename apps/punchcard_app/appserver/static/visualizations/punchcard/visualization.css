@@ -51,3 +51,14 @@
   overflow-y:auto;
   overflow-x:hidden;
 }
+
+/* Dark Theme */
+
+.splunk-punchcard.dark .tick text,
+.splunk-punchcard.dark text.label {
+    fill: #E1E6EB;
+}
+
+.splunk-punchcard.dark text.value {
+    text-shadow: none;
+}

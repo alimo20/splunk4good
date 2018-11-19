@@ -4,7 +4,7 @@ import os
 import logging
 import logging.handlers
 
-from exec_anaconda import make_splunkhome_path
+from util.base_util import make_splunkhome_path
 
 BASE_LOGGER_NAME = 'mlspl'
 DEFAULT_LEVEL = logging.DEBUG

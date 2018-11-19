@@ -1,4 +1,4 @@
-define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(__WEBPACK_EXTERNAL_MODULE_113__, __WEBPACK_EXTERNAL_MODULE_114__) { return /******/ (function(modules) { // webpackBootstrap
+define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(__WEBPACK_EXTERNAL_MODULE_116__, __WEBPACK_EXTERNAL_MODULE_117__) { return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 
@@ -52,23 +52,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 /***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	            __webpack_require__(4),
-	            __webpack_require__(116),
-	            __webpack_require__(3),
-	            __webpack_require__(5),
-	            __webpack_require__(8),
-	            __webpack_require__(112),
-	            __webpack_require__(113),
-	            __webpack_require__(114),
-	            __webpack_require__(115),
-				__webpack_require__(2),
-				__webpack_require__(117),
-	            __webpack_require__(118),
+	            __webpack_require__(6),
 	            __webpack_require__(119),
-	            __webpack_require__(120),
-	            __webpack_require__(121),
+	            __webpack_require__(3),
+	            __webpack_require__(7),
+	            __webpack_require__(10),
+	            __webpack_require__(115),
+	            __webpack_require__(116),
+	            __webpack_require__(117),
+	            __webpack_require__(118),
+	            __webpack_require__(2),
+				__webpack_require__(121),
 				__webpack_require__(122),
-	            __webpack_require__(123)
+	            __webpack_require__(123),
+	            __webpack_require__(124),
+	            __webpack_require__(125),
+	            __webpack_require__(126),
+				__webpack_require__(127),
+	            __webpack_require__(128)
 	        ], __WEBPACK_AMD_DEFINE_RESULT__ = function(
 	            $,
 	            _,
@@ -462,7 +463,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                googlePlacesSearch = parseInt(this._getEscapedProperty('googlePlacesSearch', config)),
 	                googlePlacesApiKey = this._getEscapedProperty('googlePlacesApiKey', config),
 	                googlePlacesZoomLevel = parseInt(this._getEscapedProperty('googlePlacesZoomLevel', config)),
-					googlePlacesPosition = this._getEscapedProperty('googlePlacesPosition', config),
+	                googlePlacesPosition = this._getEscapedProperty('googlePlacesPosition', config),
+	                bingMaps = parseInt(this._getEscapedProperty('bingMaps', config)),
+	                bingMapsApiKey = this._getEscapedProperty('bingMapsApiKey', config),
+	                bingMapsTileLayer = this._getEscapedProperty('bingMapsTileLayer', config),
+	                bingMapsLabelLanguage = this._getEscapedProperty('bingMapsLabelLanguage', config),
 	                kmlOverlay  = this._getEscapedProperty('kmlOverlay', config),
 	                rangeOneBgColor = this._getEscapedProperty('rangeOneBgColor', config),
 	                rangeOneFgColor = this._getEscapedProperty('rangeOneFgColor', config),
@@ -639,15 +644,23 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    }) 
 	                }
 
-	                // Setup the tile layer with map tile, zoom and attribution
-					this.tileLayer = L.tileLayer(this.activeTile, {
-	                    attribution: this.attribution,
-	                    minZoom: minZoom,
-	                    maxZoom: maxZoom
-					});
+	                // Create Bing Map
+	                if(this.isArgTrue(bingMaps)) {
+	                    var bingOptions = this.bingOptions = {"bingMapsKey": bingMapsApiKey,
+	                                                          "imagerySet": bingMapsTileLayer,
+	                                                          "culture": bingMapsLabelLanguage};
+	                    this.tileLayer = L.tileLayer.bing(this.bingOptions);
+	                } else {
+	                    // Setup the tile layer with map tile, zoom and attribution
+	                    this.tileLayer = L.tileLayer(this.activeTile, {
+	                        attribution: this.attribution,
+	                        minZoom: minZoom,
+	                        maxZoom: maxZoom
+	                    });    
+	                }
 
 	                // Add tile layer to map
-	                this.map.addLayer(this.tileLayer);   
+	                this.map.addLayer(this.tileLayer);
 
 	                this.markers = new L.MarkerClusterGroup({ 
 	                    chunkedLoading: true,
@@ -743,14 +756,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                this.allDataProcessed = false;
 	            } 
 
-
 	            // Map Scroll
 	            (this.isArgTrue(scrollWheelZoom)) ? this.map.scrollWheelZoom.enable() : this.map.scrollWheelZoom.disable();
 
-	            // Reset Tile If Changed
-	            if(this.tileLayer._url != this.activeTile) {
-	                this.tileLayer.setUrl(this.activeTile);
-	            }
+	            if(!this.isArgTrue(bingMaps)) {
+	                // Reset Tile If Changed
+	                if(this.tileLayer._url != this.activeTile) {
+	                    this.tileLayer.setUrl(this.activeTile);
+	                }
+	            }   
 
 	            // Reset tile zoom levels if changed
 	            if (this.tileLayer.options.maxZoom != maxZoom) {
@@ -1040,592 +1054,281 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
-		Leaflet.contextmenu, a context menu for Leaflet.
-		(c) 2015, Adam Ratcliffe, GeoSmart Maps Limited
-
-		@preserve
-	*/
-
-	(function(factory) {
-		// Packaging/modules magic dance
-		var L;
-		if (true) {
-			// AMD
-			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(3)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-		} else if (typeof module === 'object' && typeof module.exports === 'object') {
-			// Node/CommonJS
-			L = require('leaflet');
-			module.exports = factory(L);
-		} else {
-			// Browser globals
-			if (typeof window.L === 'undefined') {
-				throw new Error('Leaflet must be loaded first');
-			}
-			factory(window.L);
-		}
-	})(function(L) {
-	L.Map.mergeOptions({
-	    contextmenuItems: []
-	});
-
-	L.Map.ContextMenu = L.Handler.extend({
-	    _touchstart: L.Browser.msPointer ? 'MSPointerDown' : L.Browser.pointer ? 'pointerdown' : 'touchstart',
-	    
-	    statics: {
-	        BASE_CLS: 'leaflet-contextmenu'
-	    },
-	    
-	    initialize: function (map) {
-	        L.Handler.prototype.initialize.call(this, map);
-	        
-	        this._items = [];
-	        this._visible = false;
-
-	        var container = this._container = L.DomUtil.create('div', L.Map.ContextMenu.BASE_CLS, map._container);
-	        container.style.zIndex = 10000;
-	        container.style.position = 'absolute';
-
-	        if (map.options.contextmenuWidth) {
-	            container.style.width = map.options.contextmenuWidth + 'px';
-	        }
-
-	        this._createItems();
-
-	        L.DomEvent
-	            .on(container, 'click', L.DomEvent.stop)
-	            .on(container, 'mousedown', L.DomEvent.stop)
-	            .on(container, 'dblclick', L.DomEvent.stop)
-	            .on(container, 'contextmenu', L.DomEvent.stop);
-	    },
-
-	    addHooks: function () {
-	        var container = this._map.getContainer();
-
-	        L.DomEvent
-	            .on(container, 'mouseleave', this._hide, this)
-	            .on(document, 'keydown', this._onKeyDown, this);
-
-	        if (L.Browser.touch) {
-	            L.DomEvent.on(document, this._touchstart, this._hide, this);
-	        }
-
-	        this._map.on({
-	            contextmenu: this._show,
-	            mousedown: this._hide,
-	            movestart: this._hide,
-	            zoomstart: this._hide
-	        }, this);
-	    },
-
-	    removeHooks: function () {
-	        var container = this._map.getContainer();
-
-	        L.DomEvent
-	            .off(container, 'mouseleave', this._hide, this)
-	            .off(document, 'keydown', this._onKeyDown, this);
-
-	        if (L.Browser.touch) {
-	            L.DomEvent.off(document, this._touchstart, this._hide, this);
-	        }
-
-	        this._map.off({
-	            contextmenu: this._show,
-	            mousedown: this._hide,
-	            movestart: this._hide,
-	            zoomstart: this._hide
-	        }, this);
-	    },
-
-	    showAt: function (point, data) {
-	        if (point instanceof L.LatLng) {
-	            point = this._map.latLngToContainerPoint(point);
-	        }
-	        this._showAtPoint(point, data);
-	    },
-
-	    hide: function () {
-	        this._hide();
-	    },
-
-	    addItem: function (options) {
-	        return this.insertItem(options);
-	    },
-
-	    insertItem: function (options, index) {
-	        index = index !== undefined ? index: this._items.length;
-
-	        var item = this._createItem(this._container, options, index);
-
-	        this._items.push(item);
-
-	        this._sizeChanged = true;
-
-	        this._map.fire('contextmenu.additem', {
-	            contextmenu: this,
-	            el: item.el,
-	            index: index
-	        });
-
-	        return item.el;
-	    },
-
-	    removeItem: function (item) {
-	        var container = this._container;
-
-	        if (!isNaN(item)) {
-	            item = container.children[item];
-	        }
-
-	        if (item) {
-	            this._removeItem(L.Util.stamp(item));
-
-	            this._sizeChanged = true;
-
-	            this._map.fire('contextmenu.removeitem', {
-	                contextmenu: this,
-	                el: item
-	            });
-
-	            return item;
-	        }
-
-	        return null;
-	    },
-
-	    removeAllItems: function () {
-	        var items = this._container.children,
-	            item;
-
-	        while (items.length) {
-	            item = items[0];
-	            this._removeItem(L.Util.stamp(item));
-	        }
-	        return items;
-	    },
-
-	    hideAllItems: function () {
-	        var item, i, l;
-
-	        for (i = 0, l = this._items.length; i < l; i++) {
-	            item = this._items[i];
-	            item.el.style.display = 'none';
-	        }
-	    },
-
-	    showAllItems: function () {
-	        var item, i, l;
-
-	        for (i = 0, l = this._items.length; i < l; i++) {
-	            item = this._items[i];
-	            item.el.style.display = '';
-	        }
-	    },
-
-	    setDisabled: function (item, disabled) {
-	        var container = this._container,
-	        itemCls = L.Map.ContextMenu.BASE_CLS + '-item';
-
-	        if (!isNaN(item)) {
-	            item = container.children[item];
-	        }
-
-	        if (item && L.DomUtil.hasClass(item, itemCls)) {
-	            if (disabled) {
-	                L.DomUtil.addClass(item, itemCls + '-disabled');
-	                this._map.fire('contextmenu.disableitem', {
-	                    contextmenu: this,
-	                    el: item
-	                });
-	            } else {
-	                L.DomUtil.removeClass(item, itemCls + '-disabled');
-	                this._map.fire('contextmenu.enableitem', {
-	                    contextmenu: this,
-	                    el: item
-	                });
-	            }
-	        }
-	    },
-
-	    isVisible: function () {
-	        return this._visible;
-	    },
-
-	    _createItems: function () {
-	        var itemOptions = this._map.options.contextmenuItems,
-	            item,
-	            i, l;
-
-	        for (i = 0, l = itemOptions.length; i < l; i++) {
-	            this._items.push(this._createItem(this._container, itemOptions[i]));
-	        }
-	    },
-
-	    _createItem: function (container, options, index) {
-	        if (options.separator || options === '-') {
-	            return this._createSeparator(container, index);
-	        }
-
-	        var itemCls = L.Map.ContextMenu.BASE_CLS + '-item',
-	            cls = options.disabled ? (itemCls + ' ' + itemCls + '-disabled') : itemCls,
-	            el = this._insertElementAt('a', cls, container, index),
-	            callback = this._createEventHandler(el, options.callback, options.context, options.hideOnSelect),
-	            icon = this._getIcon(options),
-	            iconCls = this._getIconCls(options),
-	            html = '';
-
-	        if (icon) {
-	            html = '<img class="' + L.Map.ContextMenu.BASE_CLS + '-icon" src="' + icon + '"/>';
-	        } else if (iconCls) {
-	            html = '<span class="' + L.Map.ContextMenu.BASE_CLS + '-icon ' + iconCls + '"></span>';
-	        }
-
-	        el.innerHTML = html + options.text;
-	        el.href = '#';
-
-	        L.DomEvent
-	            .on(el, 'mouseover', this._onItemMouseOver, this)
-	            .on(el, 'mouseout', this._onItemMouseOut, this)
-	            .on(el, 'mousedown', L.DomEvent.stopPropagation)
-	            .on(el, 'click', callback);
-
-	        if (L.Browser.touch) {
-	            L.DomEvent.on(el, this._touchstart, L.DomEvent.stopPropagation);
-	        }
-
-	        // Devices without a mouse fire "mouseover" on tap, but never “mouseout"
-	        if (!L.Browser.pointer) {
-	            L.DomEvent.on(el, 'click', this._onItemMouseOut, this);
-	        }
-
-	        return {
-	            id: L.Util.stamp(el),
-	            el: el,
-	            callback: callback
-	        };
-	    },
-
-	    _removeItem: function (id) {
-	        var item,
-	            el,
-	            i, l, callback;
-
-	        for (i = 0, l = this._items.length; i < l; i++) {
-	            item = this._items[i];
-
-	            if (item.id === id) {
-	                el = item.el;
-	                callback = item.callback;
-
-	                if (callback) {
-	                    L.DomEvent
-	                        .off(el, 'mouseover', this._onItemMouseOver, this)
-	                        .off(el, 'mouseover', this._onItemMouseOut, this)
-	                        .off(el, 'mousedown', L.DomEvent.stopPropagation)
-	                        .off(el, 'click', callback);
-
-	                    if (L.Browser.touch) {
-	                        L.DomEvent.off(el, this._touchstart, L.DomEvent.stopPropagation);
-	                    }
-
-	                    if (!L.Browser.pointer) {
-	                        L.DomEvent.on(el, 'click', this._onItemMouseOut, this);
-	                    }
-	                }
-
-	                this._container.removeChild(el);
-	                this._items.splice(i, 1);
-
-	                return item;
-	            }
-	        }
-	        return null;
-	    },
-
-	    _createSeparator: function (container, index) {
-	        var el = this._insertElementAt('div', L.Map.ContextMenu.BASE_CLS + '-separator', container, index);
-
-	        return {
-	            id: L.Util.stamp(el),
-	            el: el
-	        };
-	    },
-
-	    _createEventHandler: function (el, func, context, hideOnSelect) {
-	        var me = this,
-	            map = this._map,
-	            disabledCls = L.Map.ContextMenu.BASE_CLS + '-item-disabled',
-	            hideOnSelect = (hideOnSelect !== undefined) ? hideOnSelect : true;
-
-	        return function (e) {
-	            if (L.DomUtil.hasClass(el, disabledCls)) {
-	                return;
-	            }
-
-	            if (hideOnSelect) {
-	                me._hide();
-	            }
-
-	            if (func) {
-	                func.call(context || map, me._showLocation);
-	            }
-
-	            me._map.fire('contextmenu.select', {
-	                contextmenu: me,
-	                el: el
-	            });
-	        };
-	    },
-
-	    _insertElementAt: function (tagName, className, container, index) {
-	        var refEl,
-	            el = document.createElement(tagName);
-
-	        el.className = className;
-
-	        if (index !== undefined) {
-	            refEl = container.children[index];
-	        }
-
-	        if (refEl) {
-	            container.insertBefore(el, refEl);
-	        } else {
-	            container.appendChild(el);
-	        }
-
-	        return el;
-	    },
-
-	    _show: function (e) {
-	        this._showAtPoint(e.containerPoint, e);
-	    },
-
-	    _showAtPoint: function (pt, data) {
-	        if (this._items.length) {
-	            var map = this._map,
-	            layerPoint = map.containerPointToLayerPoint(pt),
-	            latlng = map.layerPointToLatLng(layerPoint),
-	            event = L.extend(data || {}, {contextmenu: this});
-
-	            this._showLocation = {
-	                latlng: latlng,
-	                layerPoint: layerPoint,
-	                containerPoint: pt
-	            };
-
-	            if (data && data.relatedTarget){
-	                this._showLocation.relatedTarget = data.relatedTarget;
-	            }
-
-	            this._setPosition(pt);
-
-	            if (!this._visible) {
-	                this._container.style.display = 'block';
-	                this._visible = true;
-	            }
-
-	            this._map.fire('contextmenu.show', event);
-	        }
-	    },
-
-	    _hide: function () {
-	        if (this._visible) {
-	            this._visible = false;
-	            this._container.style.display = 'none';
-	            this._map.fire('contextmenu.hide', {contextmenu: this});
-	        }
-	    },
-
-	    _getIcon: function (options) {
-	        return L.Browser.retina && options.retinaIcon || options.icon;
-	    },
-
-	    _getIconCls: function (options) {
-	        return L.Browser.retina && options.retinaIconCls || options.iconCls;
-	    },
-
-	    _setPosition: function (pt) {
-	        var mapSize = this._map.getSize(),
-	            container = this._container,
-	            containerSize = this._getElementSize(container),
-	            anchor;
-
-	        if (this._map.options.contextmenuAnchor) {
-	            anchor = L.point(this._map.options.contextmenuAnchor);
-	            pt = pt.add(anchor);
-	        }
-
-	        container._leaflet_pos = pt;
-
-	        if (pt.x + containerSize.x > mapSize.x) {
-	            container.style.left = 'auto';
-	            container.style.right = Math.min(Math.max(mapSize.x - pt.x, 0), mapSize.x - containerSize.x - 1) + 'px';
-	        } else {
-	            container.style.left = Math.max(pt.x, 0) + 'px';
-	            container.style.right = 'auto';
-	        }
-
-	        if (pt.y + containerSize.y > mapSize.y) {
-	            container.style.top = 'auto';
-	            container.style.bottom = Math.min(Math.max(mapSize.y - pt.y, 0), mapSize.y - containerSize.y - 1) + 'px';
-	        } else {
-	            container.style.top = Math.max(pt.y, 0) + 'px';
-	            container.style.bottom = 'auto';
-	        }
-	    },
-
-	    _getElementSize: function (el) {
-	        var size = this._size,
-	            initialDisplay = el.style.display;
-
-	        if (!size || this._sizeChanged) {
-	            size = {};
-
-	            el.style.left = '-999999px';
-	            el.style.right = 'auto';
-	            el.style.display = 'block';
-
-	            size.x = el.offsetWidth;
-	            size.y = el.offsetHeight;
-
-	            el.style.left = 'auto';
-	            el.style.display = initialDisplay;
-
-	            this._sizeChanged = false;
-	        }
-
-	        return size;
-	    },
-
-	    _onKeyDown: function (e) {
-	        var key = e.keyCode;
-
-	        // If ESC pressed and context menu is visible hide it
-	        if (key === 27) {
-	            this._hide();
-	        }
-	    },
-
-	    _onItemMouseOver: function (e) {
-	        L.DomUtil.addClass(e.target || e.srcElement, 'over');
-	    },
-
-	    _onItemMouseOut: function (e) {
-	        L.DomUtil.removeClass(e.target || e.srcElement, 'over');
-	    }
-	});
-
-	L.Map.addInitHook('addHandler', 'contextmenu', L.Map.ContextMenu);
-	L.Mixin.ContextMenu = {
-	    bindContextMenu: function (options) {
-	        L.setOptions(this, options);
-	        this._initContextMenu();
-
-	        return this;
-	    },
-
-	    unbindContextMenu: function (){
-	        this.off('contextmenu', this._showContextMenu, this);
-
-	        return this;
-	    },
-
-	    addContextMenuItem: function (item) {
-	            this.options.contextmenuItems.push(item);
-	    },
-
-	    removeContextMenuItemWithIndex: function (index) {
-	        var items = [];
-	        for (var i = 0; i < this.options.contextmenuItems.length; i++) {
-	            if (this.options.contextmenuItems[i].index == index){
-	                items.push(i);
-	            }
-	        }
-	        var elem = items.pop();
-	        while (elem !== undefined) {
-	            this.options.contextmenuItems.splice(elem,1);
-	            elem = items.pop();
-	        }
-	    },
-
-	    replaceContextMenuItem: function (item) {
-	        this.removeContextMenuItemWithIndex(item.index);
-	        this.addContextMenuItem(item);
-	    },
-
-	    _initContextMenu: function () {
-	        this._items = [];
-
-	        this.on('contextmenu', this._showContextMenu, this);
-	    },
-
-	    _showContextMenu: function (e) {
-	        var itemOptions,
-	            data, pt, i, l;
-
-	        if (this._map.contextmenu) {
-	            data = L.extend({relatedTarget: this}, e);
-
-	            pt = this._map.mouseEventToContainerPoint(e.originalEvent);
-
-	            if (!this.options.contextmenuInheritItems) {
-	                this._map.contextmenu.hideAllItems();
-	            }
-
-	            for (i = 0, l = this.options.contextmenuItems.length; i < l; i++) {
-	                itemOptions = this.options.contextmenuItems[i];
-	                this._items.push(this._map.contextmenu.insertItem(itemOptions, itemOptions.index));
-	            }
-
-	            this._map.once('contextmenu.hide', this._hideContextMenu, this);
-
-	            this._map.contextmenu.showAt(pt, data);
-	        }
-	    },
-
-	    _hideContextMenu: function () {
-	        var i, l;
-
-	        for (i = 0, l = this._items.length; i < l; i++) {
-	            this._map.contextmenu.removeItem(this._items[i]);
-	        }
-	        this._items.length = 0;
-
-	        if (!this.options.contextmenuInheritItems) {
-	            this._map.contextmenu.showAllItems();
-	        }
-	    }
-	};
-
-	var classes = [L.Marker, L.Path],
-	    defaultOptions = {
-	        contextmenu: false,
-	        contextmenuItems: [],
-	        contextmenuInheritItems: true
-	    },
-	    cls, i, l;
-
-	for (i = 0, l = classes.length; i < l; i++) {
-	    cls = classes[i];
-
-	    // L.Class should probably provide an empty options hash, as it does not test
-	    // for it here and add if needed
-	    if (!cls.prototype.options) {
-	        cls.prototype.options = defaultOptions;
-	    } else {
-	        cls.mergeOptions(defaultOptions);
-	    }
-
-	    cls.addInitHook(function () {
-	        if (this.options.contextmenu) {
-	            this._initContextMenu();
-	        }
-	    });
-
-	    cls.include(L.Mixin.ContextMenu);
+	var L = __webpack_require__(3)
+	var fetchJsonp = __webpack_require__(4)
+	var bboxIntersect = __webpack_require__(5)
+
+	/**
+	 * Converts tile xyz coordinates to Quadkey
+	 * @param {Number} x
+	 * @param {Number} y
+	 * @param {Number} z
+	 * @return {Number} Quadkey
+	 */
+	function toQuadKey (x, y, z) {
+	  var index = ''
+	  for (var i = z; i > 0; i--) {
+	    var b = 0
+	    var mask = 1 << (i - 1)
+	    if ((x & mask) !== 0) b++
+	    if ((y & mask) !== 0) b += 2
+	    index += b.toString()
+	  }
+	  return index
 	}
-	return L.Map.ContextMenu;
-	});
+
+	/**
+	 * Converts Leaflet BBoxString to Bing BBox
+	 * @param {String} bboxString 'southwest_lng,southwest_lat,northeast_lng,northeast_lat'
+	 * @return {Array} [south_lat, west_lng, north_lat, east_lng]
+	 */
+	function toBingBBox (bboxString) {
+	  var bbox = bboxString.split(',')
+	  return [bbox[1], bbox[0], bbox[3], bbox[2]]
+	}
+
+	var VALID_IMAGERY_SETS = [
+	  'Aerial',
+	  'AerialWithLabels',
+	  'AerialWithLabelsOnDemand',
+	  'Road',
+	  'RoadOnDemand',
+	  'CanvasLight',
+	  'CanvasDark',
+	  'CanvasGray',
+	  'OrdnanceSurvey'
+	]
+
+	var DYNAMIC_IMAGERY_SETS = [
+	  'AerialWithLabelsOnDemand',
+	  'RoadOnDemand'
+	]
+
+	/**
+	 * Create a new Bing Maps layer.
+	 * @param {string|object} options Either a [Bing Maps Key](https://msdn.microsoft.com/en-us/library/ff428642.aspx) or an options object
+	 * @param {string} options.BingMapsKey A valid Bing Maps Key (required)
+	 * @param {string} [options.imagerySet=Aerial] Type of imagery, see https://msdn.microsoft.com/en-us/library/ff701716.aspx
+	 * @param {string} [options.culture='en-US'] Language for labels, see https://msdn.microsoft.com/en-us/library/hh441729.aspx
+	 * @return {L.TileLayer} A Leaflet TileLayer to add to your map
+	 *
+	 * Create a basic map
+	 * @example
+	 * var map = L.map('map').setView([51.505, -0.09], 13)
+	 * L.TileLayer.Bing(MyBingMapsKey).addTo(map)
+	 */
+	L.TileLayer.Bing = L.TileLayer.extend({
+	  options: {
+	    bingMapsKey: null, // Required
+	    imagerySet: 'Aerial',
+	    culture: 'en-US',
+	    minZoom: 1,
+	    minNativeZoom: 1,
+	    maxNativeZoom: 19
+	  },
+
+	  statics: {
+	    METADATA_URL: 'https://dev.virtualearth.net/REST/v1/Imagery/Metadata/{imagerySet}?key={bingMapsKey}&include=ImageryProviders&uriScheme=https',
+	    POINT_METADATA_URL: 'https://dev.virtualearth.net/REST/v1/Imagery/Metadata/{imagerySet}/{lat},{lng}?zl={z}&key={bingMapsKey}&uriScheme=https'
+	  },
+
+	  initialize: function (options) {
+	    if (typeof options === 'string') {
+	      options = { bingMapsKey: options }
+	    }
+	    if (options && options.BingMapsKey) {
+	      options.bingMapsKey = options.BingMapsKey
+	      console.warn('use options.bingMapsKey instead of options.BingMapsKey')
+	    }
+	    if (!options || !options.bingMapsKey) {
+	      throw new Error('Must supply options.BingMapsKey')
+	    }
+	    options = L.setOptions(this, options)
+	    if (VALID_IMAGERY_SETS.indexOf(options.imagerySet) < 0) {
+	      throw new Error("'" + options.imagerySet + "' is an invalid imagerySet, see https://github.com/digidem/leaflet-bing-layer#parameters")
+	    }
+	    if (options && options.style && DYNAMIC_IMAGERY_SETS.indexOf(options.imagerySet) < 0) {
+	      console.warn('Dynamic styles will only work with these imagerySet choices: ' + DYNAMIC_IMAGERY_SETS.join(', '))
+	    }
+
+	    var metaDataUrl = L.Util.template(L.TileLayer.Bing.METADATA_URL, {
+	      bingMapsKey: this.options.bingMapsKey,
+	      imagerySet: this.options.imagerySet
+	    })
+
+	    this._imageryProviders = []
+	    this._attributions = []
+
+	    // Keep a reference to the promise so we can use it later
+	    this._fetch = fetchJsonp(metaDataUrl, {jsonpCallback: 'jsonp'})
+	      .then(function (response) {
+	        return response.json()
+	      })
+	      .then(this._metaDataOnLoad.bind(this))
+	      .catch(console.error.bind(console))
+
+	    // for https://github.com/Leaflet/Leaflet/issues/137
+	    if (!L.Browser.android) {
+	      this.on('tileunload', this._onTileRemove)
+	    }
+	  },
+
+	  createTile: function (coords, done) {
+	    var tile = document.createElement('img')
+
+	    L.DomEvent.on(tile, 'load', L.bind(this._tileOnLoad, this, done, tile))
+	    L.DomEvent.on(tile, 'error', L.bind(this._tileOnError, this, done, tile))
+
+	    if (this.options.crossOrigin) {
+	      tile.crossOrigin = ''
+	    }
+
+	    /*
+	     Alt tag is set to empty string to keep screen readers from reading URL and for compliance reasons
+	     http://www.w3.org/TR/WCAG20-TECHS/H67
+	    */
+	    tile.alt = ''
+
+	    // Don't create closure if we don't have to
+	    if (this._url) {
+	      tile.src = this.getTileUrl(coords)
+	    } else {
+	      this._fetch.then(function () {
+	        tile.src = this.getTileUrl(coords)
+	      }.bind(this)).catch(function (e) {
+	        console.error(e)
+	        done(e)
+	      })
+	    }
+
+	    return tile
+	  },
+
+	  getTileUrl: function (coords) {
+	    var quadkey = toQuadKey(coords.x, coords.y, coords.z)
+	    var url = L.Util.template(this._url, {
+	      quadkey: quadkey,
+	      subdomain: this._getSubdomain(coords),
+	      culture: this.options.culture
+	    })
+	    if (typeof this.options.style === 'string') {
+	      url += '&st=' + this.options.style
+	    }
+	    return url
+	  },
+
+	  // Update the attribution control every time the map is moved
+	  onAdd: function (map) {
+	    map.on('moveend', this._updateAttribution, this)
+	    L.TileLayer.prototype.onAdd.call(this, map)
+	    this._attributions.forEach(function (attribution) {
+	      map.attributionControl.addAttribution(attribution)
+	    })
+	  },
+
+	  // Clean up events and remove attributions from attribution control
+	  onRemove: function (map) {
+	    map.off('moveend', this._updateAttribution, this)
+	    this._attributions.forEach(function (attribution) {
+	      map.attributionControl.removeAttribution(attribution)
+	    })
+	    L.TileLayer.prototype.onRemove.call(this, map)
+	  },
+
+	  /**
+	   * Get the [Bing Imagery metadata](https://msdn.microsoft.com/en-us/library/ff701712.aspx)
+	   * for a specific [`LatLng`](http://leafletjs.com/reference.html#latlng)
+	   * and zoom level. If either `latlng` or `zoom` is omitted and the layer is attached
+	   * to a map, the map center and current map zoom are used.
+	   * @param {L.LatLng} latlng
+	   * @param {Number} zoom
+	   * @return {Promise} Resolves to the JSON metadata
+	   */
+	  getMetaData: function (latlng, zoom) {
+	    if (!this._map && (!latlng || !zoom)) {
+	      return Promise.reject(new Error('If layer is not attached to map, you must provide LatLng and zoom'))
+	    }
+	    latlng = latlng || this._map.getCenter()
+	    zoom = zoom || this._map.getZoom()
+	    var PointMetaDataUrl = L.Util.template(L.TileLayer.Bing.POINT_METADATA_URL, {
+	      bingMapsKey: this.options.bingMapsKey,
+	      imagerySet: this.options.imagerySet,
+	      z: zoom,
+	      lat: latlng.lat,
+	      lng: latlng.lng
+	    })
+	    return fetchJsonp(PointMetaDataUrl, {jsonpCallback: 'jsonp'})
+	      .then(function (response) {
+	        return response.json()
+	      })
+	      .catch(console.error.bind(console))
+	  },
+
+	  _metaDataOnLoad: function (metaData) {
+	    if (metaData.statusCode !== 200) {
+	      throw new Error('Bing Imagery Metadata error: \n' + JSON.stringify(metaData, null, '  '))
+	    }
+	    var resource = metaData.resourceSets[0].resources[0]
+	    this._url = resource.imageUrl
+	    this._imageryProviders = resource.imageryProviders || []
+	    this.options.subdomains = resource.imageUrlSubdomains
+	    this._updateAttribution()
+	    return Promise.resolve()
+	  },
+
+	  /**
+	   * Update the attribution control of the map with the provider attributions
+	   * within the current map bounds
+	   */
+	  _updateAttribution: function () {
+	    var map = this._map
+	    if (!map || !map.attributionControl) return
+	    var zoom = map.getZoom()
+	    var bbox = toBingBBox(map.getBounds().toBBoxString())
+	    this._fetch.then(function () {
+	      var newAttributions = this._getAttributions(bbox, zoom)
+	      var prevAttributions = this._attributions
+	      // Add any new provider attributions in the current area to the attribution control
+	      newAttributions.forEach(function (attr) {
+	        if (prevAttributions.indexOf(attr) > -1) return
+	        map.attributionControl.addAttribution(attr)
+	      })
+	      // Remove any attributions that are no longer in the current area from the attribution control
+	      prevAttributions.filter(function (attr) {
+	        if (newAttributions.indexOf(attr) > -1) return
+	        map.attributionControl.removeAttribution(attr)
+	      })
+	      this._attributions = newAttributions
+	    }.bind(this))
+	  },
+
+	  /**
+	   * Returns an array of attributions for given bbox and zoom
+	   * @private
+	   * @param {Array} bbox [west, south, east, north]
+	   * @param {Number} zoom
+	   * @return {Array} Array of attribution strings for each provider
+	   */
+	  _getAttributions: function (bbox, zoom) {
+	    return this._imageryProviders.reduce(function (attributions, provider) {
+	      for (var i = 0; i < provider.coverageAreas.length; i++) {
+	        if (bboxIntersect(bbox, provider.coverageAreas[i].bbox) &&
+	          zoom >= provider.coverageAreas[i].zoomMin &&
+	          zoom <= provider.coverageAreas[i].zoomMax) {
+	          attributions.push(provider.attribution)
+	          return attributions
+	        }
+	      }
+	      return attributions
+	    }, [])
+	  }
+	})
+
+	L.tileLayer.bing = function (options) {
+	  return new L.TileLayer.Bing(options)
+	}
+
+	module.exports = L.TileLayer.Bing
 
 
 /***/ }),
@@ -15440,6 +15143,151 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports, module], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
+	    factory(exports, module);
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod.exports, mod);
+	    global.fetchJsonp = mod.exports;
+	  }
+	})(this, function (exports, module) {
+	  'use strict';
+
+	  var defaultOptions = {
+	    timeout: 5000,
+	    jsonpCallback: 'callback',
+	    jsonpCallbackFunction: null
+	  };
+
+	  function generateCallbackFunction() {
+	    return 'jsonp_' + Date.now() + '_' + Math.ceil(Math.random() * 100000);
+	  }
+
+	  function clearFunction(functionName) {
+	    // IE8 throws an exception when you try to delete a property on window
+	    // http://stackoverflow.com/a/1824228/751089
+	    try {
+	      delete window[functionName];
+	    } catch (e) {
+	      window[functionName] = undefined;
+	    }
+	  }
+
+	  function removeScript(scriptId) {
+	    var script = document.getElementById(scriptId);
+	    if (script) {
+	      document.getElementsByTagName('head')[0].removeChild(script);
+	    }
+	  }
+
+	  function fetchJsonp(_url) {
+	    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+	    // to avoid param reassign
+	    var url = _url;
+	    var timeout = options.timeout || defaultOptions.timeout;
+	    var jsonpCallback = options.jsonpCallback || defaultOptions.jsonpCallback;
+
+	    var timeoutId = undefined;
+
+	    return new Promise(function (resolve, reject) {
+	      var callbackFunction = options.jsonpCallbackFunction || generateCallbackFunction();
+	      var scriptId = jsonpCallback + '_' + callbackFunction;
+
+	      window[callbackFunction] = function (response) {
+	        resolve({
+	          ok: true,
+	          // keep consistent with fetch API
+	          json: function json() {
+	            return Promise.resolve(response);
+	          }
+	        });
+
+	        if (timeoutId) clearTimeout(timeoutId);
+
+	        removeScript(scriptId);
+
+	        clearFunction(callbackFunction);
+	      };
+
+	      // Check if the user set their own params, and if not add a ? to start a list of params
+	      url += url.indexOf('?') === -1 ? '?' : '&';
+
+	      var jsonpScript = document.createElement('script');
+	      jsonpScript.setAttribute('src', '' + url + jsonpCallback + '=' + callbackFunction);
+	      if (options.charset) {
+	        jsonpScript.setAttribute('charset', options.charset);
+	      }
+	      jsonpScript.id = scriptId;
+	      document.getElementsByTagName('head')[0].appendChild(jsonpScript);
+
+	      timeoutId = setTimeout(function () {
+	        reject(new Error('JSONP request to ' + _url + ' timed out'));
+
+	        clearFunction(callbackFunction);
+	        removeScript(scriptId);
+	        window[callbackFunction] = function () {
+	          clearFunction(callbackFunction);
+	        };
+	      }, timeout);
+
+	      // Caught if got 404/500
+	      jsonpScript.onerror = function () {
+	        reject(new Error('JSONP request to ' + _url + ' failed'));
+
+	        clearFunction(callbackFunction);
+	        removeScript(scriptId);
+	        if (timeoutId) clearTimeout(timeoutId);
+	      };
+	    });
+	  }
+
+	  // export as global function
+	  /*
+	  let local;
+	  if (typeof global !== 'undefined') {
+	    local = global;
+	  } else if (typeof self !== 'undefined') {
+	    local = self;
+	  } else {
+	    try {
+	      local = Function('return this')();
+	    } catch (e) {
+	      throw new Error('polyfill failed because global object is unavailable in this environment');
+	    }
+	  }
+	  local.fetchJsonp = fetchJsonp;
+	  */
+
+	  module.exports = fetchJsonp;
+	});
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
+	module.exports = function(bbox1, bbox2){
+	  if(!(
+	      bbox1[0] > bbox2[2] ||
+	      bbox1[2] < bbox2[0] ||
+	      bbox1[3] < bbox2[1] ||
+	      bbox1[1] > bbox2[3]
+	    )){
+	      return true;
+	  } else {
+	    return false;
+	  }
+	}
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 	 * jQuery JavaScript Library v3.3.1
 	 * https://jquery.com/
@@ -25807,7 +25655,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 5 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {var toGeoJSON = (function() {
@@ -25891,7 +25739,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        serializer = new XMLSerializer();
 	    // only require xmldom in a node environment
 	    } else if (typeof exports === 'object' && typeof process === 'object' && !process.browser) {
-	        serializer = new (__webpack_require__(7).XMLSerializer)();
+	        serializer = new (__webpack_require__(9).XMLSerializer)();
 	    }
 	    function xml2str(str) {
 	        // IE9 will create a new XMLSerializer but it'll crash immediately.
@@ -26209,10 +26057,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	if (true) module.exports = toGeoJSON;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ (function(module, exports) {
 
 	// shim for using process in browser
@@ -26402,13 +26250,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, exports) {
 
 	/* (ignored) */
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26448,10 +26296,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return newObj;
 	    };
 	}
-	JSZip.prototype = __webpack_require__(9);
-	JSZip.prototype.loadAsync = __webpack_require__(103);
-	JSZip.support = __webpack_require__(12);
-	JSZip.defaults = __webpack_require__(74);
+	JSZip.prototype = __webpack_require__(11);
+	JSZip.prototype.loadAsync = __webpack_require__(106);
+	JSZip.support = __webpack_require__(14);
+	JSZip.defaults = __webpack_require__(77);
 
 	// TODO find a better way to handle this version,
 	// a require('package.json').version doesn't work with webpack, see #327
@@ -26461,25 +26309,25 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return new JSZip().loadAsync(content, options);
 	};
 
-	JSZip.external = __webpack_require__(67);
+	JSZip.external = __webpack_require__(70);
 	module.exports = JSZip;
 
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var utf8 = __webpack_require__(10);
-	var utils = __webpack_require__(11);
-	var GenericWorker = __webpack_require__(70);
-	var StreamHelper = __webpack_require__(71);
-	var defaults = __webpack_require__(74);
-	var CompressedObject = __webpack_require__(75);
-	var ZipObject = __webpack_require__(80);
-	var generate = __webpack_require__(81);
-	var nodejsUtils = __webpack_require__(45);
-	var NodejsStreamInputAdapter = __webpack_require__(102);
+	var utf8 = __webpack_require__(12);
+	var utils = __webpack_require__(13);
+	var GenericWorker = __webpack_require__(73);
+	var StreamHelper = __webpack_require__(74);
+	var defaults = __webpack_require__(77);
+	var CompressedObject = __webpack_require__(78);
+	var ZipObject = __webpack_require__(83);
+	var generate = __webpack_require__(84);
+	var nodejsUtils = __webpack_require__(48);
+	var NodejsStreamInputAdapter = __webpack_require__(105);
 
 
 	/**
@@ -26861,15 +26709,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 10 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(11);
-	var support = __webpack_require__(12);
-	var nodejsUtils = __webpack_require__(45);
-	var GenericWorker = __webpack_require__(70);
+	var utils = __webpack_require__(13);
+	var support = __webpack_require__(14);
+	var nodejsUtils = __webpack_require__(48);
+	var GenericWorker = __webpack_require__(73);
 
 	/**
 	 * The following functions come from pako, from pako/lib/utils/strings
@@ -27142,16 +26990,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var support = __webpack_require__(12);
-	var base64 = __webpack_require__(44);
-	var nodejsUtils = __webpack_require__(45);
-	var setImmediate = __webpack_require__(46);
-	var external = __webpack_require__(67);
+	var support = __webpack_require__(14);
+	var base64 = __webpack_require__(47);
+	var nodejsUtils = __webpack_require__(48);
+	var setImmediate = __webpack_require__(49);
+	var external = __webpack_require__(70);
 
 
 	/**
@@ -27624,7 +27472,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict';
@@ -27661,15 +27509,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	}
 
 	try {
-	    exports.nodestream = !!__webpack_require__(17).Readable;
+	    exports.nodestream = !!__webpack_require__(19).Readable;
 	} catch(e) {
 	    exports.nodestream = false;
 	}
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15).Buffer))
 
 /***/ }),
-/* 13 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {/*!
@@ -27682,9 +27530,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	'use strict'
 
-	var base64 = __webpack_require__(14)
-	var ieee754 = __webpack_require__(15)
-	var isArray = __webpack_require__(16)
+	var base64 = __webpack_require__(16)
+	var ieee754 = __webpack_require__(17)
+	var isArray = __webpack_require__(18)
 
 	exports.Buffer = Buffer
 	exports.SlowBuffer = SlowBuffer
@@ -29465,7 +29313,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, exports) {
 
 	'use strict'
@@ -29484,68 +29332,102 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  revLookup[code.charCodeAt(i)] = i
 	}
 
+	// Support decoding URL-safe base64 strings, as Node.js does.
+	// See: https://en.wikipedia.org/wiki/Base64#URL_applications
 	revLookup['-'.charCodeAt(0)] = 62
 	revLookup['_'.charCodeAt(0)] = 63
 
-	function placeHoldersCount (b64) {
+	function getLens (b64) {
 	  var len = b64.length
+
 	  if (len % 4 > 0) {
 	    throw new Error('Invalid string. Length must be a multiple of 4')
 	  }
 
-	  // the number of equal signs (place holders)
-	  // if there are two placeholders, than the two characters before it
-	  // represent one byte
-	  // if there is only one, then the three characters before it represent 2 bytes
-	  // this is just a cheap hack to not do indexOf twice
-	  return b64[len - 2] === '=' ? 2 : b64[len - 1] === '=' ? 1 : 0
+	  // Trim off extra bytes after placeholder bytes are found
+	  // See: https://github.com/beatgammit/base64-js/issues/42
+	  var validLen = b64.indexOf('=')
+	  if (validLen === -1) validLen = len
+
+	  var placeHoldersLen = validLen === len
+	    ? 0
+	    : 4 - (validLen % 4)
+
+	  return [validLen, placeHoldersLen]
 	}
 
+	// base64 is 4/3 + up to two characters of the original data
 	function byteLength (b64) {
-	  // base64 is 4/3 + up to two characters of the original data
-	  return (b64.length * 3 / 4) - placeHoldersCount(b64)
+	  var lens = getLens(b64)
+	  var validLen = lens[0]
+	  var placeHoldersLen = lens[1]
+	  return ((validLen + placeHoldersLen) * 3 / 4) - placeHoldersLen
+	}
+
+	function _byteLength (b64, validLen, placeHoldersLen) {
+	  return ((validLen + placeHoldersLen) * 3 / 4) - placeHoldersLen
 	}
 
 	function toByteArray (b64) {
-	  var i, l, tmp, placeHolders, arr
-	  var len = b64.length
-	  placeHolders = placeHoldersCount(b64)
+	  var tmp
+	  var lens = getLens(b64)
+	  var validLen = lens[0]
+	  var placeHoldersLen = lens[1]
 
-	  arr = new Arr((len * 3 / 4) - placeHolders)
+	  var arr = new Arr(_byteLength(b64, validLen, placeHoldersLen))
+
+	  var curByte = 0
 
 	  // if there are placeholders, only get up to the last complete 4 chars
-	  l = placeHolders > 0 ? len - 4 : len
+	  var len = placeHoldersLen > 0
+	    ? validLen - 4
+	    : validLen
 
-	  var L = 0
-
-	  for (i = 0; i < l; i += 4) {
-	    tmp = (revLookup[b64.charCodeAt(i)] << 18) | (revLookup[b64.charCodeAt(i + 1)] << 12) | (revLookup[b64.charCodeAt(i + 2)] << 6) | revLookup[b64.charCodeAt(i + 3)]
-	    arr[L++] = (tmp >> 16) & 0xFF
-	    arr[L++] = (tmp >> 8) & 0xFF
-	    arr[L++] = tmp & 0xFF
+	  for (var i = 0; i < len; i += 4) {
+	    tmp =
+	      (revLookup[b64.charCodeAt(i)] << 18) |
+	      (revLookup[b64.charCodeAt(i + 1)] << 12) |
+	      (revLookup[b64.charCodeAt(i + 2)] << 6) |
+	      revLookup[b64.charCodeAt(i + 3)]
+	    arr[curByte++] = (tmp >> 16) & 0xFF
+	    arr[curByte++] = (tmp >> 8) & 0xFF
+	    arr[curByte++] = tmp & 0xFF
 	  }
 
-	  if (placeHolders === 2) {
-	    tmp = (revLookup[b64.charCodeAt(i)] << 2) | (revLookup[b64.charCodeAt(i + 1)] >> 4)
-	    arr[L++] = tmp & 0xFF
-	  } else if (placeHolders === 1) {
-	    tmp = (revLookup[b64.charCodeAt(i)] << 10) | (revLookup[b64.charCodeAt(i + 1)] << 4) | (revLookup[b64.charCodeAt(i + 2)] >> 2)
-	    arr[L++] = (tmp >> 8) & 0xFF
-	    arr[L++] = tmp & 0xFF
+	  if (placeHoldersLen === 2) {
+	    tmp =
+	      (revLookup[b64.charCodeAt(i)] << 2) |
+	      (revLookup[b64.charCodeAt(i + 1)] >> 4)
+	    arr[curByte++] = tmp & 0xFF
+	  }
+
+	  if (placeHoldersLen === 1) {
+	    tmp =
+	      (revLookup[b64.charCodeAt(i)] << 10) |
+	      (revLookup[b64.charCodeAt(i + 1)] << 4) |
+	      (revLookup[b64.charCodeAt(i + 2)] >> 2)
+	    arr[curByte++] = (tmp >> 8) & 0xFF
+	    arr[curByte++] = tmp & 0xFF
 	  }
 
 	  return arr
 	}
 
 	function tripletToBase64 (num) {
-	  return lookup[num >> 18 & 0x3F] + lookup[num >> 12 & 0x3F] + lookup[num >> 6 & 0x3F] + lookup[num & 0x3F]
+	  return lookup[num >> 18 & 0x3F] +
+	    lookup[num >> 12 & 0x3F] +
+	    lookup[num >> 6 & 0x3F] +
+	    lookup[num & 0x3F]
 	}
 
 	function encodeChunk (uint8, start, end) {
 	  var tmp
 	  var output = []
 	  for (var i = start; i < end; i += 3) {
-	    tmp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2])
+	    tmp =
+	      ((uint8[i] << 16) & 0xFF0000) +
+	      ((uint8[i + 1] << 8) & 0xFF00) +
+	      (uint8[i + 2] & 0xFF)
 	    output.push(tripletToBase64(tmp))
 	  }
 	  return output.join('')
@@ -29555,42 +29437,45 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  var tmp
 	  var len = uint8.length
 	  var extraBytes = len % 3 // if we have 1 byte left, pad 2 bytes
-	  var output = ''
 	  var parts = []
 	  var maxChunkLength = 16383 // must be multiple of 3
 
 	  // go through the array every three bytes, we'll deal with trailing stuff later
 	  for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
-	    parts.push(encodeChunk(uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)))
+	    parts.push(encodeChunk(
+	      uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)
+	    ))
 	  }
 
 	  // pad the end with zeros, but make sure to not forget the extra bytes
 	  if (extraBytes === 1) {
 	    tmp = uint8[len - 1]
-	    output += lookup[tmp >> 2]
-	    output += lookup[(tmp << 4) & 0x3F]
-	    output += '=='
+	    parts.push(
+	      lookup[tmp >> 2] +
+	      lookup[(tmp << 4) & 0x3F] +
+	      '=='
+	    )
 	  } else if (extraBytes === 2) {
-	    tmp = (uint8[len - 2] << 8) + (uint8[len - 1])
-	    output += lookup[tmp >> 10]
-	    output += lookup[(tmp >> 4) & 0x3F]
-	    output += lookup[(tmp << 2) & 0x3F]
-	    output += '='
+	    tmp = (uint8[len - 2] << 8) + uint8[len - 1]
+	    parts.push(
+	      lookup[tmp >> 10] +
+	      lookup[(tmp >> 4) & 0x3F] +
+	      lookup[(tmp << 2) & 0x3F] +
+	      '='
+	    )
 	  }
-
-	  parts.push(output)
 
 	  return parts.join('')
 	}
 
 
 /***/ }),
-/* 15 */
+/* 17 */
 /***/ (function(module, exports) {
 
 	exports.read = function (buffer, offset, isLE, mLen, nBytes) {
 	  var e, m
-	  var eLen = nBytes * 8 - mLen - 1
+	  var eLen = (nBytes * 8) - mLen - 1
 	  var eMax = (1 << eLen) - 1
 	  var eBias = eMax >> 1
 	  var nBits = -7
@@ -29603,12 +29488,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  e = s & ((1 << (-nBits)) - 1)
 	  s >>= (-nBits)
 	  nBits += eLen
-	  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+	  for (; nBits > 0; e = (e * 256) + buffer[offset + i], i += d, nBits -= 8) {}
 
 	  m = e & ((1 << (-nBits)) - 1)
 	  e >>= (-nBits)
 	  nBits += mLen
-	  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+	  for (; nBits > 0; m = (m * 256) + buffer[offset + i], i += d, nBits -= 8) {}
 
 	  if (e === 0) {
 	    e = 1 - eBias
@@ -29623,7 +29508,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 	  var e, m, c
-	  var eLen = nBytes * 8 - mLen - 1
+	  var eLen = (nBytes * 8) - mLen - 1
 	  var eMax = (1 << eLen) - 1
 	  var eBias = eMax >> 1
 	  var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0)
@@ -29656,7 +29541,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      m = 0
 	      e = eMax
 	    } else if (e + eBias >= 1) {
-	      m = (value * c - 1) * Math.pow(2, mLen)
+	      m = ((value * c) - 1) * Math.pow(2, mLen)
 	      e = e + eBias
 	    } else {
 	      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen)
@@ -29675,7 +29560,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 16 */
+/* 18 */
 /***/ (function(module, exports) {
 
 	var toString = {}.toString;
@@ -29686,7 +29571,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 17 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*
@@ -29697,11 +29582,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	 * reduce the final size of the bundle (only one stream implementation, not
 	 * two).
 	 */
-	module.exports = __webpack_require__(18);
+	module.exports = __webpack_require__(20);
 
 
 /***/ }),
-/* 18 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -29727,15 +29612,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	module.exports = Stream;
 
-	var EE = __webpack_require__(19).EventEmitter;
-	var inherits = __webpack_require__(20);
+	var EE = __webpack_require__(21).EventEmitter;
+	var inherits = __webpack_require__(22);
 
 	inherits(Stream, EE);
-	Stream.Readable = __webpack_require__(21);
-	Stream.Writable = __webpack_require__(40);
-	Stream.Duplex = __webpack_require__(41);
-	Stream.Transform = __webpack_require__(42);
-	Stream.PassThrough = __webpack_require__(43);
+	Stream.Readable = __webpack_require__(23);
+	Stream.Writable = __webpack_require__(43);
+	Stream.Duplex = __webpack_require__(44);
+	Stream.Transform = __webpack_require__(45);
+	Stream.PassThrough = __webpack_require__(46);
 
 	// Backwards-compat with node 0.4.x
 	Stream.Stream = Stream;
@@ -29834,7 +29719,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 19 */
+/* 21 */
 /***/ (function(module, exports) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -30142,7 +30027,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 20 */
+/* 22 */
 /***/ (function(module, exports) {
 
 	if (typeof Object.create === 'function') {
@@ -30171,20 +30056,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 21 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(22);
+	exports = module.exports = __webpack_require__(24);
 	exports.Stream = exports;
 	exports.Readable = exports;
-	exports.Writable = __webpack_require__(33);
-	exports.Duplex = __webpack_require__(32);
-	exports.Transform = __webpack_require__(38);
-	exports.PassThrough = __webpack_require__(39);
+	exports.Writable = __webpack_require__(36);
+	exports.Duplex = __webpack_require__(35);
+	exports.Transform = __webpack_require__(41);
+	exports.PassThrough = __webpack_require__(42);
 
 
 /***/ }),
-/* 22 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -30212,13 +30097,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	/*<replacement>*/
 
-	var processNextTick = __webpack_require__(23);
+	var pna = __webpack_require__(25);
 	/*</replacement>*/
 
 	module.exports = Readable;
 
 	/*<replacement>*/
-	var isArray = __webpack_require__(24);
+	var isArray = __webpack_require__(26);
 	/*</replacement>*/
 
 	/*<replacement>*/
@@ -30228,7 +30113,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	Readable.ReadableState = ReadableState;
 
 	/*<replacement>*/
-	var EE = __webpack_require__(19).EventEmitter;
+	var EE = __webpack_require__(21).EventEmitter;
 
 	var EElistenerCount = function (emitter, type) {
 	  return emitter.listeners(type).length;
@@ -30236,13 +30121,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	/*</replacement>*/
 
 	/*<replacement>*/
-	var Stream = __webpack_require__(25);
+	var Stream = __webpack_require__(27);
 	/*</replacement>*/
 
-	// TODO(bmeurer): Change this back to const once hole checks are
-	// properly optimized away early in Ignition+TurboFan.
 	/*<replacement>*/
-	var Buffer = __webpack_require__(26).Buffer;
+
+	var Buffer = __webpack_require__(28).Buffer;
 	var OurUint8Array = global.Uint8Array || function () {};
 	function _uint8ArrayToBuffer(chunk) {
 	  return Buffer.from(chunk);
@@ -30250,15 +30134,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	function _isUint8Array(obj) {
 	  return Buffer.isBuffer(obj) || obj instanceof OurUint8Array;
 	}
+
 	/*</replacement>*/
 
 	/*<replacement>*/
-	var util = __webpack_require__(27);
-	util.inherits = __webpack_require__(28);
+	var util = __webpack_require__(29);
+	util.inherits = __webpack_require__(30);
 	/*</replacement>*/
 
 	/*<replacement>*/
-	var debugUtil = __webpack_require__(29);
+	var debugUtil = __webpack_require__(31);
 	var debug = void 0;
 	if (debugUtil && debugUtil.debuglog) {
 	  debug = debugUtil.debuglog('stream');
@@ -30267,8 +30152,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	}
 	/*</replacement>*/
 
-	var BufferList = __webpack_require__(30);
-	var destroyImpl = __webpack_require__(31);
+	var BufferList = __webpack_require__(32);
+	var destroyImpl = __webpack_require__(34);
 	var StringDecoder;
 
 	util.inherits(Readable, Stream);
@@ -30278,33 +30163,40 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	function prependListener(emitter, event, fn) {
 	  // Sadly this is not cacheable as some libraries bundle their own
 	  // event emitter implementation with them.
-	  if (typeof emitter.prependListener === 'function') {
-	    return emitter.prependListener(event, fn);
-	  } else {
-	    // This is a hack to make sure that our error handler is attached before any
-	    // userland ones.  NEVER DO THIS. This is here only because this code needs
-	    // to continue to work with older versions of Node.js that do not include
-	    // the prependListener() method. The goal is to eventually remove this hack.
-	    if (!emitter._events || !emitter._events[event]) emitter.on(event, fn);else if (isArray(emitter._events[event])) emitter._events[event].unshift(fn);else emitter._events[event] = [fn, emitter._events[event]];
-	  }
+	  if (typeof emitter.prependListener === 'function') return emitter.prependListener(event, fn);
+
+	  // This is a hack to make sure that our error handler is attached before any
+	  // userland ones.  NEVER DO THIS. This is here only because this code needs
+	  // to continue to work with older versions of Node.js that do not include
+	  // the prependListener() method. The goal is to eventually remove this hack.
+	  if (!emitter._events || !emitter._events[event]) emitter.on(event, fn);else if (isArray(emitter._events[event])) emitter._events[event].unshift(fn);else emitter._events[event] = [fn, emitter._events[event]];
 	}
 
 	function ReadableState(options, stream) {
-	  Duplex = Duplex || __webpack_require__(32);
+	  Duplex = Duplex || __webpack_require__(35);
 
 	  options = options || {};
+
+	  // Duplex streams are both readable and writable, but share
+	  // the same options object.
+	  // However, some cases require setting options to different
+	  // values for the readable and the writable sides of the duplex stream.
+	  // These options can be provided separately as readableXXX and writableXXX.
+	  var isDuplex = stream instanceof Duplex;
 
 	  // object stream flag. Used to make read(n) ignore n and to
 	  // make all the buffer merging and length checks go away
 	  this.objectMode = !!options.objectMode;
 
-	  if (stream instanceof Duplex) this.objectMode = this.objectMode || !!options.readableObjectMode;
+	  if (isDuplex) this.objectMode = this.objectMode || !!options.readableObjectMode;
 
 	  // the point at which it stops calling _read() to fill the buffer
 	  // Note: 0 is a valid value, means "don't call _read preemptively ever"
 	  var hwm = options.highWaterMark;
+	  var readableHwm = options.readableHighWaterMark;
 	  var defaultHwm = this.objectMode ? 16 : 16 * 1024;
-	  this.highWaterMark = hwm || hwm === 0 ? hwm : defaultHwm;
+
+	  if (hwm || hwm === 0) this.highWaterMark = hwm;else if (isDuplex && (readableHwm || readableHwm === 0)) this.highWaterMark = readableHwm;else this.highWaterMark = defaultHwm;
 
 	  // cast to ints.
 	  this.highWaterMark = Math.floor(this.highWaterMark);
@@ -30351,14 +30243,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  this.decoder = null;
 	  this.encoding = null;
 	  if (options.encoding) {
-	    if (!StringDecoder) StringDecoder = __webpack_require__(37).StringDecoder;
+	    if (!StringDecoder) StringDecoder = __webpack_require__(40).StringDecoder;
 	    this.decoder = new StringDecoder(options.encoding);
 	    this.encoding = options.encoding;
 	  }
 	}
 
 	function Readable(options) {
-	  Duplex = Duplex || __webpack_require__(32);
+	  Duplex = Duplex || __webpack_require__(35);
 
 	  if (!(this instanceof Readable)) return new Readable(options);
 
@@ -30507,7 +30399,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	// backwards compatibility.
 	Readable.prototype.setEncoding = function (enc) {
-	  if (!StringDecoder) StringDecoder = __webpack_require__(37).StringDecoder;
+	  if (!StringDecoder) StringDecoder = __webpack_require__(40).StringDecoder;
 	  this._readableState.decoder = new StringDecoder(enc);
 	  this._readableState.encoding = enc;
 	  return this;
@@ -30677,7 +30569,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  if (!state.emittedReadable) {
 	    debug('emitReadable', state.flowing);
 	    state.emittedReadable = true;
-	    if (state.sync) processNextTick(emitReadable_, stream);else emitReadable_(stream);
+	    if (state.sync) pna.nextTick(emitReadable_, stream);else emitReadable_(stream);
 	  }
 	}
 
@@ -30696,7 +30588,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	function maybeReadMore(stream, state) {
 	  if (!state.readingMore) {
 	    state.readingMore = true;
-	    processNextTick(maybeReadMore_, stream, state);
+	    pna.nextTick(maybeReadMore_, stream, state);
 	  }
 	}
 
@@ -30741,7 +30633,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  var doEnd = (!pipeOpts || pipeOpts.end !== false) && dest !== process.stdout && dest !== process.stderr;
 
 	  var endFn = doEnd ? onend : unpipe;
-	  if (state.endEmitted) processNextTick(endFn);else src.once('end', endFn);
+	  if (state.endEmitted) pna.nextTick(endFn);else src.once('end', endFn);
 
 	  dest.on('unpipe', onunpipe);
 	  function onunpipe(readable, unpipeInfo) {
@@ -30931,7 +30823,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      state.readableListening = state.needReadable = true;
 	      state.emittedReadable = false;
 	      if (!state.reading) {
-	        processNextTick(nReadingNextTick, this);
+	        pna.nextTick(nReadingNextTick, this);
 	      } else if (state.length) {
 	        emitReadable(this);
 	      }
@@ -30962,7 +30854,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	function resume(stream, state) {
 	  if (!state.resumeScheduled) {
 	    state.resumeScheduled = true;
-	    processNextTick(resume_, stream, state);
+	    pna.nextTick(resume_, stream, state);
 	  }
 	}
 
@@ -30999,18 +30891,19 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	// This is *not* part of the readable stream interface.
 	// It is an ugly unfortunate mess of history.
 	Readable.prototype.wrap = function (stream) {
+	  var _this = this;
+
 	  var state = this._readableState;
 	  var paused = false;
 
-	  var self = this;
 	  stream.on('end', function () {
 	    debug('wrapped end');
 	    if (state.decoder && !state.ended) {
 	      var chunk = state.decoder.end();
-	      if (chunk && chunk.length) self.push(chunk);
+	      if (chunk && chunk.length) _this.push(chunk);
 	    }
 
-	    self.push(null);
+	    _this.push(null);
 	  });
 
 	  stream.on('data', function (chunk) {
@@ -31020,7 +30913,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    // don't skip over falsy values in objectMode
 	    if (state.objectMode && (chunk === null || chunk === undefined)) return;else if (!state.objectMode && (!chunk || !chunk.length)) return;
 
-	    var ret = self.push(chunk);
+	    var ret = _this.push(chunk);
 	    if (!ret) {
 	      paused = true;
 	      stream.pause();
@@ -31041,12 +30934,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // proxy certain important events.
 	  for (var n = 0; n < kProxyEvents.length; n++) {
-	    stream.on(kProxyEvents[n], self.emit.bind(self, kProxyEvents[n]));
+	    stream.on(kProxyEvents[n], this.emit.bind(this, kProxyEvents[n]));
 	  }
 
 	  // when we try to consume some more bytes, simply unpause the
 	  // underlying stream.
-	  self._read = function (n) {
+	  this._read = function (n) {
 	    debug('wrapped _read', n);
 	    if (paused) {
 	      paused = false;
@@ -31054,8 +30947,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 	  };
 
-	  return self;
+	  return this;
 	};
+
+	Object.defineProperty(Readable.prototype, 'readableHighWaterMark', {
+	  // making it explicit this property is not enumerable
+	  // because otherwise some prototype manipulation in
+	  // userland will fail
+	  enumerable: false,
+	  get: function () {
+	    return this._readableState.highWaterMark;
+	  }
+	});
 
 	// exposed for testing purposes only.
 	Readable._fromList = fromList;
@@ -31169,7 +31072,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  if (!state.endEmitted) {
 	    state.ended = true;
-	    processNextTick(endReadableNT, state, stream);
+	    pna.nextTick(endReadableNT, state, stream);
 	  }
 	}
 
@@ -31182,22 +31085,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  }
 	}
 
-	function forEach(xs, f) {
-	  for (var i = 0, l = xs.length; i < l; i++) {
-	    f(xs[i], i);
-	  }
-	}
-
 	function indexOf(xs, x) {
 	  for (var i = 0, l = xs.length; i < l; i++) {
 	    if (xs[i] === x) return i;
 	  }
 	  return -1;
 	}
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(6)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(8)))
 
 /***/ }),
-/* 23 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -31205,9 +31102,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	if (!process.version ||
 	    process.version.indexOf('v0.') === 0 ||
 	    process.version.indexOf('v1.') === 0 && process.version.indexOf('v1.8.') !== 0) {
-	  module.exports = nextTick;
+	  module.exports = { nextTick: nextTick };
 	} else {
-	  module.exports = process.nextTick;
+	  module.exports = process
 	}
 
 	function nextTick(fn, arg1, arg2, arg3) {
@@ -31244,10 +31141,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  }
 	}
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
-/* 24 */
+/* 26 */
 /***/ (function(module, exports) {
 
 	var toString = {}.toString;
@@ -31258,18 +31156,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 25 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(19).EventEmitter;
+	module.exports = __webpack_require__(21).EventEmitter;
 
 
 /***/ }),
-/* 26 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* eslint-disable node/no-deprecated-api */
-	var buffer = __webpack_require__(13)
+	var buffer = __webpack_require__(15)
 	var Buffer = buffer.Buffer
 
 	// alternative to using Object.keys for old browsers
@@ -31333,7 +31231,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 27 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer) {// Copyright Joyent, Inc. and other Node contributors.
@@ -31444,10 +31342,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  return Object.prototype.toString.call(o);
 	}
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15).Buffer))
 
 /***/ }),
-/* 28 */
+/* 30 */
 /***/ (function(module, exports) {
 
 	if (typeof Object.create === 'function') {
@@ -31476,23 +31374,21 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 29 */
+/* 31 */
 /***/ (function(module, exports) {
 
 	/* (ignored) */
 
 /***/ }),
-/* 30 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	/*<replacement>*/
-
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var Buffer = __webpack_require__(26).Buffer;
-	/*</replacement>*/
+	var Buffer = __webpack_require__(28).Buffer;
+	var util = __webpack_require__(33);
 
 	function copyBuffer(src, target, offset) {
 	  src.copy(target, offset);
@@ -31560,15 +31456,28 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  return BufferList;
 	}();
 
+	if (util && util.inspect && util.inspect.custom) {
+	  module.exports.prototype[util.inspect.custom] = function () {
+	    var obj = util.inspect({ length: this.length });
+	    return this.constructor.name + ' ' + obj;
+	  };
+	}
+
 /***/ }),
-/* 31 */
+/* 33 */
+/***/ (function(module, exports) {
+
+	/* (ignored) */
+
+/***/ }),
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	/*<replacement>*/
 
-	var processNextTick = __webpack_require__(23);
+	var pna = __webpack_require__(25);
 	/*</replacement>*/
 
 	// undocumented cb() API, needed for core, not for public API
@@ -31582,9 +31491,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    if (cb) {
 	      cb(err);
 	    } else if (err && (!this._writableState || !this._writableState.errorEmitted)) {
-	      processNextTick(emitErrorNT, this, err);
+	      pna.nextTick(emitErrorNT, this, err);
 	    }
-	    return;
+	    return this;
 	  }
 
 	  // we set destroyed to true before firing error callbacks in order
@@ -31601,7 +31510,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  this._destroy(err || null, function (err) {
 	    if (!cb && err) {
-	      processNextTick(emitErrorNT, _this, err);
+	      pna.nextTick(emitErrorNT, _this, err);
 	      if (_this._writableState) {
 	        _this._writableState.errorEmitted = true;
 	      }
@@ -31609,6 +31518,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      cb(err);
 	    }
 	  });
+
+	  return this;
 	}
 
 	function undestroy() {
@@ -31638,7 +31549,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	};
 
 /***/ }),
-/* 32 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -31671,7 +31582,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	/*<replacement>*/
 
-	var processNextTick = __webpack_require__(23);
+	var pna = __webpack_require__(25);
 	/*</replacement>*/
 
 	/*<replacement>*/
@@ -31686,19 +31597,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	module.exports = Duplex;
 
 	/*<replacement>*/
-	var util = __webpack_require__(27);
-	util.inherits = __webpack_require__(28);
+	var util = __webpack_require__(29);
+	util.inherits = __webpack_require__(30);
 	/*</replacement>*/
 
-	var Readable = __webpack_require__(22);
-	var Writable = __webpack_require__(33);
+	var Readable = __webpack_require__(24);
+	var Writable = __webpack_require__(36);
 
 	util.inherits(Duplex, Readable);
 
-	var keys = objectKeys(Writable.prototype);
-	for (var v = 0; v < keys.length; v++) {
-	  var method = keys[v];
-	  if (!Duplex.prototype[method]) Duplex.prototype[method] = Writable.prototype[method];
+	{
+	  // avoid scope creep, the keys array can then be collected
+	  var keys = objectKeys(Writable.prototype);
+	  for (var v = 0; v < keys.length; v++) {
+	    var method = keys[v];
+	    if (!Duplex.prototype[method]) Duplex.prototype[method] = Writable.prototype[method];
+	  }
 	}
 
 	function Duplex(options) {
@@ -31717,6 +31631,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  this.once('end', onend);
 	}
 
+	Object.defineProperty(Duplex.prototype, 'writableHighWaterMark', {
+	  // making it explicit this property is not enumerable
+	  // because otherwise some prototype manipulation in
+	  // userland will fail
+	  enumerable: false,
+	  get: function () {
+	    return this._writableState.highWaterMark;
+	  }
+	});
+
 	// the no-half-open enforcer
 	function onend() {
 	  // if we allow half-open state, or if the writable side ended,
@@ -31725,7 +31649,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // no more data can be written.
 	  // But allow more writes to happen in this tick.
-	  processNextTick(onEndNT, this);
+	  pna.nextTick(onEndNT, this);
 	}
 
 	function onEndNT(self) {
@@ -31757,17 +31681,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  this.push(null);
 	  this.end();
 
-	  processNextTick(cb, err);
+	  pna.nextTick(cb, err);
 	};
 
-	function forEach(xs, f) {
-	  for (var i = 0, l = xs.length; i < l; i++) {
-	    f(xs[i], i);
-	  }
-	}
-
 /***/ }),
-/* 33 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process, setImmediate, global) {// Copyright Joyent, Inc. and other Node contributors.
@@ -31799,7 +31717,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	/*<replacement>*/
 
-	var processNextTick = __webpack_require__(23);
+	var pna = __webpack_require__(25);
 	/*</replacement>*/
 
 	module.exports = Writable;
@@ -31826,7 +31744,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	/* </replacement> */
 
 	/*<replacement>*/
-	var asyncWrite = !process.browser && ['v0.10', 'v0.9.'].indexOf(process.version.slice(0, 5)) > -1 ? setImmediate : processNextTick;
+	var asyncWrite = !process.browser && ['v0.10', 'v0.9.'].indexOf(process.version.slice(0, 5)) > -1 ? setImmediate : pna.nextTick;
 	/*</replacement>*/
 
 	/*<replacement>*/
@@ -31836,22 +31754,23 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	Writable.WritableState = WritableState;
 
 	/*<replacement>*/
-	var util = __webpack_require__(27);
-	util.inherits = __webpack_require__(28);
+	var util = __webpack_require__(29);
+	util.inherits = __webpack_require__(30);
 	/*</replacement>*/
 
 	/*<replacement>*/
 	var internalUtil = {
-	  deprecate: __webpack_require__(36)
+	  deprecate: __webpack_require__(39)
 	};
 	/*</replacement>*/
 
 	/*<replacement>*/
-	var Stream = __webpack_require__(25);
+	var Stream = __webpack_require__(27);
 	/*</replacement>*/
 
 	/*<replacement>*/
-	var Buffer = __webpack_require__(26).Buffer;
+
+	var Buffer = __webpack_require__(28).Buffer;
 	var OurUint8Array = global.Uint8Array || function () {};
 	function _uint8ArrayToBuffer(chunk) {
 	  return Buffer.from(chunk);
@@ -31859,31 +31778,41 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	function _isUint8Array(obj) {
 	  return Buffer.isBuffer(obj) || obj instanceof OurUint8Array;
 	}
+
 	/*</replacement>*/
 
-	var destroyImpl = __webpack_require__(31);
+	var destroyImpl = __webpack_require__(34);
 
 	util.inherits(Writable, Stream);
 
 	function nop() {}
 
 	function WritableState(options, stream) {
-	  Duplex = Duplex || __webpack_require__(32);
+	  Duplex = Duplex || __webpack_require__(35);
 
 	  options = options || {};
+
+	  // Duplex streams are both readable and writable, but share
+	  // the same options object.
+	  // However, some cases require setting options to different
+	  // values for the readable and the writable sides of the duplex stream.
+	  // These options can be provided separately as readableXXX and writableXXX.
+	  var isDuplex = stream instanceof Duplex;
 
 	  // object stream flag to indicate whether or not this stream
 	  // contains buffers or objects.
 	  this.objectMode = !!options.objectMode;
 
-	  if (stream instanceof Duplex) this.objectMode = this.objectMode || !!options.writableObjectMode;
+	  if (isDuplex) this.objectMode = this.objectMode || !!options.writableObjectMode;
 
 	  // the point at which write() starts returning false
 	  // Note: 0 is a valid value, means that we always return false if
 	  // the entire buffer is not flushed immediately on write()
 	  var hwm = options.highWaterMark;
+	  var writableHwm = options.writableHighWaterMark;
 	  var defaultHwm = this.objectMode ? 16 : 16 * 1024;
-	  this.highWaterMark = hwm || hwm === 0 ? hwm : defaultHwm;
+
+	  if (hwm || hwm === 0) this.highWaterMark = hwm;else if (isDuplex && (writableHwm || writableHwm === 0)) this.highWaterMark = writableHwm;else this.highWaterMark = defaultHwm;
 
 	  // cast to ints.
 	  this.highWaterMark = Math.floor(this.highWaterMark);
@@ -31997,6 +31926,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  Object.defineProperty(Writable, Symbol.hasInstance, {
 	    value: function (object) {
 	      if (realHasInstance.call(this, object)) return true;
+	      if (this !== Writable) return false;
 
 	      return object && object._writableState instanceof WritableState;
 	    }
@@ -32008,7 +31938,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	}
 
 	function Writable(options) {
-	  Duplex = Duplex || __webpack_require__(32);
+	  Duplex = Duplex || __webpack_require__(35);
 
 	  // Writable ctor is applied to Duplexes, too.
 	  // `realHasInstance` is necessary because using plain `instanceof`
@@ -32048,7 +31978,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  var er = new Error('write after end');
 	  // TODO: defer error events consistently everywhere, not just the cb
 	  stream.emit('error', er);
-	  processNextTick(cb, er);
+	  pna.nextTick(cb, er);
 	}
 
 	// Checks that a user-supplied chunk is valid, especially for the particular
@@ -32065,7 +31995,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  }
 	  if (er) {
 	    stream.emit('error', er);
-	    processNextTick(cb, er);
+	    pna.nextTick(cb, er);
 	    valid = false;
 	  }
 	  return valid;
@@ -32074,7 +32004,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	Writable.prototype.write = function (chunk, encoding, cb) {
 	  var state = this._writableState;
 	  var ret = false;
-	  var isBuf = _isUint8Array(chunk) && !state.objectMode;
+	  var isBuf = !state.objectMode && _isUint8Array(chunk);
 
 	  if (isBuf && !Buffer.isBuffer(chunk)) {
 	    chunk = _uint8ArrayToBuffer(chunk);
@@ -32127,6 +32057,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  }
 	  return chunk;
 	}
+
+	Object.defineProperty(Writable.prototype, 'writableHighWaterMark', {
+	  // making it explicit this property is not enumerable
+	  // because otherwise some prototype manipulation in
+	  // userland will fail
+	  enumerable: false,
+	  get: function () {
+	    return this._writableState.highWaterMark;
+	  }
+	});
 
 	// if we're already writing something, then just put this
 	// in the queue, and wait our turn.  Otherwise, call _write
@@ -32185,10 +32125,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  if (sync) {
 	    // defer the callback if we are being called synchronously
 	    // to avoid piling up things on the stack
-	    processNextTick(cb, er);
+	    pna.nextTick(cb, er);
 	    // this can emit finish, and it will always happen
 	    // after error
-	    processNextTick(finishMaybe, stream, state);
+	    pna.nextTick(finishMaybe, stream, state);
 	    stream._writableState.errorEmitted = true;
 	    stream.emit('error', er);
 	  } else {
@@ -32286,6 +32226,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    } else {
 	      state.corkedRequestsFree = new CorkedRequest(state);
 	    }
+	    state.bufferedRequestCount = 0;
 	  } else {
 	    // Slow case, write chunks one-by-one
 	    while (entry) {
@@ -32296,6 +32237,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	      doWrite(stream, state, false, len, chunk, encoding, cb);
 	      entry = entry.next;
+	      state.bufferedRequestCount--;
 	      // if we didn't call the onwrite immediately, then
 	      // it means that we need to wait until it does.
 	      // also, that means that the chunk and cb are currently
@@ -32308,7 +32250,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    if (entry === null) state.lastBufferedRequest = null;
 	  }
 
-	  state.bufferedRequestCount = 0;
 	  state.bufferedRequest = entry;
 	  state.bufferProcessing = false;
 	}
@@ -32362,7 +32303,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    if (typeof stream._final === 'function') {
 	      state.pendingcb++;
 	      state.finalCalled = true;
-	      processNextTick(callFinal, stream, state);
+	      pna.nextTick(callFinal, stream, state);
 	    } else {
 	      state.prefinished = true;
 	      stream.emit('prefinish');
@@ -32386,7 +32327,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  state.ending = true;
 	  finishMaybe(stream, state);
 	  if (cb) {
-	    if (state.finished) processNextTick(cb);else stream.once('finish', cb);
+	    if (state.finished) pna.nextTick(cb);else stream.once('finish', cb);
 	  }
 	  state.ended = true;
 	  stream.writable = false;
@@ -32434,21 +32375,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  this.end();
 	  cb(err);
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6), __webpack_require__(34).setImmediate, (function() { return this; }())))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8), __webpack_require__(37).setImmediate, (function() { return this; }())))
 
 /***/ }),
-/* 34 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {var apply = Function.prototype.apply;
+	/* WEBPACK VAR INJECTION */(function(global) {var scope = (typeof global !== "undefined" && global) ||
+	            (typeof self !== "undefined" && self) ||
+	            window;
+	var apply = Function.prototype.apply;
 
 	// DOM APIs, for completeness
 
 	exports.setTimeout = function() {
-	  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
+	  return new Timeout(apply.call(setTimeout, scope, arguments), clearTimeout);
 	};
 	exports.setInterval = function() {
-	  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
+	  return new Timeout(apply.call(setInterval, scope, arguments), clearInterval);
 	};
 	exports.clearTimeout =
 	exports.clearInterval = function(timeout) {
@@ -32463,7 +32407,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	}
 	Timeout.prototype.unref = Timeout.prototype.ref = function() {};
 	Timeout.prototype.close = function() {
-	  this._clearFn.call(window, this._id);
+	  this._clearFn.call(scope, this._id);
 	};
 
 	// Does not start the time, just sets up the members needed.
@@ -32490,8 +32434,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	};
 
 	// setimmediate attaches itself to the global object
-	__webpack_require__(35);
-	// On some exotic environments, it's not clear which object `setimmeidate` was
+	__webpack_require__(38);
+	// On some exotic environments, it's not clear which object `setimmediate` was
 	// able to install onto.  Search each possibility in the same order as the
 	// `setimmediate` library.
 	exports.setImmediate = (typeof self !== "undefined" && self.setImmediate) ||
@@ -32504,7 +32448,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ }),
-/* 35 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -32694,10 +32638,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    attachTo.clearImmediate = clearImmediate;
 	}(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(6)))
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(8)))
 
 /***/ }),
-/* 36 */
+/* 39 */
 /***/ (function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {
@@ -32771,12 +32715,36 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ }),
-/* 37 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
+
+	// Copyright Joyent, Inc. and other Node contributors.
+	//
+	// Permission is hereby granted, free of charge, to any person obtaining a
+	// copy of this software and associated documentation files (the
+	// "Software"), to deal in the Software without restriction, including
+	// without limitation the rights to use, copy, modify, merge, publish,
+	// distribute, sublicense, and/or sell copies of the Software, and to permit
+	// persons to whom the Software is furnished to do so, subject to the
+	// following conditions:
+	//
+	// The above copyright notice and this permission notice shall be included
+	// in all copies or substantial portions of the Software.
+	//
+	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+	// USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 	'use strict';
 
-	var Buffer = __webpack_require__(26).Buffer;
+	/*<replacement>*/
+
+	var Buffer = __webpack_require__(28).Buffer;
+	/*</replacement>*/
 
 	var isEncoding = Buffer.isEncoding || function (encoding) {
 	  encoding = '' + encoding;
@@ -32888,10 +32856,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	};
 
 	// Checks the type of a UTF-8 byte, whether it's ASCII, a leading byte, or a
-	// continuation byte.
+	// continuation byte. If an invalid byte is detected, -2 is returned.
 	function utf8CheckByte(byte) {
 	  if (byte <= 0x7F) return 0;else if (byte >> 5 === 0x06) return 2;else if (byte >> 4 === 0x0E) return 3;else if (byte >> 3 === 0x1E) return 4;
-	  return -1;
+	  return byte >> 6 === 0x02 ? -1 : -2;
 	}
 
 	// Checks at most 3 bytes at the end of a Buffer in order to detect an
@@ -32905,13 +32873,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    if (nb > 0) self.lastNeed = nb - 1;
 	    return nb;
 	  }
-	  if (--j < i) return 0;
+	  if (--j < i || nb === -2) return 0;
 	  nb = utf8CheckByte(buf[j]);
 	  if (nb >= 0) {
 	    if (nb > 0) self.lastNeed = nb - 2;
 	    return nb;
 	  }
-	  if (--j < i) return 0;
+	  if (--j < i || nb === -2) return 0;
 	  nb = utf8CheckByte(buf[j]);
 	  if (nb >= 0) {
 	    if (nb > 0) {
@@ -32925,7 +32893,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	// Validates as many continuation bytes for a multi-byte UTF-8 character as
 	// needed or are available. If we see a non-continuation byte where we expect
 	// one, we "replace" the validated continuation bytes we've seen so far with
-	// UTF-8 replacement characters ('\ufffd'), to match v8's UTF-8 decoding
+	// a single UTF-8 replacement character ('\ufffd'), to match v8's UTF-8 decoding
 	// behavior. The continuation byte check is included three times in the case
 	// where all of the continuation bytes for a character exist in the same buffer.
 	// It is also done this way as a slight performance increase instead of using a
@@ -32933,17 +32901,17 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	function utf8CheckExtraBytes(self, buf, p) {
 	  if ((buf[0] & 0xC0) !== 0x80) {
 	    self.lastNeed = 0;
-	    return '\ufffd'.repeat(p);
+	    return '\ufffd';
 	  }
 	  if (self.lastNeed > 1 && buf.length > 1) {
 	    if ((buf[1] & 0xC0) !== 0x80) {
 	      self.lastNeed = 1;
-	      return '\ufffd'.repeat(p + 1);
+	      return '\ufffd';
 	    }
 	    if (self.lastNeed > 2 && buf.length > 2) {
 	      if ((buf[2] & 0xC0) !== 0x80) {
 	        self.lastNeed = 2;
-	        return '\ufffd'.repeat(p + 2);
+	        return '\ufffd';
 	      }
 	    }
 	  }
@@ -32974,11 +32942,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  return buf.toString('utf8', i, end);
 	}
 
-	// For UTF-8, a replacement character for each buffered byte of a (partial)
-	// character needs to be added to the output.
+	// For UTF-8, a replacement character is added when ending on a partial
+	// character.
 	function utf8End(buf) {
 	  var r = buf && buf.length ? this.write(buf) : '';
-	  if (this.lastNeed) return r + '\ufffd'.repeat(this.lastTotal - this.lastNeed);
+	  if (this.lastNeed) return r + '\ufffd';
 	  return r;
 	}
 
@@ -33048,7 +33016,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	}
 
 /***/ }),
-/* 38 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -33118,48 +33086,37 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	module.exports = Transform;
 
-	var Duplex = __webpack_require__(32);
+	var Duplex = __webpack_require__(35);
 
 	/*<replacement>*/
-	var util = __webpack_require__(27);
-	util.inherits = __webpack_require__(28);
+	var util = __webpack_require__(29);
+	util.inherits = __webpack_require__(30);
 	/*</replacement>*/
 
 	util.inherits(Transform, Duplex);
 
-	function TransformState(stream) {
-	  this.afterTransform = function (er, data) {
-	    return afterTransform(stream, er, data);
-	  };
-
-	  this.needTransform = false;
-	  this.transforming = false;
-	  this.writecb = null;
-	  this.writechunk = null;
-	  this.writeencoding = null;
-	}
-
-	function afterTransform(stream, er, data) {
-	  var ts = stream._transformState;
+	function afterTransform(er, data) {
+	  var ts = this._transformState;
 	  ts.transforming = false;
 
 	  var cb = ts.writecb;
 
 	  if (!cb) {
-	    return stream.emit('error', new Error('write callback called multiple times'));
+	    return this.emit('error', new Error('write callback called multiple times'));
 	  }
 
 	  ts.writechunk = null;
 	  ts.writecb = null;
 
-	  if (data !== null && data !== undefined) stream.push(data);
+	  if (data != null) // single equals check for both `null` and `undefined`
+	    this.push(data);
 
 	  cb(er);
 
-	  var rs = stream._readableState;
+	  var rs = this._readableState;
 	  rs.reading = false;
 	  if (rs.needReadable || rs.length < rs.highWaterMark) {
-	    stream._read(rs.highWaterMark);
+	    this._read(rs.highWaterMark);
 	  }
 	}
 
@@ -33168,9 +33125,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  Duplex.call(this, options);
 
-	  this._transformState = new TransformState(this);
-
-	  var stream = this;
+	  this._transformState = {
+	    afterTransform: afterTransform.bind(this),
+	    needTransform: false,
+	    transforming: false,
+	    writecb: null,
+	    writechunk: null,
+	    writeencoding: null
+	  };
 
 	  // start out asking for a readable event once data is transformed.
 	  this._readableState.needReadable = true;
@@ -33187,11 +33149,19 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  }
 
 	  // When the writable side finishes, then flush out anything remaining.
-	  this.once('prefinish', function () {
-	    if (typeof this._flush === 'function') this._flush(function (er, data) {
-	      done(stream, er, data);
-	    });else done(stream);
-	  });
+	  this.on('prefinish', prefinish);
+	}
+
+	function prefinish() {
+	  var _this = this;
+
+	  if (typeof this._flush === 'function') {
+	    this._flush(function (er, data) {
+	      done(_this, er, data);
+	    });
+	  } else {
+	    done(this, null, null);
+	  }
 	}
 
 	Transform.prototype.push = function (chunk, encoding) {
@@ -33241,33 +33211,31 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	};
 
 	Transform.prototype._destroy = function (err, cb) {
-	  var _this = this;
+	  var _this2 = this;
 
 	  Duplex.prototype._destroy.call(this, err, function (err2) {
 	    cb(err2);
-	    _this.emit('close');
+	    _this2.emit('close');
 	  });
 	};
 
 	function done(stream, er, data) {
 	  if (er) return stream.emit('error', er);
 
-	  if (data !== null && data !== undefined) stream.push(data);
+	  if (data != null) // single equals check for both `null` and `undefined`
+	    stream.push(data);
 
 	  // if there's nothing in the write buffer, then that means
 	  // that nothing more will ever be provided
-	  var ws = stream._writableState;
-	  var ts = stream._transformState;
+	  if (stream._writableState.length) throw new Error('Calling transform done when ws.length != 0');
 
-	  if (ws.length) throw new Error('Calling transform done when ws.length != 0');
-
-	  if (ts.transforming) throw new Error('Calling transform done when still transforming');
+	  if (stream._transformState.transforming) throw new Error('Calling transform done when still transforming');
 
 	  return stream.push(null);
 	}
 
 /***/ }),
-/* 39 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -33299,11 +33267,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	module.exports = PassThrough;
 
-	var Transform = __webpack_require__(38);
+	var Transform = __webpack_require__(41);
 
 	/*<replacement>*/
-	var util = __webpack_require__(27);
-	util.inherits = __webpack_require__(28);
+	var util = __webpack_require__(29);
+	util.inherits = __webpack_require__(30);
 	/*</replacement>*/
 
 	util.inherits(PassThrough, Transform);
@@ -33319,40 +33287,40 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	};
 
 /***/ }),
-/* 40 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(33);
-
-
-/***/ }),
-/* 41 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(32);
-
-
-/***/ }),
-/* 42 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(21).Transform
-
-
-/***/ }),
 /* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(21).PassThrough
+	module.exports = __webpack_require__(36);
 
 
 /***/ }),
 /* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
+	module.exports = __webpack_require__(35);
+
+
+/***/ }),
+/* 45 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(23).Transform
+
+
+/***/ }),
+/* 46 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(23).PassThrough
+
+
+/***/ }),
+/* 47 */
+/***/ (function(module, exports, __webpack_require__) {
+
 	'use strict';
-	var utils = __webpack_require__(11);
-	var support = __webpack_require__(12);
+	var utils = __webpack_require__(13);
+	var support = __webpack_require__(14);
 	// private property
 	var _keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 
@@ -33459,7 +33427,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 45 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict';
@@ -33515,34 +33483,34 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 	};
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15).Buffer))
 
 /***/ }),
-/* 46 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	__webpack_require__(47);
-	module.exports = __webpack_require__(50).setImmediate;
+	__webpack_require__(50);
+	module.exports = __webpack_require__(53).setImmediate;
 
 /***/ }),
-/* 47 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var $export = __webpack_require__(48)
-	  , $task   = __webpack_require__(63);
+	var $export = __webpack_require__(51)
+	  , $task   = __webpack_require__(66);
 	$export($export.G + $export.B, {
 	  setImmediate:   $task.set,
 	  clearImmediate: $task.clear
 	});
 
 /***/ }),
-/* 48 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var global    = __webpack_require__(49)
-	  , core      = __webpack_require__(50)
-	  , ctx       = __webpack_require__(51)
-	  , hide      = __webpack_require__(53)
+	var global    = __webpack_require__(52)
+	  , core      = __webpack_require__(53)
+	  , ctx       = __webpack_require__(54)
+	  , hide      = __webpack_require__(56)
 	  , PROTOTYPE = 'prototype';
 
 	var $export = function(type, name, source){
@@ -33602,7 +33570,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	module.exports = $export;
 
 /***/ }),
-/* 49 */
+/* 52 */
 /***/ (function(module, exports) {
 
 	// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
@@ -33611,18 +33579,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
 
 /***/ }),
-/* 50 */
+/* 53 */
 /***/ (function(module, exports) {
 
 	var core = module.exports = {version: '2.3.0'};
 	if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
 
 /***/ }),
-/* 51 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// optional / simple context binding
-	var aFunction = __webpack_require__(52);
+	var aFunction = __webpack_require__(55);
 	module.exports = function(fn, that, length){
 	  aFunction(fn);
 	  if(that === undefined)return fn;
@@ -33643,7 +33611,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	};
 
 /***/ }),
-/* 52 */
+/* 55 */
 /***/ (function(module, exports) {
 
 	module.exports = function(it){
@@ -33652,12 +33620,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	};
 
 /***/ }),
-/* 53 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var dP         = __webpack_require__(54)
-	  , createDesc = __webpack_require__(62);
-	module.exports = __webpack_require__(58) ? function(object, key, value){
+	var dP         = __webpack_require__(57)
+	  , createDesc = __webpack_require__(65);
+	module.exports = __webpack_require__(61) ? function(object, key, value){
 	  return dP.f(object, key, createDesc(1, value));
 	} : function(object, key, value){
 	  object[key] = value;
@@ -33665,15 +33633,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	};
 
 /***/ }),
-/* 54 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var anObject       = __webpack_require__(55)
-	  , IE8_DOM_DEFINE = __webpack_require__(57)
-	  , toPrimitive    = __webpack_require__(61)
+	var anObject       = __webpack_require__(58)
+	  , IE8_DOM_DEFINE = __webpack_require__(60)
+	  , toPrimitive    = __webpack_require__(64)
 	  , dP             = Object.defineProperty;
 
-	exports.f = __webpack_require__(58) ? Object.defineProperty : function defineProperty(O, P, Attributes){
+	exports.f = __webpack_require__(61) ? Object.defineProperty : function defineProperty(O, P, Attributes){
 	  anObject(O);
 	  P = toPrimitive(P, true);
 	  anObject(Attributes);
@@ -33686,17 +33654,17 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	};
 
 /***/ }),
-/* 55 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var isObject = __webpack_require__(56);
+	var isObject = __webpack_require__(59);
 	module.exports = function(it){
 	  if(!isObject(it))throw TypeError(it + ' is not an object!');
 	  return it;
 	};
 
 /***/ }),
-/* 56 */
+/* 59 */
 /***/ (function(module, exports) {
 
 	module.exports = function(it){
@@ -33704,24 +33672,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	};
 
 /***/ }),
-/* 57 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	module.exports = !__webpack_require__(58) && !__webpack_require__(59)(function(){
-	  return Object.defineProperty(__webpack_require__(60)('div'), 'a', {get: function(){ return 7; }}).a != 7;
+	module.exports = !__webpack_require__(61) && !__webpack_require__(62)(function(){
+	  return Object.defineProperty(__webpack_require__(63)('div'), 'a', {get: function(){ return 7; }}).a != 7;
 	});
 
 /***/ }),
-/* 58 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// Thank's IE8 for his funny defineProperty
-	module.exports = !__webpack_require__(59)(function(){
+	module.exports = !__webpack_require__(62)(function(){
 	  return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
 	});
 
 /***/ }),
-/* 59 */
+/* 62 */
 /***/ (function(module, exports) {
 
 	module.exports = function(exec){
@@ -33733,11 +33701,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	};
 
 /***/ }),
-/* 60 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var isObject = __webpack_require__(56)
-	  , document = __webpack_require__(49).document
+	var isObject = __webpack_require__(59)
+	  , document = __webpack_require__(52).document
 	  // in old IE typeof document.createElement is 'object'
 	  , is = isObject(document) && isObject(document.createElement);
 	module.exports = function(it){
@@ -33745,11 +33713,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	};
 
 /***/ }),
-/* 61 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// 7.1.1 ToPrimitive(input [, PreferredType])
-	var isObject = __webpack_require__(56);
+	var isObject = __webpack_require__(59);
 	// instead of the ES6 spec version, we didn't implement @@toPrimitive case
 	// and the second argument - flag - preferred type is a string
 	module.exports = function(it, S){
@@ -33762,7 +33730,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	};
 
 /***/ }),
-/* 62 */
+/* 65 */
 /***/ (function(module, exports) {
 
 	module.exports = function(bitmap, value){
@@ -33775,14 +33743,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	};
 
 /***/ }),
-/* 63 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var ctx                = __webpack_require__(51)
-	  , invoke             = __webpack_require__(64)
-	  , html               = __webpack_require__(65)
-	  , cel                = __webpack_require__(60)
-	  , global             = __webpack_require__(49)
+	var ctx                = __webpack_require__(54)
+	  , invoke             = __webpack_require__(67)
+	  , html               = __webpack_require__(68)
+	  , cel                = __webpack_require__(63)
+	  , global             = __webpack_require__(52)
 	  , process            = global.process
 	  , setTask            = global.setImmediate
 	  , clearTask          = global.clearImmediate
@@ -33817,7 +33785,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    delete queue[id];
 	  };
 	  // Node.js 0.8-
-	  if(__webpack_require__(66)(process) == 'process'){
+	  if(__webpack_require__(69)(process) == 'process'){
 	    defer = function(id){
 	      process.nextTick(ctx(run, id, 1));
 	    };
@@ -33855,7 +33823,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	};
 
 /***/ }),
-/* 64 */
+/* 67 */
 /***/ (function(module, exports) {
 
 	// fast apply, http://jsperf.lnkit.com/fast-apply/5
@@ -33876,13 +33844,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	};
 
 /***/ }),
-/* 65 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(49).document && document.documentElement;
+	module.exports = __webpack_require__(52).document && document.documentElement;
 
 /***/ }),
-/* 66 */
+/* 69 */
 /***/ (function(module, exports) {
 
 	var toString = {}.toString;
@@ -33892,7 +33860,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	};
 
 /***/ }),
-/* 67 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* global Promise */
@@ -33905,7 +33873,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	if (typeof Promise !== "undefined") {
 	    ES6Promise = Promise;
 	} else {
-	    ES6Promise = __webpack_require__(68);
+	    ES6Promise = __webpack_require__(71);
 	}
 
 	/**
@@ -33917,11 +33885,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 68 */
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var immediate = __webpack_require__(69);
+	var immediate = __webpack_require__(72);
 
 	/* istanbul ignore next */
 	function INTERNAL() {}
@@ -34176,7 +34144,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 69 */
+/* 72 */
 /***/ (function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
@@ -34252,7 +34220,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ }),
-/* 70 */
+/* 73 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -34521,22 +34489,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 71 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict';
 
-	var utils = __webpack_require__(11);
-	var ConvertWorker = __webpack_require__(72);
-	var GenericWorker = __webpack_require__(70);
-	var base64 = __webpack_require__(44);
-	var support = __webpack_require__(12);
-	var external = __webpack_require__(67);
+	var utils = __webpack_require__(13);
+	var ConvertWorker = __webpack_require__(75);
+	var GenericWorker = __webpack_require__(73);
+	var base64 = __webpack_require__(47);
+	var support = __webpack_require__(14);
+	var external = __webpack_require__(70);
 
 	var NodejsStreamOutputAdapter = null;
 	if (support.nodestream) {
 	    try {
-	        NodejsStreamOutputAdapter = __webpack_require__(73);
+	        NodejsStreamOutputAdapter = __webpack_require__(76);
 	    } catch(e) {}
 	}
 
@@ -34737,16 +34705,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	module.exports = StreamHelper;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15).Buffer))
 
 /***/ }),
-/* 72 */
+/* 75 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var GenericWorker = __webpack_require__(70);
-	var utils = __webpack_require__(11);
+	var GenericWorker = __webpack_require__(73);
+	var utils = __webpack_require__(13);
 
 	/**
 	 * A worker which convert chunks to a specified type.
@@ -34772,14 +34740,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 73 */
+/* 76 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var Readable = __webpack_require__(17).Readable;
+	var Readable = __webpack_require__(19).Readable;
 
-	var utils = __webpack_require__(11);
+	var utils = __webpack_require__(13);
 	utils.inherits(NodejsStreamOutputAdapter, Readable);
 
 	/**
@@ -34820,7 +34788,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 74 */
+/* 77 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -34837,16 +34805,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 75 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var external = __webpack_require__(67);
-	var DataWorker = __webpack_require__(76);
-	var DataLengthProbe = __webpack_require__(77);
-	var Crc32Probe = __webpack_require__(78);
-	var DataLengthProbe = __webpack_require__(77);
+	var external = __webpack_require__(70);
+	var DataWorker = __webpack_require__(79);
+	var DataLengthProbe = __webpack_require__(80);
+	var Crc32Probe = __webpack_require__(81);
+	var DataLengthProbe = __webpack_require__(80);
 
 	/**
 	 * Represent a compressed object, with everything needed to decompress it.
@@ -34918,13 +34886,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 76 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(11);
-	var GenericWorker = __webpack_require__(70);
+	var utils = __webpack_require__(13);
+	var GenericWorker = __webpack_require__(73);
 
 	// the size of the generated chunks
 	// TODO expose this as a public variable
@@ -35040,13 +35008,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 77 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(11);
-	var GenericWorker = __webpack_require__(70);
+	var utils = __webpack_require__(13);
+	var GenericWorker = __webpack_require__(73);
 
 	/**
 	 * A worker which calculate the total length of the data flowing through.
@@ -35075,14 +35043,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 78 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var GenericWorker = __webpack_require__(70);
-	var crc32 = __webpack_require__(79);
-	var utils = __webpack_require__(11);
+	var GenericWorker = __webpack_require__(73);
+	var crc32 = __webpack_require__(82);
+	var utils = __webpack_require__(13);
 
 	/**
 	 * A worker which calculate the crc32 of the data flowing through.
@@ -35105,12 +35073,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 79 */
+/* 82 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(11);
+	var utils = __webpack_require__(13);
 
 	/**
 	 * The following functions come from pako, from pako/lib/zlib/crc32.js
@@ -35188,16 +35156,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 80 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var StreamHelper = __webpack_require__(71);
-	var DataWorker = __webpack_require__(76);
-	var utf8 = __webpack_require__(10);
-	var CompressedObject = __webpack_require__(75);
-	var GenericWorker = __webpack_require__(70);
+	var StreamHelper = __webpack_require__(74);
+	var DataWorker = __webpack_require__(79);
+	var utf8 = __webpack_require__(12);
+	var CompressedObject = __webpack_require__(78);
+	var GenericWorker = __webpack_require__(73);
 
 	/**
 	 * A simple object representing a file in the zip file.
@@ -35327,13 +35295,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 81 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var compressions = __webpack_require__(82);
-	var ZipFileWorker = __webpack_require__(100);
+	var compressions = __webpack_require__(85);
+	var ZipFileWorker = __webpack_require__(103);
 
 	/**
 	 * Find the compression to use.
@@ -35390,12 +35358,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 82 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var GenericWorker = __webpack_require__(70);
+	var GenericWorker = __webpack_require__(73);
 
 	exports.STORE = {
 	    magic: "\x00\x00",
@@ -35406,19 +35374,19 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return new GenericWorker("STORE decompression");
 	    }
 	};
-	exports.DEFLATE = __webpack_require__(83);
+	exports.DEFLATE = __webpack_require__(86);
 
 
 /***/ }),
-/* 83 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	var USE_TYPEDARRAY = (typeof Uint8Array !== 'undefined') && (typeof Uint16Array !== 'undefined') && (typeof Uint32Array !== 'undefined');
 
-	var pako = __webpack_require__(84);
-	var utils = __webpack_require__(11);
-	var GenericWorker = __webpack_require__(70);
+	var pako = __webpack_require__(87);
+	var utils = __webpack_require__(13);
+	var GenericWorker = __webpack_require__(73);
 
 	var ARRAY_TYPE = USE_TYPEDARRAY ? "uint8array" : "array";
 
@@ -35501,17 +35469,17 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 84 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// Top level file is just a mixin of submodules & constants
 	'use strict';
 
-	var assign    = __webpack_require__(85).assign;
+	var assign    = __webpack_require__(88).assign;
 
-	var deflate   = __webpack_require__(86);
-	var inflate   = __webpack_require__(94);
-	var constants = __webpack_require__(98);
+	var deflate   = __webpack_require__(89);
+	var inflate   = __webpack_require__(97);
+	var constants = __webpack_require__(101);
 
 	var pako = {};
 
@@ -35521,7 +35489,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 85 */
+/* 88 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -35632,17 +35600,17 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 86 */
+/* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 
-	var zlib_deflate = __webpack_require__(87);
-	var utils        = __webpack_require__(85);
-	var strings      = __webpack_require__(92);
-	var msg          = __webpack_require__(91);
-	var ZStream      = __webpack_require__(93);
+	var zlib_deflate = __webpack_require__(90);
+	var utils        = __webpack_require__(88);
+	var strings      = __webpack_require__(95);
+	var msg          = __webpack_require__(94);
+	var ZStream      = __webpack_require__(96);
 
 	var toString = Object.prototype.toString;
 
@@ -36038,7 +36006,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 87 */
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36062,11 +36030,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	//   misrepresented as being the original software.
 	// 3. This notice may not be removed or altered from any source distribution.
 
-	var utils   = __webpack_require__(85);
-	var trees   = __webpack_require__(88);
-	var adler32 = __webpack_require__(89);
-	var crc32   = __webpack_require__(90);
-	var msg     = __webpack_require__(91);
+	var utils   = __webpack_require__(88);
+	var trees   = __webpack_require__(91);
+	var adler32 = __webpack_require__(92);
+	var crc32   = __webpack_require__(93);
+	var msg     = __webpack_require__(94);
 
 	/* Public constants ==========================================================*/
 	/* ===========================================================================*/
@@ -37918,7 +37886,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 88 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -37942,7 +37910,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	//   misrepresented as being the original software.
 	// 3. This notice may not be removed or altered from any source distribution.
 
-	var utils = __webpack_require__(85);
+	var utils = __webpack_require__(88);
 
 	/* Public constants ==========================================================*/
 	/* ===========================================================================*/
@@ -39144,7 +39112,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 89 */
+/* 92 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -39201,7 +39169,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 90 */
+/* 93 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -39266,7 +39234,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 91 */
+/* 94 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -39304,14 +39272,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 92 */
+/* 95 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// String encode/decode helpers
 	'use strict';
 
 
-	var utils = __webpack_require__(85);
+	var utils = __webpack_require__(88);
 
 
 	// Quick check if we can use fast array to bin string conversion
@@ -39495,7 +39463,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 93 */
+/* 96 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -39548,19 +39516,19 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 94 */
+/* 97 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 
-	var zlib_inflate = __webpack_require__(95);
-	var utils        = __webpack_require__(85);
-	var strings      = __webpack_require__(92);
-	var c            = __webpack_require__(98);
-	var msg          = __webpack_require__(91);
-	var ZStream      = __webpack_require__(93);
-	var GZheader     = __webpack_require__(99);
+	var zlib_inflate = __webpack_require__(98);
+	var utils        = __webpack_require__(88);
+	var strings      = __webpack_require__(95);
+	var c            = __webpack_require__(101);
+	var msg          = __webpack_require__(94);
+	var ZStream      = __webpack_require__(96);
+	var GZheader     = __webpack_require__(102);
 
 	var toString = Object.prototype.toString;
 
@@ -39972,7 +39940,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 95 */
+/* 98 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -39996,11 +39964,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	//   misrepresented as being the original software.
 	// 3. This notice may not be removed or altered from any source distribution.
 
-	var utils         = __webpack_require__(85);
-	var adler32       = __webpack_require__(89);
-	var crc32         = __webpack_require__(90);
-	var inflate_fast  = __webpack_require__(96);
-	var inflate_table = __webpack_require__(97);
+	var utils         = __webpack_require__(88);
+	var adler32       = __webpack_require__(92);
+	var crc32         = __webpack_require__(93);
+	var inflate_fast  = __webpack_require__(99);
+	var inflate_table = __webpack_require__(100);
 
 	var CODES = 0;
 	var LENS = 1;
@@ -41534,7 +41502,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 96 */
+/* 99 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -41885,7 +41853,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 97 */
+/* 100 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -41909,7 +41877,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	//   misrepresented as being the original software.
 	// 3. This notice may not be removed or altered from any source distribution.
 
-	var utils = __webpack_require__(85);
+	var utils = __webpack_require__(88);
 
 	var MAXBITS = 15;
 	var ENOUGH_LENS = 852;
@@ -42234,7 +42202,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 98 */
+/* 101 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -42308,7 +42276,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 99 */
+/* 102 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -42372,16 +42340,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 100 */
+/* 103 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(11);
-	var GenericWorker = __webpack_require__(70);
-	var utf8 = __webpack_require__(10);
-	var crc32 = __webpack_require__(79);
-	var signature = __webpack_require__(101);
+	var utils = __webpack_require__(13);
+	var GenericWorker = __webpack_require__(73);
+	var utf8 = __webpack_require__(12);
+	var crc32 = __webpack_require__(82);
+	var signature = __webpack_require__(104);
 
 	/**
 	 * Transform an integer into a string in hexadecimal.
@@ -42918,7 +42886,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 101 */
+/* 104 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -42931,13 +42899,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 102 */
+/* 105 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var utils = __webpack_require__(11);
-	var GenericWorker = __webpack_require__(70);
+	var utils = __webpack_require__(13);
+	var GenericWorker = __webpack_require__(73);
 
 	/**
 	 * A worker that use a nodejs stream as source.
@@ -43011,17 +42979,17 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 103 */
+/* 106 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var utils = __webpack_require__(11);
-	var external = __webpack_require__(67);
-	var utf8 = __webpack_require__(10);
-	var utils = __webpack_require__(11);
-	var ZipEntries = __webpack_require__(104);
-	var Crc32Probe = __webpack_require__(78);
-	var nodejsUtils = __webpack_require__(45);
+	var utils = __webpack_require__(13);
+	var external = __webpack_require__(70);
+	var utf8 = __webpack_require__(12);
+	var utils = __webpack_require__(13);
+	var ZipEntries = __webpack_require__(107);
+	var Crc32Probe = __webpack_require__(81);
+	var nodejsUtils = __webpack_require__(48);
 
 	/**
 	 * Check the CRC32 of an entry.
@@ -43099,16 +43067,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 104 */
+/* 107 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var readerFor = __webpack_require__(105);
-	var utils = __webpack_require__(11);
-	var sig = __webpack_require__(101);
-	var ZipEntry = __webpack_require__(111);
-	var utf8 = __webpack_require__(10);
-	var support = __webpack_require__(12);
+	var readerFor = __webpack_require__(108);
+	var utils = __webpack_require__(13);
+	var sig = __webpack_require__(104);
+	var ZipEntry = __webpack_require__(114);
+	var utf8 = __webpack_require__(12);
+	var support = __webpack_require__(14);
 	//  class ZipEntries {{{
 	/**
 	 * All the entries in the zip file.
@@ -43367,17 +43335,17 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 105 */
+/* 108 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(11);
-	var support = __webpack_require__(12);
-	var ArrayReader = __webpack_require__(106);
-	var StringReader = __webpack_require__(108);
-	var NodeBufferReader = __webpack_require__(109);
-	var Uint8ArrayReader = __webpack_require__(110);
+	var utils = __webpack_require__(13);
+	var support = __webpack_require__(14);
+	var ArrayReader = __webpack_require__(109);
+	var StringReader = __webpack_require__(111);
+	var NodeBufferReader = __webpack_require__(112);
+	var Uint8ArrayReader = __webpack_require__(113);
 
 	/**
 	 * Create a reader adapted to the data.
@@ -43401,12 +43369,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 106 */
+/* 109 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var DataReader = __webpack_require__(107);
-	var utils = __webpack_require__(11);
+	var DataReader = __webpack_require__(110);
+	var utils = __webpack_require__(13);
 
 	function ArrayReader(data) {
 	    DataReader.call(this, data);
@@ -43464,11 +43432,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 107 */
+/* 110 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var utils = __webpack_require__(11);
+	var utils = __webpack_require__(13);
 
 	function DataReader(data) {
 	    this.data = data; // type : see implementation
@@ -43586,12 +43554,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 108 */
+/* 111 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var DataReader = __webpack_require__(107);
-	var utils = __webpack_require__(11);
+	var DataReader = __webpack_require__(110);
+	var utils = __webpack_require__(13);
 
 	function StringReader(data) {
 	    DataReader.call(this, data);
@@ -43630,12 +43598,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 109 */
+/* 112 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var Uint8ArrayReader = __webpack_require__(110);
-	var utils = __webpack_require__(11);
+	var Uint8ArrayReader = __webpack_require__(113);
+	var utils = __webpack_require__(13);
 
 	function NodeBufferReader(data) {
 	    Uint8ArrayReader.call(this, data);
@@ -43655,12 +43623,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 110 */
+/* 113 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var ArrayReader = __webpack_require__(106);
-	var utils = __webpack_require__(11);
+	var ArrayReader = __webpack_require__(109);
+	var utils = __webpack_require__(13);
 
 	function Uint8ArrayReader(data) {
 	    ArrayReader.call(this, data);
@@ -43683,17 +43651,17 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 111 */
+/* 114 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var readerFor = __webpack_require__(105);
-	var utils = __webpack_require__(11);
-	var CompressedObject = __webpack_require__(75);
-	var crc32fn = __webpack_require__(79);
-	var utf8 = __webpack_require__(10);
-	var compressions = __webpack_require__(82);
-	var support = __webpack_require__(12);
+	var readerFor = __webpack_require__(108);
+	var utils = __webpack_require__(13);
+	var CompressedObject = __webpack_require__(78);
+	var crc32fn = __webpack_require__(82);
+	var utf8 = __webpack_require__(12);
+	var compressions = __webpack_require__(85);
+	var support = __webpack_require__(14);
 
 	var MADE_BY_DOS = 0x00;
 	var MADE_BY_UNIX = 0x03;
@@ -43981,7 +43949,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 112 */
+/* 115 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -44090,78 +44058,77 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 113 */
+/* 116 */
 /***/ (function(module, exports) {
 
-	module.exports = __WEBPACK_EXTERNAL_MODULE_113__;
+	module.exports = __WEBPACK_EXTERNAL_MODULE_116__;
 
 /***/ }),
-/* 114 */
+/* 117 */
 /***/ (function(module, exports) {
 
-	module.exports = __WEBPACK_EXTERNAL_MODULE_114__;
+	module.exports = __WEBPACK_EXTERNAL_MODULE_117__;
 
 /***/ }),
-/* 115 */
+/* 118 */
 /***/ (function(module, exports) {
 
 	var CALLBACK_NAME = '__googleMapsApiOnLoadCallback'
 
 	var OPTIONS_KEYS = ['channel', 'client', 'key', 'language', 'region', 'v']
 
-	module.exports = function(options) {
+	var promise = null
+
+	module.exports = function (options) {
 	  options = options || {}
 
-	  return new Promise(function(resolve, reject) {
-	    // Exit if not running inside a browser.
-	    if (typeof window === 'undefined') {
-	      return reject(
-	        new Error('Can only load the Google Maps API in the browser')
-	      )
-	    }
+	  if (!promise) {
+	    promise = new Promise(function (resolve, reject) {
+	      // Reject the promise after a timeout
+	      var timeoutId = setTimeout(function () {
+	        window[CALLBACK_NAME] = function () {} // Set the on load callback to a no-op
+	        reject(new Error('Could not load the Google Maps API'))
+	      }, options.timeout || 10000)
 
-	    // Reject the promise after a timeout.
-	    var timeoutId = setTimeout(function() {
-	      window[CALLBACK_NAME] = function() {} // Set the on load callback to a no-op.
-	      reject(new Error('Could not load the Google Maps API'))
-	    }, options.timeout || 10000)
-
-	    // Hook up the on load callback.
-	    window[CALLBACK_NAME] = function() {
-	      if (timeoutId !== null) {
-	        clearTimeout(timeoutId)
+	      // Hook up the on load callback
+	      window[CALLBACK_NAME] = function () {
+	        if (timeoutId !== null) {
+	          clearTimeout(timeoutId)
+	        }
+	        resolve(window.google.maps)
+	        delete window[CALLBACK_NAME]
 	      }
-	      resolve(window.google.maps)
-	      delete window[CALLBACK_NAME]
-	    }
 
-	    // Prepare the `script` tag to be inserted into the page.
-	    var scriptElement = document.createElement('script')
-	    var params = ['callback=' + CALLBACK_NAME]
-	    OPTIONS_KEYS.forEach(function(key) {
-	      if (options[key]) {
-	        params.push(key + '=' + options[key])
+	      // Prepare the `script` tag to be inserted into the page
+	      var scriptElement = document.createElement('script')
+	      var params = ['callback=' + CALLBACK_NAME]
+	      OPTIONS_KEYS.forEach(function (key) {
+	        if (options[key]) {
+	          params.push(key + '=' + options[key])
+	        }
+	      })
+	      if (options.libraries && options.libraries.length) {
+	        params.push('libraries=' + options.libraries.join(','))
 	      }
+	      scriptElement.src =
+	        'https://maps.googleapis.com/maps/api/js?' + params.join('&')
+
+	      // Insert the `script` tag
+	      document.body.appendChild(scriptElement)
 	    })
-	    if (options.libraries && options.libraries.length) {
-	      params.push('libraries=' + options.libraries.join(','))
-	    }
-	    scriptElement.src =
-	      'https://maps.googleapis.com/maps/api/js?' + params.join('&')
+	  }
 
-	    // Insert the `script` tag.
-	    document.body.appendChild(scriptElement)
-	  })
+	  return promise
 	}
 
 
 /***/ }),
-/* 116 */
+/* 119 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//     Underscore.js 1.8.3
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global, module) {//     Underscore.js 1.9.1
 	//     http://underscorejs.org
-	//     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+	//     (c) 2009-2018 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	//     Underscore may be freely distributed under the MIT license.
 
 	(function() {
@@ -44169,29 +44136,32 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // Baseline setup
 	  // --------------
 
-	  // Establish the root object, `window` in the browser, or `exports` on the server.
-	  var root = this;
+	  // Establish the root object, `window` (`self`) in the browser, `global`
+	  // on the server, or `this` in some virtual machines. We use `self`
+	  // instead of `window` for `WebWorker` support.
+	  var root = typeof self == 'object' && self.self === self && self ||
+	            typeof global == 'object' && global.global === global && global ||
+	            this ||
+	            {};
 
 	  // Save the previous value of the `_` variable.
 	  var previousUnderscore = root._;
 
 	  // Save bytes in the minified (but not gzipped) version:
-	  var ArrayProto = Array.prototype, ObjProto = Object.prototype, FuncProto = Function.prototype;
+	  var ArrayProto = Array.prototype, ObjProto = Object.prototype;
+	  var SymbolProto = typeof Symbol !== 'undefined' ? Symbol.prototype : null;
 
 	  // Create quick reference variables for speed access to core prototypes.
-	  var
-	    push             = ArrayProto.push,
-	    slice            = ArrayProto.slice,
-	    toString         = ObjProto.toString,
-	    hasOwnProperty   = ObjProto.hasOwnProperty;
+	  var push = ArrayProto.push,
+	      slice = ArrayProto.slice,
+	      toString = ObjProto.toString,
+	      hasOwnProperty = ObjProto.hasOwnProperty;
 
 	  // All **ECMAScript 5** native function implementations that we hope to use
 	  // are declared here.
-	  var
-	    nativeIsArray      = Array.isArray,
-	    nativeKeys         = Object.keys,
-	    nativeBind         = FuncProto.bind,
-	    nativeCreate       = Object.create;
+	  var nativeIsArray = Array.isArray,
+	      nativeKeys = Object.keys,
+	      nativeCreate = Object.create;
 
 	  // Naked function reference for surrogate-prototype-swapping.
 	  var Ctor = function(){};
@@ -44204,10 +44174,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  };
 
 	  // Export the Underscore object for **Node.js**, with
-	  // backwards-compatibility for the old `require()` API. If we're in
+	  // backwards-compatibility for their old module API. If we're in
 	  // the browser, add `_` as a global object.
-	  if (true) {
-	    if (typeof module !== 'undefined' && module.exports) {
+	  // (`nodeType` is checked to ensure that `module`
+	  // and `exports` are not HTML elements.)
+	  if (typeof exports != 'undefined' && !exports.nodeType) {
+	    if (typeof module != 'undefined' && !module.nodeType && module.exports) {
 	      exports = module.exports = _;
 	    }
 	    exports._ = _;
@@ -44216,7 +44188,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  }
 
 	  // Current version.
-	  _.VERSION = '1.8.3';
+	  _.VERSION = '1.9.1';
 
 	  // Internal function that returns an efficient (for current engines) version
 	  // of the passed-in callback, to be repeatedly applied in other Underscore
@@ -44227,9 +44199,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      case 1: return function(value) {
 	        return func.call(context, value);
 	      };
-	      case 2: return function(value, other) {
-	        return func.call(context, value, other);
-	      };
+	      // The 2-argument case is omitted because we’re not using it.
 	      case 3: return function(value, index, collection) {
 	        return func.call(context, value, index, collection);
 	      };
@@ -44242,34 +44212,51 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    };
 	  };
 
-	  // A mostly-internal function to generate callbacks that can be applied
-	  // to each element in a collection, returning the desired result — either
-	  // identity, an arbitrary callback, a property matcher, or a property accessor.
+	  var builtinIteratee;
+
+	  // An internal function to generate callbacks that can be applied to each
+	  // element in a collection, returning the desired result — either `identity`,
+	  // an arbitrary callback, a property matcher, or a property accessor.
 	  var cb = function(value, context, argCount) {
+	    if (_.iteratee !== builtinIteratee) return _.iteratee(value, context);
 	    if (value == null) return _.identity;
 	    if (_.isFunction(value)) return optimizeCb(value, context, argCount);
-	    if (_.isObject(value)) return _.matcher(value);
+	    if (_.isObject(value) && !_.isArray(value)) return _.matcher(value);
 	    return _.property(value);
 	  };
-	  _.iteratee = function(value, context) {
+
+	  // External wrapper for our callback generator. Users may customize
+	  // `_.iteratee` if they want additional predicate/iteratee shorthand styles.
+	  // This abstraction hides the internal-only argCount argument.
+	  _.iteratee = builtinIteratee = function(value, context) {
 	    return cb(value, context, Infinity);
 	  };
 
-	  // An internal function for creating assigner functions.
-	  var createAssigner = function(keysFunc, undefinedOnly) {
-	    return function(obj) {
-	      var length = arguments.length;
-	      if (length < 2 || obj == null) return obj;
-	      for (var index = 1; index < length; index++) {
-	        var source = arguments[index],
-	            keys = keysFunc(source),
-	            l = keys.length;
-	        for (var i = 0; i < l; i++) {
-	          var key = keys[i];
-	          if (!undefinedOnly || obj[key] === void 0) obj[key] = source[key];
-	        }
+	  // Some functions take a variable number of arguments, or a few expected
+	  // arguments at the beginning and then a variable number of values to operate
+	  // on. This helper accumulates all remaining arguments past the function’s
+	  // argument length (or an explicit `startIndex`), into an array that becomes
+	  // the last argument. Similar to ES6’s "rest parameter".
+	  var restArguments = function(func, startIndex) {
+	    startIndex = startIndex == null ? func.length - 1 : +startIndex;
+	    return function() {
+	      var length = Math.max(arguments.length - startIndex, 0),
+	          rest = Array(length),
+	          index = 0;
+	      for (; index < length; index++) {
+	        rest[index] = arguments[index + startIndex];
 	      }
-	      return obj;
+	      switch (startIndex) {
+	        case 0: return func.call(this, rest);
+	        case 1: return func.call(this, arguments[0], rest);
+	        case 2: return func.call(this, arguments[0], arguments[1], rest);
+	      }
+	      var args = Array(startIndex + 1);
+	      for (index = 0; index < startIndex; index++) {
+	        args[index] = arguments[index];
+	      }
+	      args[startIndex] = rest;
+	      return func.apply(this, args);
 	    };
 	  };
 
@@ -44283,18 +44270,31 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return result;
 	  };
 
-	  var property = function(key) {
+	  var shallowProperty = function(key) {
 	    return function(obj) {
 	      return obj == null ? void 0 : obj[key];
 	    };
 	  };
 
+	  var has = function(obj, path) {
+	    return obj != null && hasOwnProperty.call(obj, path);
+	  }
+
+	  var deepGet = function(obj, path) {
+	    var length = path.length;
+	    for (var i = 0; i < length; i++) {
+	      if (obj == null) return void 0;
+	      obj = obj[path[i]];
+	    }
+	    return length ? obj : void 0;
+	  };
+
 	  // Helper for collection methods to determine whether a collection
-	  // should be iterated as an array or as an object
+	  // should be iterated as an array or as an object.
 	  // Related: http://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength
 	  // Avoids a very nasty iOS 8 JIT bug on ARM-64. #2094
 	  var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
-	  var getLength = property('length');
+	  var getLength = shallowProperty('length');
 	  var isArrayLike = function(collection) {
 	    var length = getLength(collection);
 	    return typeof length == 'number' && length >= 0 && length <= MAX_ARRAY_INDEX;
@@ -44336,30 +44336,29 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  };
 
 	  // Create a reducing function iterating left or right.
-	  function createReduce(dir) {
-	    // Optimized iterator function as using arguments.length
-	    // in the main function will deoptimize the, see #1991.
-	    function iterator(obj, iteratee, memo, keys, index, length) {
+	  var createReduce = function(dir) {
+	    // Wrap code that reassigns argument variables in a separate function than
+	    // the one that accesses `arguments.length` to avoid a perf hit. (#1991)
+	    var reducer = function(obj, iteratee, memo, initial) {
+	      var keys = !isArrayLike(obj) && _.keys(obj),
+	          length = (keys || obj).length,
+	          index = dir > 0 ? 0 : length - 1;
+	      if (!initial) {
+	        memo = obj[keys ? keys[index] : index];
+	        index += dir;
+	      }
 	      for (; index >= 0 && index < length; index += dir) {
 	        var currentKey = keys ? keys[index] : index;
 	        memo = iteratee(memo, obj[currentKey], currentKey, obj);
 	      }
 	      return memo;
-	    }
+	    };
 
 	    return function(obj, iteratee, memo, context) {
-	      iteratee = optimizeCb(iteratee, context, 4);
-	      var keys = !isArrayLike(obj) && _.keys(obj),
-	          length = (keys || obj).length,
-	          index = dir > 0 ? 0 : length - 1;
-	      // Determine the initial value if none is provided.
-	      if (arguments.length < 3) {
-	        memo = obj[keys ? keys[index] : index];
-	        index += dir;
-	      }
-	      return iterator(obj, iteratee, memo, keys, index, length);
+	      var initial = arguments.length >= 3;
+	      return reducer(obj, optimizeCb(iteratee, context, 4), memo, initial);
 	    };
-	  }
+	  };
 
 	  // **Reduce** builds up a single result from a list of values, aka `inject`,
 	  // or `foldl`.
@@ -44370,12 +44369,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Return the first value which passes a truth test. Aliased as `detect`.
 	  _.find = _.detect = function(obj, predicate, context) {
-	    var key;
-	    if (isArrayLike(obj)) {
-	      key = _.findIndex(obj, predicate, context);
-	    } else {
-	      key = _.findKey(obj, predicate, context);
-	    }
+	    var keyFinder = isArrayLike(obj) ? _.findIndex : _.findKey;
+	    var key = keyFinder(obj, predicate, context);
 	    if (key !== void 0 && key !== -1) return obj[key];
 	  };
 
@@ -44430,14 +44425,26 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  };
 
 	  // Invoke a method (with arguments) on every item in a collection.
-	  _.invoke = function(obj, method) {
-	    var args = slice.call(arguments, 2);
-	    var isFunc = _.isFunction(method);
-	    return _.map(obj, function(value) {
-	      var func = isFunc ? method : value[method];
-	      return func == null ? func : func.apply(value, args);
+	  _.invoke = restArguments(function(obj, path, args) {
+	    var contextPath, func;
+	    if (_.isFunction(path)) {
+	      func = path;
+	    } else if (_.isArray(path)) {
+	      contextPath = path.slice(0, -1);
+	      path = path[path.length - 1];
+	    }
+	    return _.map(obj, function(context) {
+	      var method = func;
+	      if (!method) {
+	        if (contextPath && contextPath.length) {
+	          context = deepGet(context, contextPath);
+	        }
+	        if (context == null) return void 0;
+	        method = context[path];
+	      }
+	      return method == null ? method : method.apply(context, args);
 	    });
-	  };
+	  });
 
 	  // Convenience version of a common use case of `map`: fetching a property.
 	  _.pluck = function(obj, key) {
@@ -44460,20 +44467,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  _.max = function(obj, iteratee, context) {
 	    var result = -Infinity, lastComputed = -Infinity,
 	        value, computed;
-	    if (iteratee == null && obj != null) {
+	    if (iteratee == null || typeof iteratee == 'number' && typeof obj[0] != 'object' && obj != null) {
 	      obj = isArrayLike(obj) ? obj : _.values(obj);
 	      for (var i = 0, length = obj.length; i < length; i++) {
 	        value = obj[i];
-	        if (value > result) {
+	        if (value != null && value > result) {
 	          result = value;
 	        }
 	      }
 	    } else {
 	      iteratee = cb(iteratee, context);
-	      _.each(obj, function(value, index, list) {
-	        computed = iteratee(value, index, list);
+	      _.each(obj, function(v, index, list) {
+	        computed = iteratee(v, index, list);
 	        if (computed > lastComputed || computed === -Infinity && result === -Infinity) {
-	          result = value;
+	          result = v;
 	          lastComputed = computed;
 	        }
 	      });
@@ -44485,20 +44492,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  _.min = function(obj, iteratee, context) {
 	    var result = Infinity, lastComputed = Infinity,
 	        value, computed;
-	    if (iteratee == null && obj != null) {
+	    if (iteratee == null || typeof iteratee == 'number' && typeof obj[0] != 'object' && obj != null) {
 	      obj = isArrayLike(obj) ? obj : _.values(obj);
 	      for (var i = 0, length = obj.length; i < length; i++) {
 	        value = obj[i];
-	        if (value < result) {
+	        if (value != null && value < result) {
 	          result = value;
 	        }
 	      }
 	    } else {
 	      iteratee = cb(iteratee, context);
-	      _.each(obj, function(value, index, list) {
-	        computed = iteratee(value, index, list);
+	      _.each(obj, function(v, index, list) {
+	        computed = iteratee(v, index, list);
 	        if (computed < lastComputed || computed === Infinity && result === Infinity) {
-	          result = value;
+	          result = v;
 	          lastComputed = computed;
 	        }
 	      });
@@ -44506,21 +44513,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return result;
 	  };
 
-	  // Shuffle a collection, using the modern version of the
-	  // [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
+	  // Shuffle a collection.
 	  _.shuffle = function(obj) {
-	    var set = isArrayLike(obj) ? obj : _.values(obj);
-	    var length = set.length;
-	    var shuffled = Array(length);
-	    for (var index = 0, rand; index < length; index++) {
-	      rand = _.random(0, index);
-	      if (rand !== index) shuffled[index] = shuffled[rand];
-	      shuffled[rand] = set[index];
-	    }
-	    return shuffled;
+	    return _.sample(obj, Infinity);
 	  };
 
-	  // Sample **n** random values from a collection.
+	  // Sample **n** random values from a collection using the modern version of the
+	  // [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
 	  // If **n** is not specified, returns a single random element.
 	  // The internal `guard` argument allows it to work with `map`.
 	  _.sample = function(obj, n, guard) {
@@ -44528,17 +44527,28 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      if (!isArrayLike(obj)) obj = _.values(obj);
 	      return obj[_.random(obj.length - 1)];
 	    }
-	    return _.shuffle(obj).slice(0, Math.max(0, n));
+	    var sample = isArrayLike(obj) ? _.clone(obj) : _.values(obj);
+	    var length = getLength(sample);
+	    n = Math.max(Math.min(n, length), 0);
+	    var last = length - 1;
+	    for (var index = 0; index < n; index++) {
+	      var rand = _.random(index, last);
+	      var temp = sample[index];
+	      sample[index] = sample[rand];
+	      sample[rand] = temp;
+	    }
+	    return sample.slice(0, n);
 	  };
 
 	  // Sort the object's values by a criterion produced by an iteratee.
 	  _.sortBy = function(obj, iteratee, context) {
+	    var index = 0;
 	    iteratee = cb(iteratee, context);
-	    return _.pluck(_.map(obj, function(value, index, list) {
+	    return _.pluck(_.map(obj, function(value, key, list) {
 	      return {
 	        value: value,
-	        index: index,
-	        criteria: iteratee(value, index, list)
+	        index: index++,
+	        criteria: iteratee(value, key, list)
 	      };
 	    }).sort(function(left, right) {
 	      var a = left.criteria;
@@ -44552,9 +44562,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  };
 
 	  // An internal function used for aggregate "group by" operations.
-	  var group = function(behavior) {
+	  var group = function(behavior, partition) {
 	    return function(obj, iteratee, context) {
-	      var result = {};
+	      var result = partition ? [[], []] : {};
 	      iteratee = cb(iteratee, context);
 	      _.each(obj, function(value, index) {
 	        var key = iteratee(value, index, obj);
@@ -44567,7 +44577,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // Groups the object's values by a criterion. Pass either a string attribute
 	  // to group by, or a function that returns the criterion.
 	  _.groupBy = group(function(result, value, key) {
-	    if (_.has(result, key)) result[key].push(value); else result[key] = [value];
+	    if (has(result, key)) result[key].push(value); else result[key] = [value];
 	  });
 
 	  // Indexes the object's values by a criterion, similar to `groupBy`, but for
@@ -44580,13 +44590,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // either a string attribute to count by, or a function that returns the
 	  // criterion.
 	  _.countBy = group(function(result, value, key) {
-	    if (_.has(result, key)) result[key]++; else result[key] = 1;
+	    if (has(result, key)) result[key]++; else result[key] = 1;
 	  });
 
+	  var reStrSymbol = /[^\ud800-\udfff]|[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udfff]/g;
 	  // Safely create a real, live array from anything iterable.
 	  _.toArray = function(obj) {
 	    if (!obj) return [];
 	    if (_.isArray(obj)) return slice.call(obj);
+	    if (_.isString(obj)) {
+	      // Keep surrogate pair characters together
+	      return obj.match(reStrSymbol);
+	    }
 	    if (isArrayLike(obj)) return _.map(obj, _.identity);
 	    return _.values(obj);
 	  };
@@ -44599,14 +44614,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Split a collection into two arrays: one whose elements all satisfy the given
 	  // predicate, and one whose elements all do not satisfy the predicate.
-	  _.partition = function(obj, predicate, context) {
-	    predicate = cb(predicate, context);
-	    var pass = [], fail = [];
-	    _.each(obj, function(value, key, obj) {
-	      (predicate(value, key, obj) ? pass : fail).push(value);
-	    });
-	    return [pass, fail];
-	  };
+	  _.partition = group(function(result, value, pass) {
+	    result[pass ? 0 : 1].push(value);
+	  }, true);
 
 	  // Array Functions
 	  // ---------------
@@ -44615,7 +44625,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // values in the array. Aliased as `head` and `take`. The **guard** check
 	  // allows it to work with `_.map`.
 	  _.first = _.head = _.take = function(array, n, guard) {
-	    if (array == null) return void 0;
+	    if (array == null || array.length < 1) return n == null ? void 0 : [];
 	    if (n == null || guard) return array[0];
 	    return _.initial(array, array.length - n);
 	  };
@@ -44630,7 +44640,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // Get the last element of an array. Passing **n** will return the last N
 	  // values in the array.
 	  _.last = function(array, n, guard) {
-	    if (array == null) return void 0;
+	    if (array == null || array.length < 1) return n == null ? void 0 : [];
 	    if (n == null || guard) return array[array.length - 1];
 	    return _.rest(array, Math.max(0, array.length - n));
 	  };
@@ -44644,21 +44654,23 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Trim out all falsy values from an array.
 	  _.compact = function(array) {
-	    return _.filter(array, _.identity);
+	    return _.filter(array, Boolean);
 	  };
 
 	  // Internal implementation of a recursive `flatten` function.
-	  var flatten = function(input, shallow, strict, startIndex) {
-	    var output = [], idx = 0;
-	    for (var i = startIndex || 0, length = getLength(input); i < length; i++) {
+	  var flatten = function(input, shallow, strict, output) {
+	    output = output || [];
+	    var idx = output.length;
+	    for (var i = 0, length = getLength(input); i < length; i++) {
 	      var value = input[i];
 	      if (isArrayLike(value) && (_.isArray(value) || _.isArguments(value))) {
-	        //flatten current level of array or arguments object
-	        if (!shallow) value = flatten(value, shallow, strict);
-	        var j = 0, len = value.length;
-	        output.length += len;
-	        while (j < len) {
-	          output[idx++] = value[j++];
+	        // Flatten current level of array or arguments object.
+	        if (shallow) {
+	          var j = 0, len = value.length;
+	          while (j < len) output[idx++] = value[j++];
+	        } else {
+	          flatten(value, shallow, strict, output);
+	          idx = output.length;
 	        }
 	      } else if (!strict) {
 	        output[idx++] = value;
@@ -44673,12 +44685,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  };
 
 	  // Return a version of the array that does not contain the specified value(s).
-	  _.without = function(array) {
-	    return _.difference(array, slice.call(arguments, 1));
-	  };
+	  _.without = restArguments(function(array, otherArrays) {
+	    return _.difference(array, otherArrays);
+	  });
 
 	  // Produce a duplicate-free version of the array. If the array has already
 	  // been sorted, you have the option of using a faster algorithm.
+	  // The faster algorithm will not work with an iteratee if the iteratee
+	  // is not a one-to-one function, so providing an iteratee will disable
+	  // the faster algorithm.
 	  // Aliased as `unique`.
 	  _.uniq = _.unique = function(array, isSorted, iteratee, context) {
 	    if (!_.isBoolean(isSorted)) {
@@ -44692,7 +44707,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    for (var i = 0, length = getLength(array); i < length; i++) {
 	      var value = array[i],
 	          computed = iteratee ? iteratee(value, i, array) : value;
-	      if (isSorted) {
+	      if (isSorted && !iteratee) {
 	        if (!i || seen !== computed) result.push(value);
 	        seen = computed;
 	      } else if (iteratee) {
@@ -44709,9 +44724,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Produce an array that contains the union: each distinct element from all of
 	  // the passed-in arrays.
-	  _.union = function() {
-	    return _.uniq(flatten(arguments, true, true));
-	  };
+	  _.union = restArguments(function(arrays) {
+	    return _.uniq(flatten(arrays, true, true));
+	  });
 
 	  // Produce an array that contains every item shared between all the
 	  // passed-in arrays.
@@ -44721,7 +44736,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    for (var i = 0, length = getLength(array); i < length; i++) {
 	      var item = array[i];
 	      if (_.contains(result, item)) continue;
-	      for (var j = 1; j < argsLength; j++) {
+	      var j;
+	      for (j = 1; j < argsLength; j++) {
 	        if (!_.contains(arguments[j], item)) break;
 	      }
 	      if (j === argsLength) result.push(item);
@@ -44731,21 +44747,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Take the difference between one array and a number of other arrays.
 	  // Only the elements present in just the first array will remain.
-	  _.difference = function(array) {
-	    var rest = flatten(arguments, true, true, 1);
+	  _.difference = restArguments(function(array, rest) {
+	    rest = flatten(rest, true, true);
 	    return _.filter(array, function(value){
 	      return !_.contains(rest, value);
 	    });
-	  };
-
-	  // Zip together multiple lists into a single array -- elements that share
-	  // an index go together.
-	  _.zip = function() {
-	    return _.unzip(arguments);
-	  };
+	  });
 
 	  // Complement of _.zip. Unzip accepts an array of arrays and groups
-	  // each array's elements on shared indices
+	  // each array's elements on shared indices.
 	  _.unzip = function(array) {
 	    var length = array && _.max(array, getLength).length || 0;
 	    var result = Array(length);
@@ -44756,9 +44766,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return result;
 	  };
 
+	  // Zip together multiple lists into a single array -- elements that share
+	  // an index go together.
+	  _.zip = restArguments(_.unzip);
+
 	  // Converts lists into objects. Pass either a single array of `[key, value]`
 	  // pairs, or two parallel arrays of the same length -- one of keys, and one of
-	  // the corresponding values.
+	  // the corresponding values. Passing by pairs is the reverse of _.pairs.
 	  _.object = function(list, values) {
 	    var result = {};
 	    for (var i = 0, length = getLength(list); i < length; i++) {
@@ -44771,8 +44785,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return result;
 	  };
 
-	  // Generator function to create the findIndex and findLastIndex functions
-	  function createPredicateIndexFinder(dir) {
+	  // Generator function to create the findIndex and findLastIndex functions.
+	  var createPredicateIndexFinder = function(dir) {
 	    return function(array, predicate, context) {
 	      predicate = cb(predicate, context);
 	      var length = getLength(array);
@@ -44782,9 +44796,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      }
 	      return -1;
 	    };
-	  }
+	  };
 
-	  // Returns the first index on an array-like that passes a predicate test
+	  // Returns the first index on an array-like that passes a predicate test.
 	  _.findIndex = createPredicateIndexFinder(1);
 	  _.findLastIndex = createPredicateIndexFinder(-1);
 
@@ -44801,15 +44815,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return low;
 	  };
 
-	  // Generator function to create the indexOf and lastIndexOf functions
-	  function createIndexFinder(dir, predicateFind, sortedIndex) {
+	  // Generator function to create the indexOf and lastIndexOf functions.
+	  var createIndexFinder = function(dir, predicateFind, sortedIndex) {
 	    return function(array, item, idx) {
 	      var i = 0, length = getLength(array);
 	      if (typeof idx == 'number') {
 	        if (dir > 0) {
-	            i = idx >= 0 ? idx : Math.max(idx + length, i);
+	          i = idx >= 0 ? idx : Math.max(idx + length, i);
 	        } else {
-	            length = idx >= 0 ? Math.min(idx + 1, length) : idx + length + 1;
+	          length = idx >= 0 ? Math.min(idx + 1, length) : idx + length + 1;
 	        }
 	      } else if (sortedIndex && idx && length) {
 	        idx = sortedIndex(array, item);
@@ -44824,7 +44838,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      }
 	      return -1;
 	    };
-	  }
+	  };
 
 	  // Return the position of the first occurrence of an item in an array,
 	  // or -1 if the item is not included in the array.
@@ -44841,7 +44855,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      stop = start || 0;
 	      start = 0;
 	    }
-	    step = step || 1;
+	    if (!step) {
+	      step = stop < start ? -1 : 1;
+	    }
 
 	    var length = Math.max(Math.ceil((stop - start) / step), 0);
 	    var range = Array(length);
@@ -44853,11 +44869,23 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return range;
 	  };
 
+	  // Chunk a single array into multiple arrays, each containing `count` or fewer
+	  // items.
+	  _.chunk = function(array, count) {
+	    if (count == null || count < 1) return [];
+	    var result = [];
+	    var i = 0, length = array.length;
+	    while (i < length) {
+	      result.push(slice.call(array, i, i += count));
+	    }
+	    return result;
+	  };
+
 	  // Function (ahem) Functions
 	  // ------------------
 
 	  // Determines whether to execute a function as a constructor
-	  // or a normal function with the provided arguments
+	  // or a normal function with the provided arguments.
 	  var executeBound = function(sourceFunc, boundFunc, context, callingContext, args) {
 	    if (!(callingContext instanceof boundFunc)) return sourceFunc.apply(context, args);
 	    var self = baseCreate(sourceFunc.prototype);
@@ -44869,52 +44897,53 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // Create a function bound to a given object (assigning `this`, and arguments,
 	  // optionally). Delegates to **ECMAScript 5**'s native `Function.bind` if
 	  // available.
-	  _.bind = function(func, context) {
-	    if (nativeBind && func.bind === nativeBind) return nativeBind.apply(func, slice.call(arguments, 1));
+	  _.bind = restArguments(function(func, context, args) {
 	    if (!_.isFunction(func)) throw new TypeError('Bind must be called on a function');
-	    var args = slice.call(arguments, 2);
-	    var bound = function() {
-	      return executeBound(func, bound, context, this, args.concat(slice.call(arguments)));
-	    };
+	    var bound = restArguments(function(callArgs) {
+	      return executeBound(func, bound, context, this, args.concat(callArgs));
+	    });
 	    return bound;
-	  };
+	  });
 
 	  // Partially apply a function by creating a version that has had some of its
 	  // arguments pre-filled, without changing its dynamic `this` context. _ acts
-	  // as a placeholder, allowing any combination of arguments to be pre-filled.
-	  _.partial = function(func) {
-	    var boundArgs = slice.call(arguments, 1);
+	  // as a placeholder by default, allowing any combination of arguments to be
+	  // pre-filled. Set `_.partial.placeholder` for a custom placeholder argument.
+	  _.partial = restArguments(function(func, boundArgs) {
+	    var placeholder = _.partial.placeholder;
 	    var bound = function() {
 	      var position = 0, length = boundArgs.length;
 	      var args = Array(length);
 	      for (var i = 0; i < length; i++) {
-	        args[i] = boundArgs[i] === _ ? arguments[position++] : boundArgs[i];
+	        args[i] = boundArgs[i] === placeholder ? arguments[position++] : boundArgs[i];
 	      }
 	      while (position < arguments.length) args.push(arguments[position++]);
 	      return executeBound(func, bound, this, this, args);
 	    };
 	    return bound;
-	  };
+	  });
+
+	  _.partial.placeholder = _;
 
 	  // Bind a number of an object's methods to that object. Remaining arguments
 	  // are the method names to be bound. Useful for ensuring that all callbacks
 	  // defined on an object belong to it.
-	  _.bindAll = function(obj) {
-	    var i, length = arguments.length, key;
-	    if (length <= 1) throw new Error('bindAll must be passed function names');
-	    for (i = 1; i < length; i++) {
-	      key = arguments[i];
+	  _.bindAll = restArguments(function(obj, keys) {
+	    keys = flatten(keys, false, false);
+	    var index = keys.length;
+	    if (index < 1) throw new Error('bindAll must be passed function names');
+	    while (index--) {
+	      var key = keys[index];
 	      obj[key] = _.bind(obj[key], obj);
 	    }
-	    return obj;
-	  };
+	  });
 
 	  // Memoize an expensive function by storing its results.
 	  _.memoize = function(func, hasher) {
 	    var memoize = function(key) {
 	      var cache = memoize.cache;
 	      var address = '' + (hasher ? hasher.apply(this, arguments) : key);
-	      if (!_.has(cache, address)) cache[address] = func.apply(this, arguments);
+	      if (!has(cache, address)) cache[address] = func.apply(this, arguments);
 	      return cache[address];
 	    };
 	    memoize.cache = {};
@@ -44923,12 +44952,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Delays a function for the given number of milliseconds, and then calls
 	  // it with the arguments supplied.
-	  _.delay = function(func, wait) {
-	    var args = slice.call(arguments, 2);
-	    return setTimeout(function(){
+	  _.delay = restArguments(function(func, wait, args) {
+	    return setTimeout(function() {
 	      return func.apply(null, args);
 	    }, wait);
-	  };
+	  });
 
 	  // Defers a function, scheduling it to run after the current call stack has
 	  // cleared.
@@ -44940,17 +44968,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // but if you'd like to disable the execution on the leading edge, pass
 	  // `{leading: false}`. To disable execution on the trailing edge, ditto.
 	  _.throttle = function(func, wait, options) {
-	    var context, args, result;
-	    var timeout = null;
+	    var timeout, context, args, result;
 	    var previous = 0;
 	    if (!options) options = {};
+
 	    var later = function() {
 	      previous = options.leading === false ? 0 : _.now();
 	      timeout = null;
 	      result = func.apply(context, args);
 	      if (!timeout) context = args = null;
 	    };
-	    return function() {
+
+	    var throttled = function() {
 	      var now = _.now();
 	      if (!previous && options.leading === false) previous = now;
 	      var remaining = wait - (now - previous);
@@ -44969,6 +44998,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      }
 	      return result;
 	    };
+
+	    throttled.cancel = function() {
+	      clearTimeout(timeout);
+	      previous = 0;
+	      timeout = context = args = null;
+	    };
+
+	    return throttled;
 	  };
 
 	  // Returns a function, that, as long as it continues to be invoked, will not
@@ -44976,35 +45013,32 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // N milliseconds. If `immediate` is passed, trigger the function on the
 	  // leading edge, instead of the trailing.
 	  _.debounce = function(func, wait, immediate) {
-	    var timeout, args, context, timestamp, result;
+	    var timeout, result;
 
-	    var later = function() {
-	      var last = _.now() - timestamp;
-
-	      if (last < wait && last >= 0) {
-	        timeout = setTimeout(later, wait - last);
-	      } else {
-	        timeout = null;
-	        if (!immediate) {
-	          result = func.apply(context, args);
-	          if (!timeout) context = args = null;
-	        }
-	      }
+	    var later = function(context, args) {
+	      timeout = null;
+	      if (args) result = func.apply(context, args);
 	    };
 
-	    return function() {
-	      context = this;
-	      args = arguments;
-	      timestamp = _.now();
-	      var callNow = immediate && !timeout;
-	      if (!timeout) timeout = setTimeout(later, wait);
-	      if (callNow) {
-	        result = func.apply(context, args);
-	        context = args = null;
+	    var debounced = restArguments(function(args) {
+	      if (timeout) clearTimeout(timeout);
+	      if (immediate) {
+	        var callNow = !timeout;
+	        timeout = setTimeout(later, wait);
+	        if (callNow) result = func.apply(this, args);
+	      } else {
+	        timeout = _.delay(later, wait, this, args);
 	      }
 
 	      return result;
+	    });
+
+	    debounced.cancel = function() {
+	      clearTimeout(timeout);
+	      timeout = null;
 	    };
+
+	    return debounced;
 	  };
 
 	  // Returns the first function passed as an argument to the second,
@@ -45059,22 +45093,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // often you call it. Useful for lazy initialization.
 	  _.once = _.partial(_.before, 2);
 
+	  _.restArguments = restArguments;
+
 	  // Object Functions
 	  // ----------------
 
 	  // Keys in IE < 9 that won't be iterated by `for key in ...` and thus missed.
 	  var hasEnumBug = !{toString: null}.propertyIsEnumerable('toString');
 	  var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString',
-	                      'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'];
+	    'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'];
 
-	  function collectNonEnumProps(obj, keys) {
+	  var collectNonEnumProps = function(obj, keys) {
 	    var nonEnumIdx = nonEnumerableProps.length;
 	    var constructor = obj.constructor;
-	    var proto = (_.isFunction(constructor) && constructor.prototype) || ObjProto;
+	    var proto = _.isFunction(constructor) && constructor.prototype || ObjProto;
 
 	    // Constructor is a special case.
 	    var prop = 'constructor';
-	    if (_.has(obj, prop) && !_.contains(keys, prop)) keys.push(prop);
+	    if (has(obj, prop) && !_.contains(keys, prop)) keys.push(prop);
 
 	    while (nonEnumIdx--) {
 	      prop = nonEnumerableProps[nonEnumIdx];
@@ -45082,15 +45118,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        keys.push(prop);
 	      }
 	    }
-	  }
+	  };
 
 	  // Retrieve the names of an object's own properties.
-	  // Delegates to **ECMAScript 5**'s native `Object.keys`
+	  // Delegates to **ECMAScript 5**'s native `Object.keys`.
 	  _.keys = function(obj) {
 	    if (!_.isObject(obj)) return [];
 	    if (nativeKeys) return nativeKeys(obj);
 	    var keys = [];
-	    for (var key in obj) if (_.has(obj, key)) keys.push(key);
+	    for (var key in obj) if (has(obj, key)) keys.push(key);
 	    // Ahem, IE < 9.
 	    if (hasEnumBug) collectNonEnumProps(obj, keys);
 	    return keys;
@@ -45117,22 +45153,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return values;
 	  };
 
-	  // Returns the results of applying the iteratee to each element of the object
-	  // In contrast to _.map it returns an object
+	  // Returns the results of applying the iteratee to each element of the object.
+	  // In contrast to _.map it returns an object.
 	  _.mapObject = function(obj, iteratee, context) {
 	    iteratee = cb(iteratee, context);
-	    var keys =  _.keys(obj),
-	          length = keys.length,
-	          results = {},
-	          currentKey;
-	      for (var index = 0; index < length; index++) {
-	        currentKey = keys[index];
-	        results[currentKey] = iteratee(obj[currentKey], currentKey, obj);
-	      }
-	      return results;
+	    var keys = _.keys(obj),
+	        length = keys.length,
+	        results = {};
+	    for (var index = 0; index < length; index++) {
+	      var currentKey = keys[index];
+	      results[currentKey] = iteratee(obj[currentKey], currentKey, obj);
+	    }
+	    return results;
 	  };
 
 	  // Convert an object into a list of `[key, value]` pairs.
+	  // The opposite of _.object.
 	  _.pairs = function(obj) {
 	    var keys = _.keys(obj);
 	    var length = keys.length;
@@ -45154,7 +45190,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  };
 
 	  // Return a sorted list of the function names available on the object.
-	  // Aliased as `methods`
+	  // Aliased as `methods`.
 	  _.functions = _.methods = function(obj) {
 	    var names = [];
 	    for (var key in obj) {
@@ -45163,14 +45199,33 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return names.sort();
 	  };
 
+	  // An internal function for creating assigner functions.
+	  var createAssigner = function(keysFunc, defaults) {
+	    return function(obj) {
+	      var length = arguments.length;
+	      if (defaults) obj = Object(obj);
+	      if (length < 2 || obj == null) return obj;
+	      for (var index = 1; index < length; index++) {
+	        var source = arguments[index],
+	            keys = keysFunc(source),
+	            l = keys.length;
+	        for (var i = 0; i < l; i++) {
+	          var key = keys[i];
+	          if (!defaults || obj[key] === void 0) obj[key] = source[key];
+	        }
+	      }
+	      return obj;
+	    };
+	  };
+
 	  // Extend a given object with all the properties in passed-in object(s).
 	  _.extend = createAssigner(_.allKeys);
 
-	  // Assigns a given object with all the own properties in the passed-in object(s)
+	  // Assigns a given object with all the own properties in the passed-in object(s).
 	  // (https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
 	  _.extendOwn = _.assign = createAssigner(_.keys);
 
-	  // Returns the first key on an object that passes a predicate test
+	  // Returns the first key on an object that passes a predicate test.
 	  _.findKey = function(obj, predicate, context) {
 	    predicate = cb(predicate, context);
 	    var keys = _.keys(obj), key;
@@ -45180,16 +45235,21 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 	  };
 
+	  // Internal pick helper function to determine if `obj` has key `key`.
+	  var keyInObj = function(value, key, obj) {
+	    return key in obj;
+	  };
+
 	  // Return a copy of the object only containing the whitelisted properties.
-	  _.pick = function(object, oiteratee, context) {
-	    var result = {}, obj = object, iteratee, keys;
+	  _.pick = restArguments(function(obj, keys) {
+	    var result = {}, iteratee = keys[0];
 	    if (obj == null) return result;
-	    if (_.isFunction(oiteratee)) {
+	    if (_.isFunction(iteratee)) {
+	      if (keys.length > 1) iteratee = optimizeCb(iteratee, keys[1]);
 	      keys = _.allKeys(obj);
-	      iteratee = optimizeCb(oiteratee, context);
 	    } else {
-	      keys = flatten(arguments, false, false, 1);
-	      iteratee = function(value, key, obj) { return key in obj; };
+	      iteratee = keyInObj;
+	      keys = flatten(keys, false, false);
 	      obj = Object(obj);
 	    }
 	    for (var i = 0, length = keys.length; i < length; i++) {
@@ -45198,20 +45258,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      if (iteratee(value, key, obj)) result[key] = value;
 	    }
 	    return result;
-	  };
+	  });
 
-	   // Return a copy of the object without the blacklisted properties.
-	  _.omit = function(obj, iteratee, context) {
+	  // Return a copy of the object without the blacklisted properties.
+	  _.omit = restArguments(function(obj, keys) {
+	    var iteratee = keys[0], context;
 	    if (_.isFunction(iteratee)) {
 	      iteratee = _.negate(iteratee);
+	      if (keys.length > 1) context = keys[1];
 	    } else {
-	      var keys = _.map(flatten(arguments, false, false, 1), String);
+	      keys = _.map(flatten(keys, false, false), String);
 	      iteratee = function(value, key) {
 	        return !_.contains(keys, key);
 	      };
 	    }
 	    return _.pick(obj, iteratee, context);
-	  };
+	  });
 
 	  // Fill in a given object with default properties.
 	  _.defaults = createAssigner(_.allKeys, true);
@@ -45253,12 +45315,23 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 	  // Internal recursive comparison function for `isEqual`.
-	  var eq = function(a, b, aStack, bStack) {
+	  var eq, deepEq;
+	  eq = function(a, b, aStack, bStack) {
 	    // Identical objects are equal. `0 === -0`, but they aren't identical.
 	    // See the [Harmony `egal` proposal](http://wiki.ecmascript.org/doku.php?id=harmony:egal).
 	    if (a === b) return a !== 0 || 1 / a === 1 / b;
-	    // A strict comparison is necessary because `null == undefined`.
-	    if (a == null || b == null) return a === b;
+	    // `null` or `undefined` only equal to itself (strict comparison).
+	    if (a == null || b == null) return false;
+	    // `NaN`s are equivalent, but non-reflexive.
+	    if (a !== a) return b !== b;
+	    // Exhaust primitive checks
+	    var type = typeof a;
+	    if (type !== 'function' && type !== 'object' && typeof b != 'object') return false;
+	    return deepEq(a, b, aStack, bStack);
+	  };
+
+	  // Internal recursive comparison function for `isEqual`.
+	  deepEq = function(a, b, aStack, bStack) {
 	    // Unwrap any wrapped objects.
 	    if (a instanceof _) a = a._wrapped;
 	    if (b instanceof _) b = b._wrapped;
@@ -45275,7 +45348,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return '' + a === '' + b;
 	      case '[object Number]':
 	        // `NaN`s are equivalent, but non-reflexive.
-	        // Object(NaN) is equivalent to NaN
+	        // Object(NaN) is equivalent to NaN.
 	        if (+a !== +a) return +b !== +b;
 	        // An `egal` comparison is performed for other numeric values.
 	        return +a === 0 ? 1 / +a === 1 / b : +a === +b;
@@ -45285,6 +45358,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        // millisecond representations. Note that invalid dates with millisecond representations
 	        // of `NaN` are not equivalent.
 	        return +a === +b;
+	      case '[object Symbol]':
+	        return SymbolProto.valueOf.call(a) === SymbolProto.valueOf.call(b);
 	    }
 
 	    var areArrays = className === '[object Array]';
@@ -45336,7 +45411,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      while (length--) {
 	        // Deep compare each member
 	        key = keys[length];
-	        if (!(_.has(b, key) && eq(a[key], b[key], aStack, bStack))) return false;
+	        if (!(has(b, key) && eq(a[key], b[key], aStack, bStack))) return false;
 	      }
 	    }
 	    // Remove the first object from the stack of traversed objects.
@@ -45375,8 +45450,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return type === 'function' || type === 'object' && !!obj;
 	  };
 
-	  // Add some isType methods: isArguments, isFunction, isString, isNumber, isDate, isRegExp, isError.
-	  _.each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp', 'Error'], function(name) {
+	  // Add some isType methods: isArguments, isFunction, isString, isNumber, isDate, isRegExp, isError, isMap, isWeakMap, isSet, isWeakSet.
+	  _.each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp', 'Error', 'Symbol', 'Map', 'WeakMap', 'Set', 'WeakSet'], function(name) {
 	    _['is' + name] = function(obj) {
 	      return toString.call(obj) === '[object ' + name + ']';
 	    };
@@ -45386,13 +45461,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // there isn't any inspectable "Arguments" type.
 	  if (!_.isArguments(arguments)) {
 	    _.isArguments = function(obj) {
-	      return _.has(obj, 'callee');
+	      return has(obj, 'callee');
 	    };
 	  }
 
 	  // Optimize `isFunction` if appropriate. Work around some typeof bugs in old v8,
-	  // IE 11 (#1621), and in Safari 8 (#1929).
-	  if (typeof /./ != 'function' && typeof Int8Array != 'object') {
+	  // IE 11 (#1621), Safari 8 (#1929), and PhantomJS (#2236).
+	  var nodelist = root.document && root.document.childNodes;
+	  if (typeof /./ != 'function' && typeof Int8Array != 'object' && typeof nodelist != 'function') {
 	    _.isFunction = function(obj) {
 	      return typeof obj == 'function' || false;
 	    };
@@ -45400,12 +45476,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Is a given object a finite number?
 	  _.isFinite = function(obj) {
-	    return isFinite(obj) && !isNaN(parseFloat(obj));
+	    return !_.isSymbol(obj) && isFinite(obj) && !isNaN(parseFloat(obj));
 	  };
 
-	  // Is the given value `NaN`? (NaN is the only number which does not equal itself).
+	  // Is the given value `NaN`?
 	  _.isNaN = function(obj) {
-	    return _.isNumber(obj) && obj !== +obj;
+	    return _.isNumber(obj) && isNaN(obj);
 	  };
 
 	  // Is a given value a boolean?
@@ -45425,8 +45501,19 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Shortcut function for checking if an object has a given property directly
 	  // on itself (in other words, not on a prototype).
-	  _.has = function(obj, key) {
-	    return obj != null && hasOwnProperty.call(obj, key);
+	  _.has = function(obj, path) {
+	    if (!_.isArray(path)) {
+	      return has(obj, path);
+	    }
+	    var length = path.length;
+	    for (var i = 0; i < length; i++) {
+	      var key = path[i];
+	      if (obj == null || !hasOwnProperty.call(obj, key)) {
+	        return false;
+	      }
+	      obj = obj[key];
+	    }
+	    return !!length;
 	  };
 
 	  // Utility Functions
@@ -45453,12 +45540,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  _.noop = function(){};
 
-	  _.property = property;
+	  // Creates a function that, when passed an object, will traverse that object’s
+	  // properties down the given `path`, specified as an array of keys or indexes.
+	  _.property = function(path) {
+	    if (!_.isArray(path)) {
+	      return shallowProperty(path);
+	    }
+	    return function(obj) {
+	      return deepGet(obj, path);
+	    };
+	  };
 
 	  // Generates a function for a given object that returns a given property.
 	  _.propertyOf = function(obj) {
-	    return obj == null ? function(){} : function(key) {
-	      return obj[key];
+	    if (obj == null) {
+	      return function(){};
+	    }
+	    return function(path) {
+	      return !_.isArray(path) ? obj[path] : deepGet(obj, path);
 	    };
 	  };
 
@@ -45493,7 +45592,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return new Date().getTime();
 	  };
 
-	   // List of HTML entities for escaping.
+	  // List of HTML entities for escaping.
 	  var escapeMap = {
 	    '&': '&amp;',
 	    '<': '&lt;',
@@ -45509,7 +45608,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    var escaper = function(match) {
 	      return map[match];
 	    };
-	    // Regexes for identifying a key that needs to be escaped
+	    // Regexes for identifying a key that needs to be escaped.
 	    var source = '(?:' + _.keys(map).join('|') + ')';
 	    var testRegexp = RegExp(source);
 	    var replaceRegexp = RegExp(source, 'g');
@@ -45521,14 +45620,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  _.escape = createEscaper(escapeMap);
 	  _.unescape = createEscaper(unescapeMap);
 
-	  // If the value of the named `property` is a function then invoke it with the
-	  // `object` as context; otherwise, return it.
-	  _.result = function(object, property, fallback) {
-	    var value = object == null ? void 0 : object[property];
-	    if (value === void 0) {
-	      value = fallback;
+	  // Traverses the children of `obj` along `path`. If a child is a function, it
+	  // is invoked with its parent as context. Returns the value of the final
+	  // child, or `fallback` if any child is undefined.
+	  _.result = function(obj, path, fallback) {
+	    if (!_.isArray(path)) path = [path];
+	    var length = path.length;
+	    if (!length) {
+	      return _.isFunction(fallback) ? fallback.call(obj) : fallback;
 	    }
-	    return _.isFunction(value) ? value.call(object) : value;
+	    for (var i = 0; i < length; i++) {
+	      var prop = obj == null ? void 0 : obj[path[i]];
+	      if (prop === void 0) {
+	        prop = fallback;
+	        i = length; // Ensure we don't continue iterating.
+	      }
+	      obj = _.isFunction(prop) ? prop.call(obj) : prop;
+	    }
+	    return obj;
 	  };
 
 	  // Generate a unique integer id (unique within the entire client session).
@@ -45542,9 +45651,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // By default, Underscore uses ERB-style template delimiters, change the
 	  // following template settings to use alternative delimiters.
 	  _.templateSettings = {
-	    evaluate    : /<%([\s\S]+?)%>/g,
-	    interpolate : /<%=([\s\S]+?)%>/g,
-	    escape      : /<%-([\s\S]+?)%>/g
+	    evaluate: /<%([\s\S]+?)%>/g,
+	    interpolate: /<%=([\s\S]+?)%>/g,
+	    escape: /<%-([\s\S]+?)%>/g
 	  };
 
 	  // When customizing `templateSettings`, if you don't want to define an
@@ -45555,15 +45664,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // Certain characters need to be escaped so that they can be put into a
 	  // string literal.
 	  var escapes = {
-	    "'":      "'",
-	    '\\':     '\\',
-	    '\r':     'r',
-	    '\n':     'n',
+	    "'": "'",
+	    '\\': '\\',
+	    '\r': 'r',
+	    '\n': 'n',
 	    '\u2028': 'u2028',
 	    '\u2029': 'u2029'
 	  };
 
-	  var escaper = /\\|'|\r|\n|\u2028|\u2029/g;
+	  var escapeRegExp = /\\|'|\r|\n|\u2028|\u2029/g;
 
 	  var escapeChar = function(match) {
 	    return '\\' + escapes[match];
@@ -45588,7 +45697,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    var index = 0;
 	    var source = "__p+='";
 	    text.replace(matcher, function(match, escape, interpolate, evaluate, offset) {
-	      source += text.slice(index, offset).replace(escaper, escapeChar);
+	      source += text.slice(index, offset).replace(escapeRegExp, escapeChar);
 	      index = offset + match.length;
 
 	      if (escape) {
@@ -45599,7 +45708,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        source += "';\n" + evaluate + "\n__p+='";
 	      }
 
-	      // Adobe VMs need the match returned to produce the correct offest.
+	      // Adobe VMs need the match returned to produce the correct offset.
 	      return match;
 	    });
 	    source += "';\n";
@@ -45611,8 +45720,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      "print=function(){__p+=__j.call(arguments,'');};\n" +
 	      source + 'return __p;\n';
 
+	    var render;
 	    try {
-	      var render = new Function(settings.variable || 'obj', '_', source);
+	      render = new Function(settings.variable || 'obj', '_', source);
 	    } catch (e) {
 	      e.source = source;
 	      throw e;
@@ -45643,7 +45753,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // underscore functions. Wrapped objects may be chained.
 
 	  // Helper function to continue chaining intermediate results.
-	  var result = function(instance, obj) {
+	  var chainResult = function(instance, obj) {
 	    return instance._chain ? _(obj).chain() : obj;
 	  };
 
@@ -45654,9 +45764,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      _.prototype[name] = function() {
 	        var args = [this._wrapped];
 	        push.apply(args, arguments);
-	        return result(this, func.apply(_, args));
+	        return chainResult(this, func.apply(_, args));
 	      };
 	    });
+	    return _;
 	  };
 
 	  // Add all of the Underscore functions to the wrapper object.
@@ -45669,7 +45780,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      var obj = this._wrapped;
 	      method.apply(obj, arguments);
 	      if ((name === 'shift' || name === 'splice') && obj.length === 0) delete obj[0];
-	      return result(this, obj);
+	      return chainResult(this, obj);
 	    };
 	  });
 
@@ -45677,7 +45788,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  _.each(['concat', 'join', 'slice'], function(name) {
 	    var method = ArrayProto[name];
 	    _.prototype[name] = function() {
-	      return result(this, method.apply(this._wrapped, arguments));
+	      return chainResult(this, method.apply(this._wrapped, arguments));
 	    };
 	  });
 
@@ -45691,7 +45802,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  _.prototype.valueOf = _.prototype.toJSON = _.prototype.value;
 
 	  _.prototype.toString = function() {
-	    return '' + this._wrapped;
+	    return String(this._wrapped);
 	  };
 
 	  // AMD registration happens at the end for compatibility with AMD loaders
@@ -45706,11 +45817,620 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      return _;
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	  }
-	}.call(this));
+	}());
+
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(120)(module)))
+
+/***/ }),
+/* 120 */
+/***/ (function(module, exports) {
+
+	module.exports = function(module) {
+		if(!module.webpackPolyfill) {
+			module.deprecate = function() {};
+			module.paths = [];
+			// module.parent = undefined by default
+			module.children = [];
+			module.webpackPolyfill = 1;
+		}
+		return module;
+	}
 
 
 /***/ }),
-/* 117 */
+/* 121 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
+		Leaflet.contextmenu, a context menu for Leaflet.
+		(c) 2015, Adam Ratcliffe, GeoSmart Maps Limited
+
+		@preserve
+	*/
+
+	(function(factory) {
+		// Packaging/modules magic dance
+		var L;
+		if (true) {
+			// AMD
+			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(3)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+		} else if (typeof module === 'object' && typeof module.exports === 'object') {
+			// Node/CommonJS
+			L = require('leaflet');
+			module.exports = factory(L);
+		} else {
+			// Browser globals
+			if (typeof window.L === 'undefined') {
+				throw new Error('Leaflet must be loaded first');
+			}
+			factory(window.L);
+		}
+	})(function(L) {
+	L.Map.mergeOptions({
+	    contextmenuItems: []
+	});
+
+	L.Map.ContextMenu = L.Handler.extend({
+	    _touchstart: L.Browser.msPointer ? 'MSPointerDown' : L.Browser.pointer ? 'pointerdown' : 'touchstart',
+	    
+	    statics: {
+	        BASE_CLS: 'leaflet-contextmenu'
+	    },
+	    
+	    initialize: function (map) {
+	        L.Handler.prototype.initialize.call(this, map);
+	        
+	        this._items = [];
+	        this._visible = false;
+
+	        var container = this._container = L.DomUtil.create('div', L.Map.ContextMenu.BASE_CLS, map._container);
+	        container.style.zIndex = 10000;
+	        container.style.position = 'absolute';
+
+	        if (map.options.contextmenuWidth) {
+	            container.style.width = map.options.contextmenuWidth + 'px';
+	        }
+
+	        this._createItems();
+
+	        L.DomEvent
+	            .on(container, 'click', L.DomEvent.stop)
+	            .on(container, 'mousedown', L.DomEvent.stop)
+	            .on(container, 'dblclick', L.DomEvent.stop)
+	            .on(container, 'contextmenu', L.DomEvent.stop);
+	    },
+
+	    addHooks: function () {
+	        var container = this._map.getContainer();
+
+	        L.DomEvent
+	            .on(container, 'mouseleave', this._hide, this)
+	            .on(document, 'keydown', this._onKeyDown, this);
+
+	        if (L.Browser.touch) {
+	            L.DomEvent.on(document, this._touchstart, this._hide, this);
+	        }
+
+	        this._map.on({
+	            contextmenu: this._show,
+	            mousedown: this._hide,
+	            movestart: this._hide,
+	            zoomstart: this._hide
+	        }, this);
+	    },
+
+	    removeHooks: function () {
+	        var container = this._map.getContainer();
+
+	        L.DomEvent
+	            .off(container, 'mouseleave', this._hide, this)
+	            .off(document, 'keydown', this._onKeyDown, this);
+
+	        if (L.Browser.touch) {
+	            L.DomEvent.off(document, this._touchstart, this._hide, this);
+	        }
+
+	        this._map.off({
+	            contextmenu: this._show,
+	            mousedown: this._hide,
+	            movestart: this._hide,
+	            zoomstart: this._hide
+	        }, this);
+	    },
+
+	    showAt: function (point, data) {
+	        if (point instanceof L.LatLng) {
+	            point = this._map.latLngToContainerPoint(point);
+	        }
+	        this._showAtPoint(point, data);
+	    },
+
+	    hide: function () {
+	        this._hide();
+	    },
+
+	    addItem: function (options) {
+	        return this.insertItem(options);
+	    },
+
+	    insertItem: function (options, index) {
+	        index = index !== undefined ? index: this._items.length;
+
+	        var item = this._createItem(this._container, options, index);
+
+	        this._items.push(item);
+
+	        this._sizeChanged = true;
+
+	        this._map.fire('contextmenu.additem', {
+	            contextmenu: this,
+	            el: item.el,
+	            index: index
+	        });
+
+	        return item.el;
+	    },
+
+	    removeItem: function (item) {
+	        var container = this._container;
+
+	        if (!isNaN(item)) {
+	            item = container.children[item];
+	        }
+
+	        if (item) {
+	            this._removeItem(L.Util.stamp(item));
+
+	            this._sizeChanged = true;
+
+	            this._map.fire('contextmenu.removeitem', {
+	                contextmenu: this,
+	                el: item
+	            });
+
+	            return item;
+	        }
+
+	        return null;
+	    },
+
+	    removeAllItems: function () {
+	        var items = this._container.children,
+	            item;
+
+	        while (items.length) {
+	            item = items[0];
+	            this._removeItem(L.Util.stamp(item));
+	        }
+	        return items;
+	    },
+
+	    hideAllItems: function () {
+	        var item, i, l;
+
+	        for (i = 0, l = this._items.length; i < l; i++) {
+	            item = this._items[i];
+	            item.el.style.display = 'none';
+	        }
+	    },
+
+	    showAllItems: function () {
+	        var item, i, l;
+
+	        for (i = 0, l = this._items.length; i < l; i++) {
+	            item = this._items[i];
+	            item.el.style.display = '';
+	        }
+	    },
+
+	    setDisabled: function (item, disabled) {
+	        var container = this._container,
+	        itemCls = L.Map.ContextMenu.BASE_CLS + '-item';
+
+	        if (!isNaN(item)) {
+	            item = container.children[item];
+	        }
+
+	        if (item && L.DomUtil.hasClass(item, itemCls)) {
+	            if (disabled) {
+	                L.DomUtil.addClass(item, itemCls + '-disabled');
+	                this._map.fire('contextmenu.disableitem', {
+	                    contextmenu: this,
+	                    el: item
+	                });
+	            } else {
+	                L.DomUtil.removeClass(item, itemCls + '-disabled');
+	                this._map.fire('contextmenu.enableitem', {
+	                    contextmenu: this,
+	                    el: item
+	                });
+	            }
+	        }
+	    },
+
+	    isVisible: function () {
+	        return this._visible;
+	    },
+
+	    _createItems: function () {
+	        var itemOptions = this._map.options.contextmenuItems,
+	            item,
+	            i, l;
+
+	        for (i = 0, l = itemOptions.length; i < l; i++) {
+	            this._items.push(this._createItem(this._container, itemOptions[i]));
+	        }
+	    },
+
+	    _createItem: function (container, options, index) {
+	        if (options.separator || options === '-') {
+	            return this._createSeparator(container, index);
+	        }
+
+	        var itemCls = L.Map.ContextMenu.BASE_CLS + '-item',
+	            cls = options.disabled ? (itemCls + ' ' + itemCls + '-disabled') : itemCls,
+	            el = this._insertElementAt('a', cls, container, index),
+	            callback = this._createEventHandler(el, options.callback, options.context, options.hideOnSelect),
+	            icon = this._getIcon(options),
+	            iconCls = this._getIconCls(options),
+	            html = '';
+
+	        if (icon) {
+	            html = '<img class="' + L.Map.ContextMenu.BASE_CLS + '-icon" src="' + icon + '"/>';
+	        } else if (iconCls) {
+	            html = '<span class="' + L.Map.ContextMenu.BASE_CLS + '-icon ' + iconCls + '"></span>';
+	        }
+
+	        el.innerHTML = html + options.text;
+	        el.href = '#';
+
+	        L.DomEvent
+	            .on(el, 'mouseover', this._onItemMouseOver, this)
+	            .on(el, 'mouseout', this._onItemMouseOut, this)
+	            .on(el, 'mousedown', L.DomEvent.stopPropagation)
+	            .on(el, 'click', callback);
+
+	        if (L.Browser.touch) {
+	            L.DomEvent.on(el, this._touchstart, L.DomEvent.stopPropagation);
+	        }
+
+	        // Devices without a mouse fire "mouseover" on tap, but never “mouseout"
+	        if (!L.Browser.pointer) {
+	            L.DomEvent.on(el, 'click', this._onItemMouseOut, this);
+	        }
+
+	        return {
+	            id: L.Util.stamp(el),
+	            el: el,
+	            callback: callback
+	        };
+	    },
+
+	    _removeItem: function (id) {
+	        var item,
+	            el,
+	            i, l, callback;
+
+	        for (i = 0, l = this._items.length; i < l; i++) {
+	            item = this._items[i];
+
+	            if (item.id === id) {
+	                el = item.el;
+	                callback = item.callback;
+
+	                if (callback) {
+	                    L.DomEvent
+	                        .off(el, 'mouseover', this._onItemMouseOver, this)
+	                        .off(el, 'mouseover', this._onItemMouseOut, this)
+	                        .off(el, 'mousedown', L.DomEvent.stopPropagation)
+	                        .off(el, 'click', callback);
+
+	                    if (L.Browser.touch) {
+	                        L.DomEvent.off(el, this._touchstart, L.DomEvent.stopPropagation);
+	                    }
+
+	                    if (!L.Browser.pointer) {
+	                        L.DomEvent.on(el, 'click', this._onItemMouseOut, this);
+	                    }
+	                }
+
+	                this._container.removeChild(el);
+	                this._items.splice(i, 1);
+
+	                return item;
+	            }
+	        }
+	        return null;
+	    },
+
+	    _createSeparator: function (container, index) {
+	        var el = this._insertElementAt('div', L.Map.ContextMenu.BASE_CLS + '-separator', container, index);
+
+	        return {
+	            id: L.Util.stamp(el),
+	            el: el
+	        };
+	    },
+
+	    _createEventHandler: function (el, func, context, hideOnSelect) {
+	        var me = this,
+	            map = this._map,
+	            disabledCls = L.Map.ContextMenu.BASE_CLS + '-item-disabled',
+	            hideOnSelect = (hideOnSelect !== undefined) ? hideOnSelect : true;
+
+	        return function (e) {
+	            if (L.DomUtil.hasClass(el, disabledCls)) {
+	                return;
+	            }
+
+	            if (hideOnSelect) {
+	                me._hide();
+	            }
+
+	            if (func) {
+	                func.call(context || map, me._showLocation);
+	            }
+
+	            me._map.fire('contextmenu.select', {
+	                contextmenu: me,
+	                el: el
+	            });
+	        };
+	    },
+
+	    _insertElementAt: function (tagName, className, container, index) {
+	        var refEl,
+	            el = document.createElement(tagName);
+
+	        el.className = className;
+
+	        if (index !== undefined) {
+	            refEl = container.children[index];
+	        }
+
+	        if (refEl) {
+	            container.insertBefore(el, refEl);
+	        } else {
+	            container.appendChild(el);
+	        }
+
+	        return el;
+	    },
+
+	    _show: function (e) {
+	        this._showAtPoint(e.containerPoint, e);
+	    },
+
+	    _showAtPoint: function (pt, data) {
+	        if (this._items.length) {
+	            var map = this._map,
+	            layerPoint = map.containerPointToLayerPoint(pt),
+	            latlng = map.layerPointToLatLng(layerPoint),
+	            event = L.extend(data || {}, {contextmenu: this});
+
+	            this._showLocation = {
+	                latlng: latlng,
+	                layerPoint: layerPoint,
+	                containerPoint: pt
+	            };
+
+	            if (data && data.relatedTarget){
+	                this._showLocation.relatedTarget = data.relatedTarget;
+	            }
+
+	            this._setPosition(pt);
+
+	            if (!this._visible) {
+	                this._container.style.display = 'block';
+	                this._visible = true;
+	            }
+
+	            this._map.fire('contextmenu.show', event);
+	        }
+	    },
+
+	    _hide: function () {
+	        if (this._visible) {
+	            this._visible = false;
+	            this._container.style.display = 'none';
+	            this._map.fire('contextmenu.hide', {contextmenu: this});
+	        }
+	    },
+
+	    _getIcon: function (options) {
+	        return L.Browser.retina && options.retinaIcon || options.icon;
+	    },
+
+	    _getIconCls: function (options) {
+	        return L.Browser.retina && options.retinaIconCls || options.iconCls;
+	    },
+
+	    _setPosition: function (pt) {
+	        var mapSize = this._map.getSize(),
+	            container = this._container,
+	            containerSize = this._getElementSize(container),
+	            anchor;
+
+	        if (this._map.options.contextmenuAnchor) {
+	            anchor = L.point(this._map.options.contextmenuAnchor);
+	            pt = pt.add(anchor);
+	        }
+
+	        container._leaflet_pos = pt;
+
+	        if (pt.x + containerSize.x > mapSize.x) {
+	            container.style.left = 'auto';
+	            container.style.right = Math.min(Math.max(mapSize.x - pt.x, 0), mapSize.x - containerSize.x - 1) + 'px';
+	        } else {
+	            container.style.left = Math.max(pt.x, 0) + 'px';
+	            container.style.right = 'auto';
+	        }
+
+	        if (pt.y + containerSize.y > mapSize.y) {
+	            container.style.top = 'auto';
+	            container.style.bottom = Math.min(Math.max(mapSize.y - pt.y, 0), mapSize.y - containerSize.y - 1) + 'px';
+	        } else {
+	            container.style.top = Math.max(pt.y, 0) + 'px';
+	            container.style.bottom = 'auto';
+	        }
+	    },
+
+	    _getElementSize: function (el) {
+	        var size = this._size,
+	            initialDisplay = el.style.display;
+
+	        if (!size || this._sizeChanged) {
+	            size = {};
+
+	            el.style.left = '-999999px';
+	            el.style.right = 'auto';
+	            el.style.display = 'block';
+
+	            size.x = el.offsetWidth;
+	            size.y = el.offsetHeight;
+
+	            el.style.left = 'auto';
+	            el.style.display = initialDisplay;
+
+	            this._sizeChanged = false;
+	        }
+
+	        return size;
+	    },
+
+	    _onKeyDown: function (e) {
+	        var key = e.keyCode;
+
+	        // If ESC pressed and context menu is visible hide it
+	        if (key === 27) {
+	            this._hide();
+	        }
+	    },
+
+	    _onItemMouseOver: function (e) {
+	        L.DomUtil.addClass(e.target || e.srcElement, 'over');
+	    },
+
+	    _onItemMouseOut: function (e) {
+	        L.DomUtil.removeClass(e.target || e.srcElement, 'over');
+	    }
+	});
+
+	L.Map.addInitHook('addHandler', 'contextmenu', L.Map.ContextMenu);
+	L.Mixin.ContextMenu = {
+	    bindContextMenu: function (options) {
+	        L.setOptions(this, options);
+	        this._initContextMenu();
+
+	        return this;
+	    },
+
+	    unbindContextMenu: function (){
+	        this.off('contextmenu', this._showContextMenu, this);
+
+	        return this;
+	    },
+
+	    addContextMenuItem: function (item) {
+	            this.options.contextmenuItems.push(item);
+	    },
+
+	    removeContextMenuItemWithIndex: function (index) {
+	        var items = [];
+	        for (var i = 0; i < this.options.contextmenuItems.length; i++) {
+	            if (this.options.contextmenuItems[i].index == index){
+	                items.push(i);
+	            }
+	        }
+	        var elem = items.pop();
+	        while (elem !== undefined) {
+	            this.options.contextmenuItems.splice(elem,1);
+	            elem = items.pop();
+	        }
+	    },
+
+	    replaceContextMenuItem: function (item) {
+	        this.removeContextMenuItemWithIndex(item.index);
+	        this.addContextMenuItem(item);
+	    },
+
+	    _initContextMenu: function () {
+	        this._items = [];
+
+	        this.on('contextmenu', this._showContextMenu, this);
+	    },
+
+	    _showContextMenu: function (e) {
+	        var itemOptions,
+	            data, pt, i, l;
+
+	        if (this._map.contextmenu) {
+	            data = L.extend({relatedTarget: this}, e);
+
+	            pt = this._map.mouseEventToContainerPoint(e.originalEvent);
+
+	            if (!this.options.contextmenuInheritItems) {
+	                this._map.contextmenu.hideAllItems();
+	            }
+
+	            for (i = 0, l = this.options.contextmenuItems.length; i < l; i++) {
+	                itemOptions = this.options.contextmenuItems[i];
+	                this._items.push(this._map.contextmenu.insertItem(itemOptions, itemOptions.index));
+	            }
+
+	            this._map.once('contextmenu.hide', this._hideContextMenu, this);
+
+	            this._map.contextmenu.showAt(pt, data);
+	        }
+	    },
+
+	    _hideContextMenu: function () {
+	        var i, l;
+
+	        for (i = 0, l = this._items.length; i < l; i++) {
+	            this._map.contextmenu.removeItem(this._items[i]);
+	        }
+	        this._items.length = 0;
+
+	        if (!this.options.contextmenuInheritItems) {
+	            this._map.contextmenu.showAllItems();
+	        }
+	    }
+	};
+
+	var classes = [L.Marker, L.Path],
+	    defaultOptions = {
+	        contextmenu: false,
+	        contextmenuItems: [],
+	        contextmenuInheritItems: true
+	    },
+	    cls, i, l;
+
+	for (i = 0, l = classes.length; i < l; i++) {
+	    cls = classes[i];
+
+	    // L.Class should probably provide an empty options hash, as it does not test
+	    // for it here and add if needed
+	    if (!cls.prototype.options) {
+	        cls.prototype.options = defaultOptions;
+	    } else {
+	        cls.mergeOptions(defaultOptions);
+	    }
+
+	    cls.addInitHook(function () {
+	        if (this.options.contextmenu) {
+	            this._initContextMenu();
+	        }
+	    });
+
+	    cls.include(L.Mixin.ContextMenu);
+	}
+	return L.Map.ContextMenu;
+	});
+
+
+/***/ }),
+/* 122 */
 /***/ (function(module, exports) {
 
 	L.Control.Dialog = L.Control.extend({
@@ -46072,7 +46792,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 118 */
+/* 123 */
 /***/ (function(module, exports) {
 
 	(function () {
@@ -46222,7 +46942,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 119 */
+/* 124 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -48895,7 +49615,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 120 */
+/* 125 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -49120,7 +49840,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 121 */
+/* 126 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var require;var require;var __WEBPACK_AMD_DEFINE_RESULT__;var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global) {/*** IMPORTS FROM imports-loader ***/
@@ -56421,7 +57141,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ }),
-/* 122 */
+/* 127 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/
@@ -56557,7 +57277,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 /***/ }),
-/* 123 */
+/* 128 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*** IMPORTS FROM imports-loader ***/

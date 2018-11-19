@@ -16,10 +16,27 @@
 }
 .show-tokens .token-value.undefined {
     color: #999;
-
 }
 .show-tokens .form-switch {
     float: right;
     padding-right: 20px;
     padding-top: 6px;
+}
+
+/* Dark Theme */
+
+.show-tokens.dark {
+    background: #31373E;
+    border-top: 1px solid #31373E;
+    border-bottom: 1px solid #31373E;
+}
+
+.show-tokens.dark .token-name {
+    color: #AF575A;
+}
+.show-tokens.dark .token-value {
+    color: #FFFFFF;
+}
+.show-tokens.dark .token-value.undefined {
+    color: #999;
 }

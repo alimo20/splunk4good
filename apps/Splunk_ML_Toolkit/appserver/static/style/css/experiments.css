@@ -9,51 +9,6 @@
     font-weight: 200;
 }
 
-.mltk-experiments-type-list {
-    max-width: 1000px;
-    list-style: none;
-    padding: 0;
-    margin: 0 auto;
-    column-count: 3;
-    -moz-column-count: 3;
-    -webkit-column-count: 3;
-}
-
-.mltk-experiments-type-list > li {
-    display: inline-block;
-    width: 250px;
-    background: white;
-    padding: 8px 18px;
-    margin: 20px;
-    vertical-align: top;
-    border: 2px solid;
-    border-color: white;
-    height: 180px;
-}
-
-.mltk-experiments-type-list > li:hover {
-    border-color: #1e93c6;
-    cursor: pointer;
-}
-
-.mltk-experiments-type-list-title {
-    margin-bottom: 10px;
-}
-
-.mltk-experiments-type-list-title > * {
-    vertical-align: middle;
-}
-
-.mltk-experiments-type-list-title > .icon {
-    font-size: 40px;
-    color: #1e93c6;
-}
-
-.mltk-experiments-type-list-title > h3 {
-    display: inline-block;
-    margin-left: 10px;
-}
-
 th.col-scheduled-training {
     width: 15px;
     text-align: center;
@@ -176,22 +131,6 @@ td.icon-cell {
   color: #1e93c6;
 }
 
-/* alert modals */
-.clustering-alert-modal-cluster-control .select2-container {
-    width: 120px !important;
-    min-width: 120px !important;
-}
-
-.categorical-outlier-alert-modal .modal-body br + * {
-    margin: 0;
-    vertical-align: text-bottom;
-}
-
-.categorical-outlier-alert-modal-probable-cause-checkbox input[type="checkbox"] {
-    margin-top: 2px;
-}
-
-/* Firefox doesn't handle the width correctly if we set only the "width" property on the MultiDropdownView */
-.categorical-outlier-alert-modal-probable-cause-control {
-    width: 300px;
+#categoricalOutliersAlertModalProbableCauseCheckbox {
+    margin-bottom: 20px;
 }

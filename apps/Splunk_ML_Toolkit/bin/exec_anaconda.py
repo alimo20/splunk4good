@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 # Copyright (C) 2015-2016 Splunk Inc. All Rights Reserved.
 
+# To be used in accordance with the README file in Python for Scientific
+# Computing (PSC). That is, exec_anaconda.py is available to be copied and
+# placed into your applications as needed to allow for the execution of Splunk
+# Custom Search Commands and cross-platform module imports. See the PSC README
+# file for more details.
+
 import os
 import platform
 import stat
@@ -9,42 +15,7 @@ import subprocess
 import time
 import traceback
 
-
-# Note: the following functions do NOT work with Search Head
-# Pooling/shared storage.
-
-def get_splunkhome_path():
-    return os.path.normpath(os.environ["SPLUNK_HOME"])
-
-
-def make_splunkhome_path(p):
-    return os.path.join(get_splunkhome_path(), *p)
-
-
-def get_etc_path():
-    return os.environ.get(
-        'SPLUNK_ETC',
-        os.path.join(get_splunkhome_path(), 'etc'))
-
-
-def get_apps_path(bundle_path=None):
-    """
-    Get the full path to the 'apps' directory.
-
-    Args:
-        bundle_path: path of the search bundle that contains the 'apps' directory
-
-    Returns:
-        path to the apps directory
-
-    """
-    full_path_to_apps_dir = bundle_path if bundle_path else get_etc_path()
-    return os.path.normpath(os.path.join(full_path_to_apps_dir, 'apps'))
-
-
-def get_staging_area_path():
-    staging_path = os.sep.join(['var','run','splunk','lookup_tmp'])
-    return os.path.normpath(os.path.join(get_splunkhome_path(), staging_path))
+from util.base_util import get_apps_path
 
 
 def exec_anaconda():

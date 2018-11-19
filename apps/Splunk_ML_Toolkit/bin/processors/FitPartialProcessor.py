@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 # Copyright (C) 2015-2017 Splunk Inc. All Rights Reserved.
-import errno
-
 import pandas as pd
 
 import cexc
 import models
+from FitBatchProcessor import FitBatchProcessor
 from util.base_util import MLSPLNotImplementedError
 from util.mlspl_loader import MLSPLConf
-from FitBatchProcessor import FitBatchProcessor
 from util.lookup_exceptions import ModelNotFoundException
+from util.processor_util import (
+    split_options,
+    load_resource_limits,
+)
 
 logger = cexc.get_logger(__name__)
 messages = cexc.get_messages_logger()
@@ -36,7 +38,7 @@ class FitPartialProcessor(FitBatchProcessor):
         # Split apart process & algo options
         self.namespace = process_options.pop('namespace', None)
         mlspl_conf = MLSPLConf(searchinfo)
-        self.process_options, self.algo_options = self.split_options(process_options, mlspl_conf)
+        self.process_options, self.algo_options = split_options(process_options, mlspl_conf, process_options['algo_name'])
         self.searchinfo = searchinfo
 
         # Convenience / readability
@@ -57,7 +59,7 @@ class FitPartialProcessor(FitBatchProcessor):
             self.warn_about_new_parameters()
 
         self.save_temp_model(self.algo_options, self.tmp_dir)
-        self.resource_limits = self.load_resource_limits(self.algo, mlspl_conf)
+        self.resource_limits = load_resource_limits(self.algo_options['algo_name'], mlspl_conf)
 
     @staticmethod
     def initialize_algo_from_model(algo_options, searchinfo, namespace):
@@ -136,6 +138,9 @@ class FitPartialProcessor(FitBatchProcessor):
         if 'model_name' not in algo_options:
             raise RuntimeError('You must save a model if you fit the model with partial_fit enabled')
 
+        if algo_options.get('kfold_cv') is not None:
+            raise RuntimeError('kfold_cv cannot be used with partial_fit')
+
     @staticmethod
     def fit(algo, df, options):
         """Perform the partial fit.
@@ -168,7 +173,7 @@ class FitPartialProcessor(FitBatchProcessor):
 
     def process(self):
         """Run fit and update algo."""
-        self.algo = self.match_and_assign_variables(self.df.columns, self.algo,
+        self.algo = self.match_and_assign_variables(self.searchinfo.get('app'), self.df.columns, self.algo,
                                                     self.algo_options)
         self.algo = self.fit(self.algo,
                              self.df,

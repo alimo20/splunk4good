@@ -17,7 +17,7 @@
           	<viz type="simple_xml_examples.tagcloud">
                 <search>
                   <query>index=_internal source=*metrics.log group=pipeline | stats max(cpu_seconds) as cpu_seconds sum(executes) as executes sum(cumulative_hits) as cumulative_hits by processor</query>
-                  <earlist>$earliest$</earlist>
+                  <earliest>$earliest$</earliest>
                   <latest>$latest$</latest>
               	</search>
                 <option name="drilldown">row</option>

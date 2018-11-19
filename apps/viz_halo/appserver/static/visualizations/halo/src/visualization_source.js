@@ -2,7 +2,6 @@ define([
     'jquery',
     'underscore',
     'd3',
-    'd3-scale-chromatic',
     'api/SplunkVisualizationBase',
     'api/SplunkVisualizationUtils'
 ],
@@ -10,7 +9,6 @@ function(
     $,
     _,
     d3,
-    d3_scale_chromatic,
     SplunkVisualizationBase,
     SplunkVisualizationUtils
 ) {
@@ -25,7 +23,7 @@ function(
                 .append("div")
                     .attr("id", "tooltip");
 
-            this.$el.append('<div id="ribbon_controls"><label>Choose ribbon types: </label><select id="ribbon_dropdown"><option value="__ALL__">All</option></select></div>');
+            this.$el.append('<div id="ribbon_info"><label>Choose ribbon types: </label><select id="ribbon_dropdown"><option value="__ALL__">All</option></select><div id="total"></div><div id="ribbon_legend"></div></div>');
 
             window.timer_label_relax;
             window.timer_auto_transition;
@@ -36,7 +34,7 @@ function(
         getInitialDataParams: function() {
             return ({
                 outputMode: SplunkVisualizationBase.RAW_OUTPUT_MODE,
-                count: 1000000
+                count: 100000
             });
         },
 
@@ -45,10 +43,12 @@ function(
         },
 
         // Optionally implement to format data returned from search.
-        // The returned object will be passed to updateView as 'data'
+        // The returned object will be passed to updateView as 'rows'
         formatData: function(raw_data) {
             console.log("formatData");
-            if(raw_data.results.length < 1) {
+            var rows = raw_data.results;
+
+            if(rows.length < 1) {
                 return false;
             }
 
@@ -64,36 +64,7 @@ function(
                 );
             }
 
-            _.mixin({
-                "total": function(data, key) {
-                    return _(data).chain()
-                        .pluck(key)
-                        .reduce(function(memo, num) {
-                            return memo + num;
-                        }, 0)
-                        .value();
-                }
-            });
-
-            function by_ribbon(data, inner) {
-                return _(data).chain()
-                    .groupBy("ribbon")
-                    .map(function(v, k) {
-                        var obj = {
-                            "ribbon": k,
-                            "total": _(v).total("count")
-                        }
-
-                        if(inner) {
-                            obj.inner = inner;
-                        }
-
-                        return obj;
-                })
-                .value();
-            };
-
-            raw_data.results = _(raw_data.results).map(function(o) {
+            rows = _(rows).map(function(o) {
                 _(required_fields).each(function(k) {
                     o[k] = SplunkVisualizationUtils.escapeHtml(o[k])
                 });
@@ -112,49 +83,13 @@ function(
                 return o;
             });
 
-            var data = {};
+            if(!this.orig_rows) {
+                // Deep copy the original raw data
+                // https://stackoverflow.com/a/23481096/1150923
+                this.orig_rows = JSON.parse(JSON.stringify(rows))
+            }
 
-            data.stats = {
-                "total": _(raw_data.results).total("count"),
-                "ribbon": by_ribbon(raw_data.results, null),
-                "inner": _(raw_data.results).chain()
-                        .groupBy("inner")
-                        .map(function(v, k) {
-                            return {
-                                "inner": k,
-                                "total": _(v).total("count"),
-                                "ribbon": by_ribbon(v, k)
-                            };
-                        })
-                        .value()
-            };
-
-            $("#ribbon_dropdown option").not("[value='__ALL__']").remove();
-
-            _(data.stats.ribbon).each(function(o) {
-                $("#ribbon_dropdown").append('<option value="' + o.ribbon + '">' + o.ribbon + '</option>');
-            });
-
-            data.outer = _(raw_data.results).map(function(v, i) {
-                v._index = i;
-
-                return v;
-            });
-
-            var i = 0;
-
-            data.inner = _(data.outer).chain()
-                .groupBy("inner")
-                .map(function(v, k) {
-                    return {
-                        "_index": i++,
-                        "inner": k,
-                        "data": v
-                    };
-                })
-                .value();
-
-            return data;
+            return rows;
         },
 
         // Implement updateView to render a visualization.
@@ -165,9 +100,12 @@ function(
 
             var that = this;
 
-            if(!data) {
+            if(!that.orig_rows) {
                 return;
             }
+
+            // Deep copy again
+            var rows = JSON.parse(JSON.stringify(that.orig_rows))
 
             console.log("clearing");
 
@@ -201,28 +139,214 @@ function(
                 height                       = config_default("height",                       width * 0.8),
                 radius                       = config_default("radius",                       width / 2 * 0.55),
                 radius_label                 = config_default("radius_label",                 radius * 1.1),
-                thickness                    = config_default("thickness",                    radius * 0.07),
+                outer_thickness              = config_default("outer_thickness",              radius * 0.07),
+                inner_thickness_pct          = config_default("inner_thickness_pct",          0.8),
                 ribbon_radius_cp_offset      = config_default("ribbon_radius_cp_offset",      radius * 0.2),
-                outer_colors                 = config_default("outer_colors",                 "schemeCategory20b"),
-                radius_pack                  = config_default("radius_pack",                  0.8 * (radius - thickness)),
+                radius_pack                  = config_default("radius_pack",                  0.8 * (radius - outer_thickness)),
                 padding_pack                 = config_default("padding_pack",                 radius * 0.1),
                 opacity_ribbon               = config_default("opacity_ribbon",               0.6),
                 opacity_fade                 = config_default("opacity_fade",                 0.1),
+                group_outer_limit            = config_default("group_outer_limit",            30),
+                group_inner_limit            = config_default("group_inner_limit",            10),
+                group_use_others_outer       = config_default("group_use_others_outer",       "true"),
+                group_use_others_inner       = config_default("group_use_others_inner",       "true"),
+                group_others_outer_label     = config_default("group_others_outer_label",     "others"),
+                group_others_inner_label     = config_default("group_others_inner_label",     "others"),
+                group_others_inner_color     = config_default("group_others_inner_color",     "#808080"),
+                group_others_inner_img       = config_default("group_others_inner_img",       null),
+                label_text_color             = config_default("label_text_color",             "#000000"),
+                label_line_color             = config_default("label_line_color",             "#000000"),
+                label_dot_color              = config_default("label_dot_color",              "#000000"),
                 label_font_size              = config_default("label_font_size",              radius * 0.04),
                 label_spacing                = config_default("label_spacing",                radius * 0.01),
                 label_wrap_length            = config_default("label_wrap_length",            radius * 0.7),
                 inner_labels_scale           = config_default("inner_labels_scale",           0.9),
                 label_relax_delta            = config_default("label_relax_delta",            0.5),
                 label_relax_sleep            = config_default("label_relax_sleep",            10),
+                outer_colors                 = config_default("outer_colors",                 "schemeCategory10"),
+                unit_prefix                  = config_default("unit_prefix",                  ""),
+                unit_suffix                  = config_default("unit_suffix",                  ""),
                 auto_transition              = config_default("auto_transition",              "never"),
                 auto_transition_sleep        = config_default("auto_transition_sleep",        2000),
                 auto_transition_resume_sleep = config_default("auto_transition_resume_sleep", 5000),
-                draggable                    = config_default("draggable",                    "on"),
-                transition_duration          = config_default("transition_duration",          750);
+                draggable                    = config_default("draggable",                    "true"),
+                transition_duration          = config_default("transition_duration",          750),
+                warning_override             = config_default("warning_override",             "false");
 
-            var color_outer = d3.scaleOrdinal(d3[outer_colors] || d3_scale_chromatic[outer_colors]);
+            _.mixin({
+                "total": function(data, key) {
+                    return _(data).chain()
+                        .pluck(key)
+                        .reduce(function(memo, num) {
+                            return memo + num;
+                        }, 0)
+                        .value();
+                }
+            });
+
+            function get_top(d, key, n) {
+                return _(d).chain()
+                    .groupBy(key)
+                    .map(function(v, k) {
+                        var o = {
+                            "total": _(v).total("count")
+                        };
+
+                        o[key] = k;
+
+                        return o;
+                    })
+                    .sortBy("total")
+                    .reverse()
+                    .first(n)
+                    .map(function(v) {
+                        return v[key];
+                    })
+                    .value();
+            }
+
+            var top_outer = get_top(rows, "outer", group_outer_limit);
+            var top_inner = get_top(rows, "inner", group_inner_limit);
+
+            rows = _(rows).chain()
+                .map(function(v) {
+                    if(!top_outer.includes(v.outer)) {
+                        v.outer = group_use_others_outer === "true" ? group_others_outer_label : null;
+                    }
+                    if(!top_inner.includes(v.inner)) {
+                        v.inner = group_use_others_inner === "true" ? group_others_inner_label : null;
+                    }
+
+                    return v;
+                })
+                .filter(function(v) {
+                    return v.outer && v.inner;
+                })
+                .groupBy(function(v) {
+                    return v.outer + "|||" + v.ribbon + "|||" + v.inner;
+                })
+                .map(function(v, k) {
+                    var obj = v[0];
+                    obj.count = _(v).total("count")
+
+                    if(obj.inner == group_others_inner_label) {
+                        obj.inner_img = group_others_inner_img;
+                    }
+
+                    return obj;
+                })
+                .value();
+
+            if(warning_override === "false") {
+                if(group_outer_limit > 100) {
+                    throw new SplunkVisualizationBase.VisualizationError(
+                        'Not recommended to have "Outer Group Limit">100. Decrease this value or enable "Warning Override".'
+                    );
+                }
+                if(group_inner_limit > 50) {
+                    throw new SplunkVisualizationBase.VisualizationError(
+                        'Not recommended to have "Inner Group Limit">50. Decrease this value or enable "Warning Override".'
+                    );
+                }
+                if(rows.length > 500) {
+                    throw new SplunkVisualizationBase.VisualizationError(
+                        'Not recommended to have over 500 rows/ribbons. Decrease "Outer/Inner Ring Grouping Limit" or enable "Warning Override". Current number of rows/ribbons after grouping: ' + rows.length
+                    );
+                }
+            }
+
+            var data = {};
+
+            function by_ribbon(data, inner) {
+                return _(data).chain()
+                    .groupBy("ribbon")
+                    .map(function(v, k) {
+                        var o = {
+                            "ribbon": k,
+                            "ribbon_color": v[0].ribbon_color,
+                            "total": _(v).total("count")
+                        }
+
+                        if(inner) {
+                            o.inner = inner;
+                        }
+
+                        return o;
+                })
+                .value();
+            };
+
+            data.stats = {
+                "total": _(rows).total("count"),
+                "ribbon": by_ribbon(rows, null),
+                "inner": _(rows).chain()
+                        .groupBy("inner")
+                        .map(function(v, k) {
+                            return {
+                                "inner": k,
+                                "total": _(v).total("count"),
+                                "ribbon": by_ribbon(v, k)
+                            };
+                        })
+                        .value()
+            };
 
             var number_format = d3.format(",d");
+
+            $("#total").empty();
+            $("#ribbon_dropdown option").not("[value='__ALL__']").remove();
+            $("#ribbon_legend").empty();
+
+            $("#total").append("Total: " + unit_prefix + " " + number_format(data.stats.total));
+
+            _(data.stats.ribbon).each(function(o) {
+                $("#ribbon_dropdown").append('<option value="' + o.ribbon + '">' + o.ribbon + '</option>');
+
+                $("#ribbon_legend").append(
+                    '<div class="input-color">' +
+                        '<span style="padding-left: 20px;">' +
+                            o.ribbon + ' - ' + unit_prefix + " " + number_format(o.total) + " " + unit_suffix +
+                        '</span>' +
+                        '<div class="color-box" style="background-color: ' + o.ribbon_color + ';"></div>' +
+                    '</div>'
+                );
+            });
+
+            data.outer = _(rows).map(function(v, i) {
+                v._index = i;
+
+                return v;
+            });
+
+            var i = 0;
+
+            data.inner = _(data.outer).chain()
+                .groupBy("inner")
+                .map(function(v, k) {
+                    var inner_img = v[0].inner_img;
+                    $.ajax({
+                        "url": inner_img,
+                        "type": "get",
+                        "async": false,
+                        "error": function() {
+                            inner_img = null;
+                        }
+                    });
+
+                    var inner_color = (k == group_others_inner_label ? group_others_inner_color : v[0].inner_color) || null;
+
+                    return {
+                        "_index": i++,
+                        "inner": k,
+                        "inner_img": inner_img,
+                        "inner_link": v[0].inner_link || null,
+                        "inner_color": inner_color,
+                        "data": v
+                    };
+                })
+                .value();
+
+            var color_outer = d3.scaleOrdinal(d3[outer_colors]);
 
             function tooltip_position() {
                 that.tooltip
@@ -264,7 +388,7 @@ function(
                     .attr("class", "front");
 
             var arc_outer = d3.arc()
-                .innerRadius(radius - thickness)
+                .innerRadius(radius - outer_thickness)
                 .outerRadius(radius);
 
             var pie_outer = d3.pie()
@@ -297,6 +421,10 @@ function(
                 inner_label_text
                     .transition()
                     .style("opacity", 1.0);
+
+                inner_circle_outline
+                    .transition()
+                    .style("opacity", 1.0);
             }
 
             function mouseover_outer(d) {
@@ -313,7 +441,7 @@ function(
                     pct = count / total * 100,
                     pct_ribbon = count / total_ribbon * 100;
 
-                var html = outer_label + " -> " + ribbon_label + " -> " + inner_label + ": " + number_format(count);
+                var html = outer_label + " -> " + ribbon_label + " -> " + inner_label + ": " + unit_prefix + " " + number_format(count) + " " + unit_suffix;
 
                 html += ribbon_choice === "__ALL__" ?
                     "<br>" + pct_label(pct) + " of total amount" :
@@ -356,6 +484,12 @@ function(
                     .style("opacity", function(dd) {
                         return d.data.inner === dd.data.inner ? 1.0 : opacity_fade;
                     });
+
+                inner_circle_outline
+                    .transition()
+                    .style("opacity", function(dd) {
+                        return d.data.inner === dd.data.inner ? 1.0 : opacity_fade;
+                    });
             }
 
             var path_outer_g = outer.selectAll("g.arc_outer")
@@ -387,13 +521,23 @@ function(
                         this._current = d;
                     });
 
+            var unique_outer = [];
+
             var label_group = label.selectAll("g.label-group")
                 .data(pie_outer(data.outer))
                 .enter()
                 .append("g")
                     .attr("class", "label-group")
-                    .attr("visibility", function() {
-                        return label_font_size > 0 ? "visible" : "hidden";
+                    .style("opacity", function(d) {
+                        if(label_font_size > 0 && !unique_outer.includes(d.data.outer)) {
+                            unique_outer.push(d.data.outer);
+                            return 1.0;
+                        }
+
+                        return 0.0;
+                    })
+                    .attr("visibility", function(d) {
+                        return $(this).css("opacity") == "1" ? "visible" : "hidden";
                     })
                     .style("cursor", function(d) {
                         return d.data.outer_link ? "pointer" : "";
@@ -414,6 +558,7 @@ function(
                     .attr("x", 0)
                     .attr("y", 0)
                     .attr("r", 2)
+                    .attr("fill", label_dot_color)
                     .attr("transform", function (d, i) {
                         return "translate(" + arc_outer.centroid(d) + ")";
                     })
@@ -442,10 +587,20 @@ function(
                             y = Math.sin(mid_angle) * radius_label;
                         return y;
                     })
+                    .attr("stroke", label_line_color)
                     .attr("class", "label-line")
                     .each(function(d) {
                         this._current = d;
                     });
+
+            // https://stackoverflow.com/a/3700369/1150923
+            function unescapeHtml(encoded) {
+                var elem = document.createElement('textarea');
+                elem.innerHTML = encoded;
+                var decoded = elem.value;
+
+                return decoded;
+            }
 
             // https://bl.ocks.org/mbostock/7555321
             function label_wrap(text, width) {
@@ -585,11 +740,12 @@ function(
                             x = Math.cos(mid_angle) * radius_label;
                         return (x > 0) ? "start" : "end";
                     })
+                    .attr("fill", label_text_color)
                     .attr("class", "label-text")
                     .attr("dominant-baseline", "middle")
                     .style("font-size", label_font_size)
                     .text(function (d) {
-                        return d.data.outer;
+                        return unescapeHtml(d.data.outer);
                     })
                     .each(function(d) {
                         this._current = d;
@@ -631,7 +787,7 @@ function(
                     var relative_x = d3.event.x - radius_pack,
                         relative_y = radius_pack - d3.event.y,
                         relative_r = Math.sqrt(Math.pow(relative_x, 2) + Math.pow(relative_y, 2)),
-                        limit_r = radius - 2 * thickness - d.r;
+                        limit_r = radius - 2 * outer_thickness - d.r;
 
                     if(relative_r >= limit_r) {
                         var theta = Math.atan2(relative_y, relative_x),
@@ -676,7 +832,7 @@ function(
                         return "translate(" + [d.x, d.y] + ")";
                     });
 
-            if(draggable === "on") {
+            if(draggable === "true") {
                 node_inner_g.call(drag);
             }
 
@@ -690,7 +846,7 @@ function(
                     .attr("cx", 0)
                     .attr("cy", 0)
                     .attr("r", function(d) {
-                        return d.r - thickness;
+                        return d.r * inner_thickness_pct;
                     });
 
             function mouseover_center(d) {
@@ -706,18 +862,18 @@ function(
 
 
                 if(ribbon_choice === "__ALL__") {
-                    html = inner_label + ": " + number_format(count) + " total" +
+                    html = inner_label + ": " + unit_prefix + " " + number_format(count) + " " + unit_suffix + " total" +
                         "<br>" + pct_label(pct) + " of total amount";
                 }
                 else {
                     total_ribbon = _(data.stats.ribbon).findWhere({"ribbon": ribbon_choice}).total,
                     pct_ribbon = count / total_ribbon * 100;
 
-                    html = ribbon_choice + " -> " + inner_label + ": " + number_format(count) +
+                    html = ribbon_choice + " -> " + inner_label + ": " + unit_prefix + " " + number_format(count) + " " + unit_suffix +
                         "<br>" + ribbon_choice + ": " + pct_label(pct_ribbon) + " of total amount";
                 }
 
-                if(d.data.data[0].inner_link) {
+                if(d.data.inner_link) {
                     html += "<br><i>Click for more details</i>";
                 }
 
@@ -754,10 +910,16 @@ function(
                     .style("opacity", function(dd) {
                         return d.data.inner === dd.data.inner ? 1.0 : opacity_fade;
                     });
+
+                inner_circle_outline
+                    .transition()
+                    .style("opacity", function(dd) {
+                        return d.data.inner === dd.data.inner ? 1.0 : opacity_fade;
+                    });
             }
 
             function click_center(d) {
-                var link = d.data.data[0].inner_link;
+                var link = d.data.inner_link;
 
                 if(link) {
                     window.open(link, "_blank");
@@ -767,22 +929,22 @@ function(
             var image = node_inner_g
                 .append("image")
                     .attr("x", function(d) {
-                        return thickness - d.r;
+                        return -d.r * inner_thickness_pct;
                     })
                     .attr("y", function(d) {
-                        return thickness - d.r;
+                        return -d.r * inner_thickness_pct;
                     })
                     .attr("width", function(d) {
-                        return 2 * (d.r - thickness);
+                        return 2 * (d.r * inner_thickness_pct);
                     })
                     .attr("height", function(d) {
-                        return 2 * (d.r - thickness);
+                        return 2 * (d.r * inner_thickness_pct);
                     })
                     .attr("xlink:href", function(d) {
-                        return d.data.data[0].inner_img;
+                        return d.data.inner_img;
                     })
                     .style("cursor", function(d) {
-                        return d.data.data[0].inner_link ? "pointer" : "";
+                        return d.data.inner_link ? "pointer" : "";
                     })
                     .style("clip-path", function(d) {
                         return "url(#clip_" + d.data._index + ")";
@@ -791,46 +953,6 @@ function(
                     .on("mousemove", tooltip_position)
                     .on("mouseout", mouseout_default)
                     .on("click", click_center);
-
-            var inner_label_text = node_inner_g
-                .append("text")
-                    .attr("class", "label-inner")
-                    .attr("x", 0)
-                    .attr("y", 0)
-                    .attr("alignment-baseline", "middle")
-                    .attr("text-anchor", "middle")
-                    .attr("opacity", 1.0)
-                    .attr("visibility", inner_labels_scale > 0 ? "visible" : "hidden")
-                    .text(function(d) {
-                        return d.data.inner;
-                    })
-                    .style("cursor", function(d) {
-                        return d.data.data[0].inner_link ? "pointer" : "";
-                    })
-                    .on("mouseover", mouseover_center)
-                    .on("mousemove", tooltip_position)
-                    .on("mouseout", mouseout_default)
-                    .on("click", click_center);
-
-            function inner_label_resize(d) {
-                var bb = this.getBBox();
-
-                if(bb.width === 0 && bb.height === 0) {
-                    return "";
-                }
-
-                var r = d.r - thickness,
-                    h = 2 * r / bb.height,
-                    w = 2 * r / bb.width,
-                    s = w < h ? w : h,
-                    s = s * inner_labels_scale;
-
-                return "scale(" + s + "," + s + ")";
-            }
-
-            node_inner_g.selectAll("text.label-inner")
-                .attr("transform", inner_label_resize)
-                .style("text-shadow", "-1px 0 black, 0 1px black, 1px 0 black, 0 -1px black");
 
             var arc_inner = d3.arc();
 
@@ -855,7 +977,7 @@ function(
                     pct = count / total * 100,
                     pct_ribbon = count / total_ribbon * 100;
 
-                var html = outer_label + " -> " + ribbon_label + " -> " + inner_label + ": " + number_format(count);
+                var html = outer_label + " -> " + ribbon_label + " -> " + inner_label + ": " + unit_prefix + " " + number_format(count) + " " + unit_suffix;
 
                 html += ribbon_choice === "__ALL__" ?
                     "<br>" + inner_label + ": " + pct_label(pct) + " of total amount" :
@@ -894,6 +1016,12 @@ function(
                     .style("opacity", function(dd) {
                         return d.data.inner === dd.data.inner ? 1.0 : opacity_fade;
                     });
+
+                inner_circle_outline
+                    .transition()
+                    .style("opacity", function(dd) {
+                        return d.data.inner === dd.data.inner ? 1.0 : opacity_fade;
+                    });
             }
 
             var path_inner_g = node_inner_g.selectAll("g.arc_inner")
@@ -909,6 +1037,63 @@ function(
                     .on("mouseover", mouseover_inner)
                     .on("mousemove", tooltip_position)
                     .on("mouseout", mouseout_default);
+
+            var inner_circle_outline = node_inner_g
+                .append("circle")
+                    .attr("cx", 0)
+                    .attr("cy", 0)
+                    .attr("r", function(d) {
+                        return d.r * inner_thickness_pct;
+                    })
+                    .attr("fill", "none")
+                    .attr("stroke-width", function(d) {
+                        return d.r * inner_thickness_pct * 0.1;
+                    })
+                    .attr("stroke", function(d) {
+                        return d.data.inner_color;
+                    });
+
+            var inner_label_text = node_inner_g
+                .append("text")
+                    .attr("class", "label-inner")
+                    .attr("x", 0)
+                    .attr("y", 0)
+                    .attr("alignment-baseline", "middle")
+                    .attr("text-anchor", "middle")
+                    .attr("opacity", 1.0)
+                    .attr("visibility", inner_labels_scale > 0 ? "visible" : "hidden")
+                    .text(function(d) {
+                        return unescapeHtml(d.data.inner);
+                    })
+                    .style("cursor", function(d) {
+                        return d.data.inner_link ? "pointer" : "";
+                    })
+                    .on("mouseover", mouseover_center)
+                    .on("mousemove", tooltip_position)
+                    .on("mouseout", mouseout_default)
+                    .on("click", click_center);
+
+            function inner_label_resize(d) {
+                var bb = this.getBBox();
+
+                if(bb.width === 0 && bb.height === 0) {
+                    return "";
+                }
+
+                var r = d.r * inner_thickness_pct,
+                    h = 2 * r / bb.height,
+                    w = 2 * r / bb.width,
+                    s = w < h ? w : h,
+                    s = Math.max(s * inner_labels_scale, 1);
+
+                var translate = d.data.inner_img ? "translate(0," + r + ")" : "";
+
+                return translate + " scale(" + s + "," + s + ")";
+            }
+
+            node_inner_g.selectAll("text.label-inner")
+                .attr("transform", inner_label_resize)
+                .style("text-shadow", "-2px 0 black, 0 2px black, 2px 0 black, 0 -2px black");
 
             function ribbon_data(data) {
                 return pie_outer(data.outer).map(function(d) {
@@ -936,7 +1121,7 @@ function(
             function ribbon_d_path(d) {
                 if(d.value === 0) return "";
 
-                var r_o = radius - thickness,
+                var r_o = radius - outer_thickness,
                     offset = -Math.PI / 2,
                     path_o_start = d.startAngle + offset,
                     path_o_end   = d.endAngle   + offset,
@@ -980,7 +1165,7 @@ function(
                     inner_label = d.data.inner.capitalize(),
                     count = d.data.count;
 
-                var html = outer_label + " -> " + ribbon_label + " -> " + inner_label + ": " + number_format(count);
+                var html = outer_label + " -> " + ribbon_label + " -> " + inner_label + ": " + unit_prefix + " " + number_format(count) + " " + unit_suffix;
 
                 that.tooltip
                     .style("visibility", "visible")
@@ -1015,6 +1200,12 @@ function(
                     .style("opacity", function(dd) {
                         return d.data.inner === dd.data.inner ? 1.0 : opacity_fade;
                     });
+
+                inner_circle_outline
+                    .transition()
+                    .style("opacity", function(dd) {
+                        return d.data.inner === dd.data.inner ? 1.0 : opacity_fade;
+                    });
             }
 
             var ribbon = middle.selectAll("path")
@@ -1039,7 +1230,7 @@ function(
             path_inner = path_inner_g
                 .append("path")
                     .attr("d", function(d) {
-                        d.innerRadius = d.r - thickness;
+                        d.innerRadius = d.r * inner_thickness_pct;
                         d.outerRadius = d.r;
 
                         return arc_inner(d);
@@ -1052,19 +1243,19 @@ function(
                     });
 
 
-            function ribbon_controls_choose_next() {
-                //console.log("ribbon_controls_choose_next()");
+            function ribbon_dropdown_choose_next() {
+                //console.log("ribbon_dropdown_choose_next()");
 
-                var n = $("#ribbon_controls option").length,
-                    i = $("#ribbon_controls option:selected").index(),
+                var n = $("#ribbon_dropdown option").length,
+                    i = $("#ribbon_dropdown option:selected").index(),
                     x = i + 1 >= n ? 0 : i + 1;
 
-                $("#ribbon_controls option:eq(" + x + ")").prop("selected", true).change();
+                $("#ribbon_dropdown option:eq(" + x + ")").prop("selected", true).change();
             }
 
             function start_auto_transition() {
                 if(auto_transition !== "never") {
-                    window.timer_auto_transition = setInterval(ribbon_controls_choose_next, auto_transition_sleep);
+                    window.timer_auto_transition = setInterval(ribbon_dropdown_choose_next, auto_transition_sleep);
                 }
             }
 
@@ -1113,16 +1304,23 @@ function(
                                 };
                             });
 
+                    var unique_outer = [];
+
                     label_group
                         .attr("visibility", "visible")
                         .transition()
                         .duration(transition_duration)
                             .style("opacity", function(d) {
-                                return d.data.ribbon === ribbon_choice || ribbon_choice === "__ALL__" ? 1.0 : 0.0;
+                                if(label_font_size > 0 && !unique_outer.includes(d.data.outer) && (d.data.ribbon === ribbon_choice || ribbon_choice === "__ALL__")) {
+                                    unique_outer.push(d.data.outer);
+                                    return 1.0;
+                                }
+
+                                return 0.0;
                             })
                             .on("end", function() {
                                 d3.select(this).attr("visibility", function(d) {
-                                    return d.data.ribbon === ribbon_choice || ribbon_choice === "__ALL__" ? "visible" : "hidden";
+                                    return $(this).css("opacity") == "1" ? "visible" : "hidden";
                                 });
                             });
 
@@ -1259,7 +1457,7 @@ function(
                         .transition()
                         .duration(transition_duration)
                             .attrTween("d", function(d) {
-                                d.innerRadius = d.r - thickness;
+                                d.innerRadius = d.r * inner_thickness_pct;
                                 d.outerRadius = d.r;
                                 var i = d3.interpolate(this._current, d);
                                 this._current = i(0);
@@ -1282,27 +1480,37 @@ function(
                                 return d.value === 0 ? 0.0 : opacity_ribbon;
                             });
 
+                    inner_circle_outline.data(bubble_inner(root).children)
+                        .transition()
+                        .duration(transition_duration)
+                            .attr("r", function(d) {
+                                return d.r * inner_thickness_pct;
+                            })
+                            .attr("stroke-width", function(d) {
+                                return d.r * inner_thickness_pct * 0.1;
+                            });
+
                     image_clip.data(bubble_inner(root).children)
                         .transition()
                         .duration(transition_duration)
                             .attr("r", function(d) {
-                                return Math.max(d.r - thickness, 0);
+                                return d.r * inner_thickness_pct;
                             });
 
                     image.data(bubble_inner(root).children)
                         .transition()
                         .duration(transition_duration)
                             .attr("x", function(d) {
-                                return thickness - d.r;
+                                return -d.r * inner_thickness_pct;
                             })
                             .attr("y", function(d) {
-                                return thickness - d.r;
+                                return -d.r * inner_thickness_pct;
                             })
                             .attr("width", function(d) {
-                                return Math.max(2 * (d.r - thickness), 0);
+                                return 2 * d.r * inner_thickness_pct;
                             })
                             .attr("height", function(d) {
-                                return Math.max(2 * (d.r - thickness), 0);
+                                return 2 * d.r * inner_thickness_pct;
                             });
 
                     inner_label_text.data(bubble_inner(root).children)
@@ -1312,7 +1520,7 @@ function(
                             .attr("visibility", inner_labels_scale > 0 ? "visible" : "hidden")
                             .on("end", function() {
                                 d3.select(this)
-                                    .style("text-shadow", "-1px 0 black, 0 1px black, 1px 0 black, 0 -1px black")
+                                    .style("text-shadow", "-2px 0 black, 0 2px black, 2px 0 black, 0 -2px black")
                                     .attr("visibility", function(d) {
                                         return d.value === 0 || inner_labels_scale === 0 ? "hidden" : "visible";
                                     });

@@ -192,7 +192,7 @@ class ChunkedController(object):
                     relevant_fields = self.get_required_fields()
                     df = self.parse_relevant_fields(sio, relevant_fields)
             self._csv_parse_time += csv_t.interval
-            logger.debug('chunk body: %d bytes, %d rows, %d columns, csv_read_time=%f',
+            logger.debug('chunk body=%d bytes, rows=%d, columns=%d, csv_read_time=%f',
                          len(body), len(df), len(df.columns), csv_t.interval)
         else:
             df = pd.DataFrame()

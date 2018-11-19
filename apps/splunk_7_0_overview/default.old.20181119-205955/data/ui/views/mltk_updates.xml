@@ -1,0 +1,69 @@
+<dashboard>
+  <label>Machine Learning Toolkit 2.3 and 2.4</label>
+  <description>Summary of Machine Learning Toolkit 2.3 and 2.4 Updates</description>
+  <row>
+    <panel>
+      <html>
+        
+
+         <ul>
+          <li>ARIMA Forecasting Algorithm </li>
+          <ul>
+            <li>The Forecast Time Series assistant now allows for the selection of the ARIMA forecasting algorithm. Additional panels have been added for inspecting properties unique to ARIMA models.
+            </li>
+            <br/>
+        <div style="margin-left:30px">
+          <img src="/static/app/splunk_7_0_overview/images/mltk_arima.png" style="margin: 20px 0" width="700px"/>
+          <br/>
+        </div>
+
+
+            <li>Two more algorithms are introduced to support the ARIMA’s parameter selection p, d, q: ACF (autocorrelation function) and PACF (partial autocorrelation function).For more information, see <a href="http://docs.splunk.com/Documentation/MLApp/2.3.0/User/Algorithms#ARIMA">ARIMA</a>
+            </li>
+            <br/>
+        <div style="margin-left:30px">
+          <img src="/static/app/splunk_7_0_overview/images/mltk_acfnpacf.png" style="margin: 20px 0" width="700px"/>
+          <br/>
+        </div>
+
+          </ul>
+          
+        </ul>
+        <br/>
+
+        <ul>
+          <li>Integration of role-based access control (RBAC) for MLTK models</li>
+          <ul>
+            <li>Entries in the "Load Existing Settings" tab are now unique per-user instead of being shared with all users. Entries created prior to version 2.3 will continue to be accessible by all users.
+           </li>
+           <br/>
+        <div style="margin-left:30px">
+          <img src="/static/app/splunk_7_0_overview/images/mltk_userbasedmodel.png" style="margin: 20px 0" width="700px"/>
+          <br/>
+        </div>              
+
+          </ul>
+          
+        </ul>
+ 
+         <ul>
+          <li>Enhancements to ML-SPL API</li>
+          <ul>
+            <li>The ML-SPL API has been updated to make it easier for developers and partners to import custom algorithms in order to extend the capabilities of the Splunk Machine Learning Toolkit.</li>
+          </ul>
+          <li>For more information, see <a href="http://docs.splunk.com/Documentation/MLApp/2.3.0/API/Introduction">ML-SPL API.</a>
+          </li>
+          <li>For bug fixes, see <a href="http://docs.splunk.com/Documentation/MLApp/2.3.0/User/Fixedissues">Fixed issues.</a>
+          </li>  
+
+        </ul>
+        
+ 
+ 
+ 
+ 
+
+        </html>
+    </panel>
+  </row>
+</dashboard>

@@ -4,8 +4,8 @@ from exec_anaconda import exec_anaconda_or_die
 exec_anaconda_or_die()
 
 import json
+import re
 import sys
-
 import cexc
 from cexc import BaseChunkHandler
 
@@ -13,10 +13,12 @@ from util.rest_proxy import rest_proxy_from_searchinfo
 from util import command_util
 from util.searchinfo_util import searchinfo_from_cexc
 from util.param_util import parse_args
+from util.rest_url_util import make_splunk_url
+from util.experiment_util import get_experiment_by_id, get_history_fields_from_experiment
+from experiment.evaluation_metrics import compute_statistics, get_statistics_metadata
 
 logger = cexc.get_logger('logexperiment')
 messages = cexc.get_messages_logger()
-EXP_HIST_REST_URL_FORMAT = '/servicesNS/{}/Splunk_ML_Toolkit/mltk/experiments/{}/history'
 
 
 class LogExperimentCommand(BaseChunkHandler):
@@ -27,6 +29,8 @@ class LogExperimentCommand(BaseChunkHandler):
         self.exp_id = None
         self.app = None
         self.searchinfo = None
+        self.experiment = None
+        self.exp_metadata_list = []
 
     @staticmethod
     def handle_arguments(getinfo):
@@ -65,7 +69,12 @@ class LogExperimentCommand(BaseChunkHandler):
         if app is not None:
             self.searchinfo["app"] = app
 
-        return {'type': "stateful"}
+        return {'type': "reporting"}
+
+    @staticmethod
+    def _from_schedule(sid):
+        # Assume no realtime data (realtime searches start with 'rt_scheduler__').
+        return re.match(r'scheduler__', sid) is not None
 
     def handler(self, metadata, body):
         """Main handler we override from BaseChunkHandler.
@@ -81,26 +90,42 @@ class LogExperimentCommand(BaseChunkHandler):
             (dict): metadata to be sent back to CEXC
             output_body (str): data payload to be sent back to CEXC
         """
+        finished_flag = metadata.get('finished', False)
+
         if command_util.is_getinfo_chunk(metadata):
             self.searchinfo = searchinfo_from_cexc(metadata['searchinfo'], extra_fields=['sid'])
             return self.setup()
 
-        finished_flag = metadata.get('finished', False)
+        # Save info we need to calculate stats when we process the final chunk.
+        if self.experiment is None:
+            rest_proxy = rest_proxy_from_searchinfo(self.searchinfo)
+            self.experiment = get_experiment_by_id(rest_proxy, self.exp_id)
+
+        self.exp_metadata_list.append(get_statistics_metadata(self.experiment, body))
 
         if finished_flag:
             rest_proxy = rest_proxy_from_searchinfo(self.searchinfo)
-            reply = rest_proxy.make_rest_call('POST',
-                                              EXP_HIST_REST_URL_FORMAT.format(self.searchinfo["username"], self.exp_id),
-                                              jsonargs=json.dumps({'sid': self.searchinfo["sid"]}))
-            if reply['success'] is False:
-                msg = reply['content']
-                logger.warn(msg)
-                raise Exception(msg)
-        else:
-            msg = "Unable to access experiment with id={}. It does not exist or you do not have access to it".format(
-                self.exp_id)
-            logger.warn(msg)
-            raise Exception(msg)
+            experiment = get_experiment_by_id(rest_proxy, self.exp_id)
+            experiment_history = get_history_fields_from_experiment(experiment)
+            sid = self.searchinfo['sid']
+            json_body = {
+                'sid': sid,
+                'from_schedule': self._from_schedule(sid),
+            }
+            # Update json_body with experiment history
+            json_body.update(experiment_history)
+
+            # Update the json body with statistics. If statistics can't be computed, update with empty dictionary.
+            statistics_dict = compute_statistics(self.exp_metadata_list)
+            json_body.update(statistics_dict)
+
+            # Send json_body to the history store
+            url = make_splunk_url(rest_proxy, 'user', extra_url_parts=['mltk', 'experiments', self.exp_id, 'history'])
+            reply = rest_proxy.make_rest_call('POST', url, jsonargs=json.dumps(json_body))
+            if not reply['success']:
+                content = reply['content']
+                logger.warn(content)
+                raise RuntimeError(json.loads(content)['messages'][0]['text'])
 
         # Our final farewell
         return {'finished': finished_flag}, body

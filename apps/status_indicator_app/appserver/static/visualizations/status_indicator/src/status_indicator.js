@@ -163,6 +163,7 @@ define([
             var showValue = showOption === 1 || showOption === 3;
             var useIcons = showOption < 3;
             var useFixIcon = (this._getEscapedProperty('icon', config) || 'fix_icon') === 'fix_icon';
+            var useDrilldown = this._isEnabledDrilldown(config);
             var fixIcon = this._getEscapedProperty('fixIcon', config) || 'warning';
             var useColors = vizUtils.normalizeBoolean(this._getEscapedProperty('useColors', config), { default: true });
             var colorByStaticColor = this._getEscapedProperty('colorBy', config) === 'static_color';
@@ -269,6 +270,18 @@ define([
                 this.$el.prepend($('<i />').addClass('fa fa-' + icon));
             }
 
+            if (useDrilldown) {
+                this.$el.css('cursor', 'pointer');
+                this.$el.click(function(ev) {
+                    var payload = {
+                        action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
+                        data: {}
+                    };
+                    payload.data[data.fields[0].name] = data.rows[0][0];
+                    this.drilldown(payload, ev);
+                }.bind(this));
+            }
+
         },
 
         // Search data params
@@ -287,6 +300,13 @@ define([
         _getEscapedProperty: function(name, config) {
             var propertyValue = config[this.getPropertyNamespaceInfo().propertyNamespace + name];
             return vizUtils.escapeHtml(propertyValue);
+        },
+
+        _isEnabledDrilldown: function(config) {
+            if (config['display.visualizations.custom.drilldown'] && config['display.visualizations.custom.drilldown'] === 'all') {
+                return true;
+            }
+            return false;
         }
 
     });

@@ -1,5 +1,6 @@
 {
   "schemaVersion": "1.0",
+  "$id": "experiment_schema.json",
   "properties": {
     "title": {
       "type": "string"

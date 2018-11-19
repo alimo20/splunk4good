@@ -68,6 +68,9 @@ function(
             SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
             this.$el = $(this.el);
             this.$el.addClass('splunk-sankey');
+            if (vizUtils.getCurrentTheme && vizUtils.getCurrentTheme() === 'dark'){
+              this.$el.addClass('dark');
+            }
         },
 
         _getColor: function(data) {

@@ -1,10 +1,17 @@
+/* TODO: jink to replace theme_utils with that from core */
 require.config({
     paths: {
-        "app": "../app"
+        app: '../app',
+        theme_utils: '../app/simple_xml_examples/theme_utils'
     }
 });
 
-require(['splunkjs/mvc/simplexml/ready!', 'css!app/simple_xml_examples/showtokens.css'], function() {
+require([
+  'theme_utils',
+  'splunkjs/mvc/simplexml/ready!',
+  'css!app/simple_xml_examples/showtokens.css'
+  ],
+function(themeUtils) {
     var _ = require('underscore');
     var $ = require('jquery');
     var Backbone = require('backbone');
@@ -13,6 +20,7 @@ require(['splunkjs/mvc/simplexml/ready!', 'css!app/simple_xml_examples/showtoken
     var submittedTokenModel = mvc.Components.get('submitted');
     var urlTokenModel = mvc.Components.get('url');
     var models = [defaultTokenModel, submittedTokenModel, urlTokenModel];
+    var isDarkTheme = themeUtils.getCurrentTheme && themeUtils.getCurrentTheme() === 'dark';
 
     var TokenDebugView = Backbone.View.extend({
         className: 'show-tokens',
@@ -47,6 +55,9 @@ require(['splunkjs/mvc/simplexml/ready!', 'css!app/simple_xml_examples/showtoken
         },
         render: function() {
             this.$el.addClass('show-tokens');
+            if (isDarkTheme){
+                this.$el.addClass('dark');
+            }
             if (this.$el.is(':empty')) {
                 this.$el.html(this.template);
             }

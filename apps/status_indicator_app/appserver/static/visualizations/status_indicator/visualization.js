@@ -1,4 +1,4 @@
-define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(__WEBPACK_EXTERNAL_MODULE_4__, __WEBPACK_EXTERNAL_MODULE_5__) { return /******/ (function(modules) { // webpackBootstrap
+define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(__WEBPACK_EXTERNAL_MODULE_5__, __WEBPACK_EXTERNAL_MODULE_6__) { return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 
@@ -42,7 +42,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
 	 * Status indicator visualization view class
@@ -50,9 +50,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
 	            __webpack_require__(1),
 	            __webpack_require__(2),
-	            __webpack_require__(3),
 	            __webpack_require__(4),
-	            __webpack_require__(5)
+	            __webpack_require__(5),
+	            __webpack_require__(6)
 	        ], __WEBPACK_AMD_DEFINE_RESULT__ = function(
 	            $,
 	            _,
@@ -208,6 +208,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            var showValue = showOption === 1 || showOption === 3;
 	            var useIcons = showOption < 3;
 	            var useFixIcon = (this._getEscapedProperty('icon', config) || 'fix_icon') === 'fix_icon';
+	            var useDrilldown = this._isEnabledDrilldown(config);
 	            var fixIcon = this._getEscapedProperty('fixIcon', config) || 'warning';
 	            var useColors = vizUtils.normalizeBoolean(this._getEscapedProperty('useColors', config), { default: true });
 	            var colorByStaticColor = this._getEscapedProperty('colorBy', config) === 'static_color';
@@ -314,6 +315,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                this.$el.prepend($('<i />').addClass('fa fa-' + icon));
 	            }
 
+	            if (useDrilldown) {
+	                this.$el.css('cursor', 'pointer');
+	                this.$el.click(function(ev) {
+	                    var payload = {
+	                        action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
+	                        data: {}
+	                    };
+	                    payload.data[data.fields[0].name] = data.rows[0][0];
+	                    this.drilldown(payload, ev);
+	                }.bind(this));
+	            }
+
 	        },
 
 	        // Search data params
@@ -332,17 +345,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        _getEscapedProperty: function(name, config) {
 	            var propertyValue = config[this.getPropertyNamespaceInfo().propertyNamespace + name];
 	            return vizUtils.escapeHtml(propertyValue);
+	        },
+
+	        _isEnabledDrilldown: function(config) {
+	            if (config['display.visualizations.custom.drilldown'] && config['display.visualizations.custom.drilldown'] === 'all') {
+	                return true;
+	            }
+	            return false;
 	        }
 
 	    });
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
-/***/ },
+/***/ }),
 /* 1 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
-	 * jQuery JavaScript Library v2.2.1
+	 * jQuery JavaScript Library v2.2.4
 	 * http://jquery.com/
 	 *
 	 * Includes Sizzle.js
@@ -352,7 +372,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	 * Released under the MIT license
 	 * http://jquery.org/license
 	 *
-	 * Date: 2016-02-22T19:11Z
+	 * Date: 2016-05-20T17:23Z
 	 */
 
 	(function( global, factory ) {
@@ -408,7 +428,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 	var
-		version = "2.2.1",
+		version = "2.2.4",
 
 		// Define a local copy of jQuery
 		jQuery = function( selector, context ) {
@@ -619,6 +639,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 		},
 
 		isPlainObject: function( obj ) {
+			var key;
 
 			// Not plain objects:
 			// - Any object or value whose internal [[Class]] property is not "[object Object]"
@@ -628,14 +649,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 				return false;
 			}
 
+			// Not own constructor property must be Object
 			if ( obj.constructor &&
-					!hasOwn.call( obj.constructor.prototype, "isPrototypeOf" ) ) {
+					!hasOwn.call( obj, "constructor" ) &&
+					!hasOwn.call( obj.constructor.prototype || {}, "isPrototypeOf" ) ) {
 				return false;
 			}
 
-			// If the function hasn't returned already, we're confident that
-			// |obj| is a plain object, created by {} or constructed with new Object
-			return true;
+			// Own properties are enumerated firstly, so to speed up,
+			// if last one is own, then all properties are own
+			for ( key in obj ) {}
+
+			return key === undefined || hasOwn.call( obj, key );
 		},
 
 		isEmptyObject: function( obj ) {
@@ -5344,13 +5369,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 		isDefaultPrevented: returnFalse,
 		isPropagationStopped: returnFalse,
 		isImmediatePropagationStopped: returnFalse,
+		isSimulated: false,
 
 		preventDefault: function() {
 			var e = this.originalEvent;
 
 			this.isDefaultPrevented = returnTrue;
 
-			if ( e ) {
+			if ( e && !this.isSimulated ) {
 				e.preventDefault();
 			}
 		},
@@ -5359,7 +5385,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 			this.isPropagationStopped = returnTrue;
 
-			if ( e ) {
+			if ( e && !this.isSimulated ) {
 				e.stopPropagation();
 			}
 		},
@@ -5368,7 +5394,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 			this.isImmediatePropagationStopped = returnTrue;
 
-			if ( e ) {
+			if ( e && !this.isSimulated ) {
 				e.stopImmediatePropagation();
 			}
 
@@ -6298,19 +6324,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 			val = name === "width" ? elem.offsetWidth : elem.offsetHeight,
 			styles = getStyles( elem ),
 			isBorderBox = jQuery.css( elem, "boxSizing", false, styles ) === "border-box";
-
-		// Support: IE11 only
-		// In IE 11 fullscreen elements inside of an iframe have
-		// 100x too small dimensions (gh-1764).
-		if ( document.msFullscreenElement && window.top !== window ) {
-
-			// Support: IE11 only
-			// Running getBoundingClientRect on a disconnected node
-			// in IE throws an error.
-			if ( elem.getClientRects().length ) {
-				val = Math.round( elem.getBoundingClientRect()[ name ] * 100 );
-			}
-		}
 
 		// Some non-html elements return undefined for offsetWidth, so check for null/undefined
 		// svg - https://bugzilla.mozilla.org/show_bug.cgi?id=649285
@@ -7668,6 +7681,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 		}
 	} );
 
+	// Support: IE <=11 only
+	// Accessing the selectedIndex property
+	// forces the browser to respect setting selected
+	// on the option
+	// The getter ensures a default option is selected
+	// when in an optgroup
 	if ( !support.optSelected ) {
 		jQuery.propHooks.selected = {
 			get: function( elem ) {
@@ -7676,6 +7695,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 					parent.parentNode.selectedIndex;
 				}
 				return null;
+			},
+			set: function( elem ) {
+				var parent = elem.parentNode;
+				if ( parent ) {
+					parent.selectedIndex;
+
+					if ( parent.parentNode ) {
+						parent.parentNode.selectedIndex;
+					}
+				}
 			}
 		};
 	}
@@ -7870,7 +7899,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 
-	var rreturn = /\r/g;
+	var rreturn = /\r/g,
+		rspaces = /[\x20\t\r\n\f]+/g;
 
 	jQuery.fn.extend( {
 		val: function( value ) {
@@ -7946,9 +7976,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 			option: {
 				get: function( elem ) {
 
-					// Support: IE<11
-					// option.value not trimmed (#14858)
-					return jQuery.trim( elem.value );
+					var val = jQuery.find.attr( elem, "value" );
+					return val != null ?
+						val :
+
+						// Support: IE10-11+
+						// option.text throws exceptions (#14686, #14858)
+						// Strip and collapse whitespace
+						// https://html.spec.whatwg.org/#strip-and-collapse-whitespace
+						jQuery.trim( jQuery.text( elem ) ).replace( rspaces, " " );
 				}
 			},
 			select: {
@@ -8001,7 +8037,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 					while ( i-- ) {
 						option = options[ i ];
 						if ( option.selected =
-								jQuery.inArray( jQuery.valHooks.option.get( option ), values ) > -1
+							jQuery.inArray( jQuery.valHooks.option.get( option ), values ) > -1
 						) {
 							optionSet = true;
 						}
@@ -8179,6 +8215,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 		},
 
 		// Piggyback on a donor event to simulate a different one
+		// Used only for `focus(in | out)` events
 		simulate: function( type, elem, event ) {
 			var e = jQuery.extend(
 				new jQuery.Event(),
@@ -8186,27 +8223,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 				{
 					type: type,
 					isSimulated: true
-
-					// Previously, `originalEvent: {}` was set here, so stopPropagation call
-					// would not be triggered on donor event, since in our own
-					// jQuery.event.stopPropagation function we had a check for existence of
-					// originalEvent.stopPropagation method, so, consequently it would be a noop.
-					//
-					// But now, this "simulate" function is used only for events
-					// for which stopPropagation() is noop, so there is no need for that anymore.
-					//
-					// For the 1.x branch though, guard for "click" and "submit"
-					// events is still used, but was moved to jQuery.event.stopPropagation function
-					// because `originalEvent` should point to the original event for the constancy
-					// with other events and for more focused logic
 				}
 			);
 
 			jQuery.event.trigger( e, null, elem );
-
-			if ( e.isDefaultPrevented() ) {
-				event.preventDefault();
-			}
 		}
 
 	} );
@@ -9696,18 +9716,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 
-	// Support: Safari 8+
-	// In Safari 8 documents created via document.implementation.createHTMLDocument
-	// collapse sibling forms: the second one becomes a child of the first one.
-	// Because of that, this security measure has to be disabled in Safari 8.
-	// https://bugs.webkit.org/show_bug.cgi?id=137337
-	support.createHTMLDocument = ( function() {
-		var body = document.implementation.createHTMLDocument( "" ).body;
-		body.innerHTML = "<form></form><form></form>";
-		return body.childNodes.length === 2;
-	} )();
-
-
 	// Argument "data" should be string of html
 	// context (optional): If specified, the fragment will be created in this context,
 	// defaults to document
@@ -9720,12 +9728,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 			keepScripts = context;
 			context = false;
 		}
-
-		// Stop scripts or inline event handlers from being executed immediately
-		// by using document.implementation
-		context = context || ( support.createHTMLDocument ?
-			document.implementation.createHTMLDocument( "" ) :
-			document );
+		context = context || document;
 
 		var parsed = rsingleTag.exec( data ),
 			scripts = !keepScripts && [];
@@ -9807,7 +9810,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 			// If it fails, this function gets "jqXHR", "status", "error"
 			} ).always( callback && function( jqXHR, status ) {
 				self.each( function() {
-					callback.apply( self, response || [ jqXHR.responseText, status, jqXHR ] );
+					callback.apply( this, response || [ jqXHR.responseText, status, jqXHR ] );
 				} );
 			} );
 		}
@@ -10174,13 +10177,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	}));
 
 
-/***/ },
+/***/ }),
 /* 2 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//     Underscore.js 1.8.3
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global, module) {//     Underscore.js 1.9.1
 	//     http://underscorejs.org
-	//     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+	//     (c) 2009-2018 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	//     Underscore may be freely distributed under the MIT license.
 
 	(function() {
@@ -10188,29 +10191,32 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // Baseline setup
 	  // --------------
 
-	  // Establish the root object, `window` in the browser, or `exports` on the server.
-	  var root = this;
+	  // Establish the root object, `window` (`self`) in the browser, `global`
+	  // on the server, or `this` in some virtual machines. We use `self`
+	  // instead of `window` for `WebWorker` support.
+	  var root = typeof self == 'object' && self.self === self && self ||
+	            typeof global == 'object' && global.global === global && global ||
+	            this ||
+	            {};
 
 	  // Save the previous value of the `_` variable.
 	  var previousUnderscore = root._;
 
 	  // Save bytes in the minified (but not gzipped) version:
-	  var ArrayProto = Array.prototype, ObjProto = Object.prototype, FuncProto = Function.prototype;
+	  var ArrayProto = Array.prototype, ObjProto = Object.prototype;
+	  var SymbolProto = typeof Symbol !== 'undefined' ? Symbol.prototype : null;
 
 	  // Create quick reference variables for speed access to core prototypes.
-	  var
-	    push             = ArrayProto.push,
-	    slice            = ArrayProto.slice,
-	    toString         = ObjProto.toString,
-	    hasOwnProperty   = ObjProto.hasOwnProperty;
+	  var push = ArrayProto.push,
+	      slice = ArrayProto.slice,
+	      toString = ObjProto.toString,
+	      hasOwnProperty = ObjProto.hasOwnProperty;
 
 	  // All **ECMAScript 5** native function implementations that we hope to use
 	  // are declared here.
-	  var
-	    nativeIsArray      = Array.isArray,
-	    nativeKeys         = Object.keys,
-	    nativeBind         = FuncProto.bind,
-	    nativeCreate       = Object.create;
+	  var nativeIsArray = Array.isArray,
+	      nativeKeys = Object.keys,
+	      nativeCreate = Object.create;
 
 	  // Naked function reference for surrogate-prototype-swapping.
 	  var Ctor = function(){};
@@ -10223,10 +10229,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  };
 
 	  // Export the Underscore object for **Node.js**, with
-	  // backwards-compatibility for the old `require()` API. If we're in
+	  // backwards-compatibility for their old module API. If we're in
 	  // the browser, add `_` as a global object.
-	  if (true) {
-	    if (typeof module !== 'undefined' && module.exports) {
+	  // (`nodeType` is checked to ensure that `module`
+	  // and `exports` are not HTML elements.)
+	  if (typeof exports != 'undefined' && !exports.nodeType) {
+	    if (typeof module != 'undefined' && !module.nodeType && module.exports) {
 	      exports = module.exports = _;
 	    }
 	    exports._ = _;
@@ -10235,7 +10243,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  }
 
 	  // Current version.
-	  _.VERSION = '1.8.3';
+	  _.VERSION = '1.9.1';
 
 	  // Internal function that returns an efficient (for current engines) version
 	  // of the passed-in callback, to be repeatedly applied in other Underscore
@@ -10246,9 +10254,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      case 1: return function(value) {
 	        return func.call(context, value);
 	      };
-	      case 2: return function(value, other) {
-	        return func.call(context, value, other);
-	      };
+	      // The 2-argument case is omitted because we’re not using it.
 	      case 3: return function(value, index, collection) {
 	        return func.call(context, value, index, collection);
 	      };
@@ -10261,34 +10267,51 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    };
 	  };
 
-	  // A mostly-internal function to generate callbacks that can be applied
-	  // to each element in a collection, returning the desired result — either
-	  // identity, an arbitrary callback, a property matcher, or a property accessor.
+	  var builtinIteratee;
+
+	  // An internal function to generate callbacks that can be applied to each
+	  // element in a collection, returning the desired result — either `identity`,
+	  // an arbitrary callback, a property matcher, or a property accessor.
 	  var cb = function(value, context, argCount) {
+	    if (_.iteratee !== builtinIteratee) return _.iteratee(value, context);
 	    if (value == null) return _.identity;
 	    if (_.isFunction(value)) return optimizeCb(value, context, argCount);
-	    if (_.isObject(value)) return _.matcher(value);
+	    if (_.isObject(value) && !_.isArray(value)) return _.matcher(value);
 	    return _.property(value);
 	  };
-	  _.iteratee = function(value, context) {
+
+	  // External wrapper for our callback generator. Users may customize
+	  // `_.iteratee` if they want additional predicate/iteratee shorthand styles.
+	  // This abstraction hides the internal-only argCount argument.
+	  _.iteratee = builtinIteratee = function(value, context) {
 	    return cb(value, context, Infinity);
 	  };
 
-	  // An internal function for creating assigner functions.
-	  var createAssigner = function(keysFunc, undefinedOnly) {
-	    return function(obj) {
-	      var length = arguments.length;
-	      if (length < 2 || obj == null) return obj;
-	      for (var index = 1; index < length; index++) {
-	        var source = arguments[index],
-	            keys = keysFunc(source),
-	            l = keys.length;
-	        for (var i = 0; i < l; i++) {
-	          var key = keys[i];
-	          if (!undefinedOnly || obj[key] === void 0) obj[key] = source[key];
-	        }
+	  // Some functions take a variable number of arguments, or a few expected
+	  // arguments at the beginning and then a variable number of values to operate
+	  // on. This helper accumulates all remaining arguments past the function’s
+	  // argument length (or an explicit `startIndex`), into an array that becomes
+	  // the last argument. Similar to ES6’s "rest parameter".
+	  var restArguments = function(func, startIndex) {
+	    startIndex = startIndex == null ? func.length - 1 : +startIndex;
+	    return function() {
+	      var length = Math.max(arguments.length - startIndex, 0),
+	          rest = Array(length),
+	          index = 0;
+	      for (; index < length; index++) {
+	        rest[index] = arguments[index + startIndex];
 	      }
-	      return obj;
+	      switch (startIndex) {
+	        case 0: return func.call(this, rest);
+	        case 1: return func.call(this, arguments[0], rest);
+	        case 2: return func.call(this, arguments[0], arguments[1], rest);
+	      }
+	      var args = Array(startIndex + 1);
+	      for (index = 0; index < startIndex; index++) {
+	        args[index] = arguments[index];
+	      }
+	      args[startIndex] = rest;
+	      return func.apply(this, args);
 	    };
 	  };
 
@@ -10302,18 +10325,31 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return result;
 	  };
 
-	  var property = function(key) {
+	  var shallowProperty = function(key) {
 	    return function(obj) {
 	      return obj == null ? void 0 : obj[key];
 	    };
 	  };
 
+	  var has = function(obj, path) {
+	    return obj != null && hasOwnProperty.call(obj, path);
+	  }
+
+	  var deepGet = function(obj, path) {
+	    var length = path.length;
+	    for (var i = 0; i < length; i++) {
+	      if (obj == null) return void 0;
+	      obj = obj[path[i]];
+	    }
+	    return length ? obj : void 0;
+	  };
+
 	  // Helper for collection methods to determine whether a collection
-	  // should be iterated as an array or as an object
+	  // should be iterated as an array or as an object.
 	  // Related: http://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength
 	  // Avoids a very nasty iOS 8 JIT bug on ARM-64. #2094
 	  var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
-	  var getLength = property('length');
+	  var getLength = shallowProperty('length');
 	  var isArrayLike = function(collection) {
 	    var length = getLength(collection);
 	    return typeof length == 'number' && length >= 0 && length <= MAX_ARRAY_INDEX;
@@ -10355,30 +10391,29 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  };
 
 	  // Create a reducing function iterating left or right.
-	  function createReduce(dir) {
-	    // Optimized iterator function as using arguments.length
-	    // in the main function will deoptimize the, see #1991.
-	    function iterator(obj, iteratee, memo, keys, index, length) {
+	  var createReduce = function(dir) {
+	    // Wrap code that reassigns argument variables in a separate function than
+	    // the one that accesses `arguments.length` to avoid a perf hit. (#1991)
+	    var reducer = function(obj, iteratee, memo, initial) {
+	      var keys = !isArrayLike(obj) && _.keys(obj),
+	          length = (keys || obj).length,
+	          index = dir > 0 ? 0 : length - 1;
+	      if (!initial) {
+	        memo = obj[keys ? keys[index] : index];
+	        index += dir;
+	      }
 	      for (; index >= 0 && index < length; index += dir) {
 	        var currentKey = keys ? keys[index] : index;
 	        memo = iteratee(memo, obj[currentKey], currentKey, obj);
 	      }
 	      return memo;
-	    }
+	    };
 
 	    return function(obj, iteratee, memo, context) {
-	      iteratee = optimizeCb(iteratee, context, 4);
-	      var keys = !isArrayLike(obj) && _.keys(obj),
-	          length = (keys || obj).length,
-	          index = dir > 0 ? 0 : length - 1;
-	      // Determine the initial value if none is provided.
-	      if (arguments.length < 3) {
-	        memo = obj[keys ? keys[index] : index];
-	        index += dir;
-	      }
-	      return iterator(obj, iteratee, memo, keys, index, length);
+	      var initial = arguments.length >= 3;
+	      return reducer(obj, optimizeCb(iteratee, context, 4), memo, initial);
 	    };
-	  }
+	  };
 
 	  // **Reduce** builds up a single result from a list of values, aka `inject`,
 	  // or `foldl`.
@@ -10389,12 +10424,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Return the first value which passes a truth test. Aliased as `detect`.
 	  _.find = _.detect = function(obj, predicate, context) {
-	    var key;
-	    if (isArrayLike(obj)) {
-	      key = _.findIndex(obj, predicate, context);
-	    } else {
-	      key = _.findKey(obj, predicate, context);
-	    }
+	    var keyFinder = isArrayLike(obj) ? _.findIndex : _.findKey;
+	    var key = keyFinder(obj, predicate, context);
 	    if (key !== void 0 && key !== -1) return obj[key];
 	  };
 
@@ -10449,14 +10480,26 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  };
 
 	  // Invoke a method (with arguments) on every item in a collection.
-	  _.invoke = function(obj, method) {
-	    var args = slice.call(arguments, 2);
-	    var isFunc = _.isFunction(method);
-	    return _.map(obj, function(value) {
-	      var func = isFunc ? method : value[method];
-	      return func == null ? func : func.apply(value, args);
+	  _.invoke = restArguments(function(obj, path, args) {
+	    var contextPath, func;
+	    if (_.isFunction(path)) {
+	      func = path;
+	    } else if (_.isArray(path)) {
+	      contextPath = path.slice(0, -1);
+	      path = path[path.length - 1];
+	    }
+	    return _.map(obj, function(context) {
+	      var method = func;
+	      if (!method) {
+	        if (contextPath && contextPath.length) {
+	          context = deepGet(context, contextPath);
+	        }
+	        if (context == null) return void 0;
+	        method = context[path];
+	      }
+	      return method == null ? method : method.apply(context, args);
 	    });
-	  };
+	  });
 
 	  // Convenience version of a common use case of `map`: fetching a property.
 	  _.pluck = function(obj, key) {
@@ -10479,20 +10522,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  _.max = function(obj, iteratee, context) {
 	    var result = -Infinity, lastComputed = -Infinity,
 	        value, computed;
-	    if (iteratee == null && obj != null) {
+	    if (iteratee == null || typeof iteratee == 'number' && typeof obj[0] != 'object' && obj != null) {
 	      obj = isArrayLike(obj) ? obj : _.values(obj);
 	      for (var i = 0, length = obj.length; i < length; i++) {
 	        value = obj[i];
-	        if (value > result) {
+	        if (value != null && value > result) {
 	          result = value;
 	        }
 	      }
 	    } else {
 	      iteratee = cb(iteratee, context);
-	      _.each(obj, function(value, index, list) {
-	        computed = iteratee(value, index, list);
+	      _.each(obj, function(v, index, list) {
+	        computed = iteratee(v, index, list);
 	        if (computed > lastComputed || computed === -Infinity && result === -Infinity) {
-	          result = value;
+	          result = v;
 	          lastComputed = computed;
 	        }
 	      });
@@ -10504,20 +10547,20 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  _.min = function(obj, iteratee, context) {
 	    var result = Infinity, lastComputed = Infinity,
 	        value, computed;
-	    if (iteratee == null && obj != null) {
+	    if (iteratee == null || typeof iteratee == 'number' && typeof obj[0] != 'object' && obj != null) {
 	      obj = isArrayLike(obj) ? obj : _.values(obj);
 	      for (var i = 0, length = obj.length; i < length; i++) {
 	        value = obj[i];
-	        if (value < result) {
+	        if (value != null && value < result) {
 	          result = value;
 	        }
 	      }
 	    } else {
 	      iteratee = cb(iteratee, context);
-	      _.each(obj, function(value, index, list) {
-	        computed = iteratee(value, index, list);
+	      _.each(obj, function(v, index, list) {
+	        computed = iteratee(v, index, list);
 	        if (computed < lastComputed || computed === Infinity && result === Infinity) {
-	          result = value;
+	          result = v;
 	          lastComputed = computed;
 	        }
 	      });
@@ -10525,21 +10568,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return result;
 	  };
 
-	  // Shuffle a collection, using the modern version of the
-	  // [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
+	  // Shuffle a collection.
 	  _.shuffle = function(obj) {
-	    var set = isArrayLike(obj) ? obj : _.values(obj);
-	    var length = set.length;
-	    var shuffled = Array(length);
-	    for (var index = 0, rand; index < length; index++) {
-	      rand = _.random(0, index);
-	      if (rand !== index) shuffled[index] = shuffled[rand];
-	      shuffled[rand] = set[index];
-	    }
-	    return shuffled;
+	    return _.sample(obj, Infinity);
 	  };
 
-	  // Sample **n** random values from a collection.
+	  // Sample **n** random values from a collection using the modern version of the
+	  // [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
 	  // If **n** is not specified, returns a single random element.
 	  // The internal `guard` argument allows it to work with `map`.
 	  _.sample = function(obj, n, guard) {
@@ -10547,17 +10582,28 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      if (!isArrayLike(obj)) obj = _.values(obj);
 	      return obj[_.random(obj.length - 1)];
 	    }
-	    return _.shuffle(obj).slice(0, Math.max(0, n));
+	    var sample = isArrayLike(obj) ? _.clone(obj) : _.values(obj);
+	    var length = getLength(sample);
+	    n = Math.max(Math.min(n, length), 0);
+	    var last = length - 1;
+	    for (var index = 0; index < n; index++) {
+	      var rand = _.random(index, last);
+	      var temp = sample[index];
+	      sample[index] = sample[rand];
+	      sample[rand] = temp;
+	    }
+	    return sample.slice(0, n);
 	  };
 
 	  // Sort the object's values by a criterion produced by an iteratee.
 	  _.sortBy = function(obj, iteratee, context) {
+	    var index = 0;
 	    iteratee = cb(iteratee, context);
-	    return _.pluck(_.map(obj, function(value, index, list) {
+	    return _.pluck(_.map(obj, function(value, key, list) {
 	      return {
 	        value: value,
-	        index: index,
-	        criteria: iteratee(value, index, list)
+	        index: index++,
+	        criteria: iteratee(value, key, list)
 	      };
 	    }).sort(function(left, right) {
 	      var a = left.criteria;
@@ -10571,9 +10617,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  };
 
 	  // An internal function used for aggregate "group by" operations.
-	  var group = function(behavior) {
+	  var group = function(behavior, partition) {
 	    return function(obj, iteratee, context) {
-	      var result = {};
+	      var result = partition ? [[], []] : {};
 	      iteratee = cb(iteratee, context);
 	      _.each(obj, function(value, index) {
 	        var key = iteratee(value, index, obj);
@@ -10586,7 +10632,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // Groups the object's values by a criterion. Pass either a string attribute
 	  // to group by, or a function that returns the criterion.
 	  _.groupBy = group(function(result, value, key) {
-	    if (_.has(result, key)) result[key].push(value); else result[key] = [value];
+	    if (has(result, key)) result[key].push(value); else result[key] = [value];
 	  });
 
 	  // Indexes the object's values by a criterion, similar to `groupBy`, but for
@@ -10599,13 +10645,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // either a string attribute to count by, or a function that returns the
 	  // criterion.
 	  _.countBy = group(function(result, value, key) {
-	    if (_.has(result, key)) result[key]++; else result[key] = 1;
+	    if (has(result, key)) result[key]++; else result[key] = 1;
 	  });
 
+	  var reStrSymbol = /[^\ud800-\udfff]|[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udfff]/g;
 	  // Safely create a real, live array from anything iterable.
 	  _.toArray = function(obj) {
 	    if (!obj) return [];
 	    if (_.isArray(obj)) return slice.call(obj);
+	    if (_.isString(obj)) {
+	      // Keep surrogate pair characters together
+	      return obj.match(reStrSymbol);
+	    }
 	    if (isArrayLike(obj)) return _.map(obj, _.identity);
 	    return _.values(obj);
 	  };
@@ -10618,14 +10669,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Split a collection into two arrays: one whose elements all satisfy the given
 	  // predicate, and one whose elements all do not satisfy the predicate.
-	  _.partition = function(obj, predicate, context) {
-	    predicate = cb(predicate, context);
-	    var pass = [], fail = [];
-	    _.each(obj, function(value, key, obj) {
-	      (predicate(value, key, obj) ? pass : fail).push(value);
-	    });
-	    return [pass, fail];
-	  };
+	  _.partition = group(function(result, value, pass) {
+	    result[pass ? 0 : 1].push(value);
+	  }, true);
 
 	  // Array Functions
 	  // ---------------
@@ -10634,7 +10680,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // values in the array. Aliased as `head` and `take`. The **guard** check
 	  // allows it to work with `_.map`.
 	  _.first = _.head = _.take = function(array, n, guard) {
-	    if (array == null) return void 0;
+	    if (array == null || array.length < 1) return n == null ? void 0 : [];
 	    if (n == null || guard) return array[0];
 	    return _.initial(array, array.length - n);
 	  };
@@ -10649,7 +10695,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // Get the last element of an array. Passing **n** will return the last N
 	  // values in the array.
 	  _.last = function(array, n, guard) {
-	    if (array == null) return void 0;
+	    if (array == null || array.length < 1) return n == null ? void 0 : [];
 	    if (n == null || guard) return array[array.length - 1];
 	    return _.rest(array, Math.max(0, array.length - n));
 	  };
@@ -10663,21 +10709,23 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Trim out all falsy values from an array.
 	  _.compact = function(array) {
-	    return _.filter(array, _.identity);
+	    return _.filter(array, Boolean);
 	  };
 
 	  // Internal implementation of a recursive `flatten` function.
-	  var flatten = function(input, shallow, strict, startIndex) {
-	    var output = [], idx = 0;
-	    for (var i = startIndex || 0, length = getLength(input); i < length; i++) {
+	  var flatten = function(input, shallow, strict, output) {
+	    output = output || [];
+	    var idx = output.length;
+	    for (var i = 0, length = getLength(input); i < length; i++) {
 	      var value = input[i];
 	      if (isArrayLike(value) && (_.isArray(value) || _.isArguments(value))) {
-	        //flatten current level of array or arguments object
-	        if (!shallow) value = flatten(value, shallow, strict);
-	        var j = 0, len = value.length;
-	        output.length += len;
-	        while (j < len) {
-	          output[idx++] = value[j++];
+	        // Flatten current level of array or arguments object.
+	        if (shallow) {
+	          var j = 0, len = value.length;
+	          while (j < len) output[idx++] = value[j++];
+	        } else {
+	          flatten(value, shallow, strict, output);
+	          idx = output.length;
 	        }
 	      } else if (!strict) {
 	        output[idx++] = value;
@@ -10692,12 +10740,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  };
 
 	  // Return a version of the array that does not contain the specified value(s).
-	  _.without = function(array) {
-	    return _.difference(array, slice.call(arguments, 1));
-	  };
+	  _.without = restArguments(function(array, otherArrays) {
+	    return _.difference(array, otherArrays);
+	  });
 
 	  // Produce a duplicate-free version of the array. If the array has already
 	  // been sorted, you have the option of using a faster algorithm.
+	  // The faster algorithm will not work with an iteratee if the iteratee
+	  // is not a one-to-one function, so providing an iteratee will disable
+	  // the faster algorithm.
 	  // Aliased as `unique`.
 	  _.uniq = _.unique = function(array, isSorted, iteratee, context) {
 	    if (!_.isBoolean(isSorted)) {
@@ -10711,7 +10762,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    for (var i = 0, length = getLength(array); i < length; i++) {
 	      var value = array[i],
 	          computed = iteratee ? iteratee(value, i, array) : value;
-	      if (isSorted) {
+	      if (isSorted && !iteratee) {
 	        if (!i || seen !== computed) result.push(value);
 	        seen = computed;
 	      } else if (iteratee) {
@@ -10728,9 +10779,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Produce an array that contains the union: each distinct element from all of
 	  // the passed-in arrays.
-	  _.union = function() {
-	    return _.uniq(flatten(arguments, true, true));
-	  };
+	  _.union = restArguments(function(arrays) {
+	    return _.uniq(flatten(arrays, true, true));
+	  });
 
 	  // Produce an array that contains every item shared between all the
 	  // passed-in arrays.
@@ -10740,7 +10791,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    for (var i = 0, length = getLength(array); i < length; i++) {
 	      var item = array[i];
 	      if (_.contains(result, item)) continue;
-	      for (var j = 1; j < argsLength; j++) {
+	      var j;
+	      for (j = 1; j < argsLength; j++) {
 	        if (!_.contains(arguments[j], item)) break;
 	      }
 	      if (j === argsLength) result.push(item);
@@ -10750,21 +10802,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Take the difference between one array and a number of other arrays.
 	  // Only the elements present in just the first array will remain.
-	  _.difference = function(array) {
-	    var rest = flatten(arguments, true, true, 1);
+	  _.difference = restArguments(function(array, rest) {
+	    rest = flatten(rest, true, true);
 	    return _.filter(array, function(value){
 	      return !_.contains(rest, value);
 	    });
-	  };
-
-	  // Zip together multiple lists into a single array -- elements that share
-	  // an index go together.
-	  _.zip = function() {
-	    return _.unzip(arguments);
-	  };
+	  });
 
 	  // Complement of _.zip. Unzip accepts an array of arrays and groups
-	  // each array's elements on shared indices
+	  // each array's elements on shared indices.
 	  _.unzip = function(array) {
 	    var length = array && _.max(array, getLength).length || 0;
 	    var result = Array(length);
@@ -10775,9 +10821,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return result;
 	  };
 
+	  // Zip together multiple lists into a single array -- elements that share
+	  // an index go together.
+	  _.zip = restArguments(_.unzip);
+
 	  // Converts lists into objects. Pass either a single array of `[key, value]`
 	  // pairs, or two parallel arrays of the same length -- one of keys, and one of
-	  // the corresponding values.
+	  // the corresponding values. Passing by pairs is the reverse of _.pairs.
 	  _.object = function(list, values) {
 	    var result = {};
 	    for (var i = 0, length = getLength(list); i < length; i++) {
@@ -10790,8 +10840,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return result;
 	  };
 
-	  // Generator function to create the findIndex and findLastIndex functions
-	  function createPredicateIndexFinder(dir) {
+	  // Generator function to create the findIndex and findLastIndex functions.
+	  var createPredicateIndexFinder = function(dir) {
 	    return function(array, predicate, context) {
 	      predicate = cb(predicate, context);
 	      var length = getLength(array);
@@ -10801,9 +10851,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      }
 	      return -1;
 	    };
-	  }
+	  };
 
-	  // Returns the first index on an array-like that passes a predicate test
+	  // Returns the first index on an array-like that passes a predicate test.
 	  _.findIndex = createPredicateIndexFinder(1);
 	  _.findLastIndex = createPredicateIndexFinder(-1);
 
@@ -10820,15 +10870,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return low;
 	  };
 
-	  // Generator function to create the indexOf and lastIndexOf functions
-	  function createIndexFinder(dir, predicateFind, sortedIndex) {
+	  // Generator function to create the indexOf and lastIndexOf functions.
+	  var createIndexFinder = function(dir, predicateFind, sortedIndex) {
 	    return function(array, item, idx) {
 	      var i = 0, length = getLength(array);
 	      if (typeof idx == 'number') {
 	        if (dir > 0) {
-	            i = idx >= 0 ? idx : Math.max(idx + length, i);
+	          i = idx >= 0 ? idx : Math.max(idx + length, i);
 	        } else {
-	            length = idx >= 0 ? Math.min(idx + 1, length) : idx + length + 1;
+	          length = idx >= 0 ? Math.min(idx + 1, length) : idx + length + 1;
 	        }
 	      } else if (sortedIndex && idx && length) {
 	        idx = sortedIndex(array, item);
@@ -10843,7 +10893,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      }
 	      return -1;
 	    };
-	  }
+	  };
 
 	  // Return the position of the first occurrence of an item in an array,
 	  // or -1 if the item is not included in the array.
@@ -10860,7 +10910,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      stop = start || 0;
 	      start = 0;
 	    }
-	    step = step || 1;
+	    if (!step) {
+	      step = stop < start ? -1 : 1;
+	    }
 
 	    var length = Math.max(Math.ceil((stop - start) / step), 0);
 	    var range = Array(length);
@@ -10872,11 +10924,23 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return range;
 	  };
 
+	  // Chunk a single array into multiple arrays, each containing `count` or fewer
+	  // items.
+	  _.chunk = function(array, count) {
+	    if (count == null || count < 1) return [];
+	    var result = [];
+	    var i = 0, length = array.length;
+	    while (i < length) {
+	      result.push(slice.call(array, i, i += count));
+	    }
+	    return result;
+	  };
+
 	  // Function (ahem) Functions
 	  // ------------------
 
 	  // Determines whether to execute a function as a constructor
-	  // or a normal function with the provided arguments
+	  // or a normal function with the provided arguments.
 	  var executeBound = function(sourceFunc, boundFunc, context, callingContext, args) {
 	    if (!(callingContext instanceof boundFunc)) return sourceFunc.apply(context, args);
 	    var self = baseCreate(sourceFunc.prototype);
@@ -10888,52 +10952,53 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // Create a function bound to a given object (assigning `this`, and arguments,
 	  // optionally). Delegates to **ECMAScript 5**'s native `Function.bind` if
 	  // available.
-	  _.bind = function(func, context) {
-	    if (nativeBind && func.bind === nativeBind) return nativeBind.apply(func, slice.call(arguments, 1));
+	  _.bind = restArguments(function(func, context, args) {
 	    if (!_.isFunction(func)) throw new TypeError('Bind must be called on a function');
-	    var args = slice.call(arguments, 2);
-	    var bound = function() {
-	      return executeBound(func, bound, context, this, args.concat(slice.call(arguments)));
-	    };
+	    var bound = restArguments(function(callArgs) {
+	      return executeBound(func, bound, context, this, args.concat(callArgs));
+	    });
 	    return bound;
-	  };
+	  });
 
 	  // Partially apply a function by creating a version that has had some of its
 	  // arguments pre-filled, without changing its dynamic `this` context. _ acts
-	  // as a placeholder, allowing any combination of arguments to be pre-filled.
-	  _.partial = function(func) {
-	    var boundArgs = slice.call(arguments, 1);
+	  // as a placeholder by default, allowing any combination of arguments to be
+	  // pre-filled. Set `_.partial.placeholder` for a custom placeholder argument.
+	  _.partial = restArguments(function(func, boundArgs) {
+	    var placeholder = _.partial.placeholder;
 	    var bound = function() {
 	      var position = 0, length = boundArgs.length;
 	      var args = Array(length);
 	      for (var i = 0; i < length; i++) {
-	        args[i] = boundArgs[i] === _ ? arguments[position++] : boundArgs[i];
+	        args[i] = boundArgs[i] === placeholder ? arguments[position++] : boundArgs[i];
 	      }
 	      while (position < arguments.length) args.push(arguments[position++]);
 	      return executeBound(func, bound, this, this, args);
 	    };
 	    return bound;
-	  };
+	  });
+
+	  _.partial.placeholder = _;
 
 	  // Bind a number of an object's methods to that object. Remaining arguments
 	  // are the method names to be bound. Useful for ensuring that all callbacks
 	  // defined on an object belong to it.
-	  _.bindAll = function(obj) {
-	    var i, length = arguments.length, key;
-	    if (length <= 1) throw new Error('bindAll must be passed function names');
-	    for (i = 1; i < length; i++) {
-	      key = arguments[i];
+	  _.bindAll = restArguments(function(obj, keys) {
+	    keys = flatten(keys, false, false);
+	    var index = keys.length;
+	    if (index < 1) throw new Error('bindAll must be passed function names');
+	    while (index--) {
+	      var key = keys[index];
 	      obj[key] = _.bind(obj[key], obj);
 	    }
-	    return obj;
-	  };
+	  });
 
 	  // Memoize an expensive function by storing its results.
 	  _.memoize = function(func, hasher) {
 	    var memoize = function(key) {
 	      var cache = memoize.cache;
 	      var address = '' + (hasher ? hasher.apply(this, arguments) : key);
-	      if (!_.has(cache, address)) cache[address] = func.apply(this, arguments);
+	      if (!has(cache, address)) cache[address] = func.apply(this, arguments);
 	      return cache[address];
 	    };
 	    memoize.cache = {};
@@ -10942,12 +11007,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Delays a function for the given number of milliseconds, and then calls
 	  // it with the arguments supplied.
-	  _.delay = function(func, wait) {
-	    var args = slice.call(arguments, 2);
-	    return setTimeout(function(){
+	  _.delay = restArguments(function(func, wait, args) {
+	    return setTimeout(function() {
 	      return func.apply(null, args);
 	    }, wait);
-	  };
+	  });
 
 	  // Defers a function, scheduling it to run after the current call stack has
 	  // cleared.
@@ -10959,17 +11023,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // but if you'd like to disable the execution on the leading edge, pass
 	  // `{leading: false}`. To disable execution on the trailing edge, ditto.
 	  _.throttle = function(func, wait, options) {
-	    var context, args, result;
-	    var timeout = null;
+	    var timeout, context, args, result;
 	    var previous = 0;
 	    if (!options) options = {};
+
 	    var later = function() {
 	      previous = options.leading === false ? 0 : _.now();
 	      timeout = null;
 	      result = func.apply(context, args);
 	      if (!timeout) context = args = null;
 	    };
-	    return function() {
+
+	    var throttled = function() {
 	      var now = _.now();
 	      if (!previous && options.leading === false) previous = now;
 	      var remaining = wait - (now - previous);
@@ -10988,6 +11053,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      }
 	      return result;
 	    };
+
+	    throttled.cancel = function() {
+	      clearTimeout(timeout);
+	      previous = 0;
+	      timeout = context = args = null;
+	    };
+
+	    return throttled;
 	  };
 
 	  // Returns a function, that, as long as it continues to be invoked, will not
@@ -10995,35 +11068,32 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // N milliseconds. If `immediate` is passed, trigger the function on the
 	  // leading edge, instead of the trailing.
 	  _.debounce = function(func, wait, immediate) {
-	    var timeout, args, context, timestamp, result;
+	    var timeout, result;
 
-	    var later = function() {
-	      var last = _.now() - timestamp;
-
-	      if (last < wait && last >= 0) {
-	        timeout = setTimeout(later, wait - last);
-	      } else {
-	        timeout = null;
-	        if (!immediate) {
-	          result = func.apply(context, args);
-	          if (!timeout) context = args = null;
-	        }
-	      }
+	    var later = function(context, args) {
+	      timeout = null;
+	      if (args) result = func.apply(context, args);
 	    };
 
-	    return function() {
-	      context = this;
-	      args = arguments;
-	      timestamp = _.now();
-	      var callNow = immediate && !timeout;
-	      if (!timeout) timeout = setTimeout(later, wait);
-	      if (callNow) {
-	        result = func.apply(context, args);
-	        context = args = null;
+	    var debounced = restArguments(function(args) {
+	      if (timeout) clearTimeout(timeout);
+	      if (immediate) {
+	        var callNow = !timeout;
+	        timeout = setTimeout(later, wait);
+	        if (callNow) result = func.apply(this, args);
+	      } else {
+	        timeout = _.delay(later, wait, this, args);
 	      }
 
 	      return result;
+	    });
+
+	    debounced.cancel = function() {
+	      clearTimeout(timeout);
+	      timeout = null;
 	    };
+
+	    return debounced;
 	  };
 
 	  // Returns the first function passed as an argument to the second,
@@ -11078,22 +11148,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // often you call it. Useful for lazy initialization.
 	  _.once = _.partial(_.before, 2);
 
+	  _.restArguments = restArguments;
+
 	  // Object Functions
 	  // ----------------
 
 	  // Keys in IE < 9 that won't be iterated by `for key in ...` and thus missed.
 	  var hasEnumBug = !{toString: null}.propertyIsEnumerable('toString');
 	  var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString',
-	                      'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'];
+	    'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'];
 
-	  function collectNonEnumProps(obj, keys) {
+	  var collectNonEnumProps = function(obj, keys) {
 	    var nonEnumIdx = nonEnumerableProps.length;
 	    var constructor = obj.constructor;
-	    var proto = (_.isFunction(constructor) && constructor.prototype) || ObjProto;
+	    var proto = _.isFunction(constructor) && constructor.prototype || ObjProto;
 
 	    // Constructor is a special case.
 	    var prop = 'constructor';
-	    if (_.has(obj, prop) && !_.contains(keys, prop)) keys.push(prop);
+	    if (has(obj, prop) && !_.contains(keys, prop)) keys.push(prop);
 
 	    while (nonEnumIdx--) {
 	      prop = nonEnumerableProps[nonEnumIdx];
@@ -11101,15 +11173,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        keys.push(prop);
 	      }
 	    }
-	  }
+	  };
 
 	  // Retrieve the names of an object's own properties.
-	  // Delegates to **ECMAScript 5**'s native `Object.keys`
+	  // Delegates to **ECMAScript 5**'s native `Object.keys`.
 	  _.keys = function(obj) {
 	    if (!_.isObject(obj)) return [];
 	    if (nativeKeys) return nativeKeys(obj);
 	    var keys = [];
-	    for (var key in obj) if (_.has(obj, key)) keys.push(key);
+	    for (var key in obj) if (has(obj, key)) keys.push(key);
 	    // Ahem, IE < 9.
 	    if (hasEnumBug) collectNonEnumProps(obj, keys);
 	    return keys;
@@ -11136,22 +11208,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return values;
 	  };
 
-	  // Returns the results of applying the iteratee to each element of the object
-	  // In contrast to _.map it returns an object
+	  // Returns the results of applying the iteratee to each element of the object.
+	  // In contrast to _.map it returns an object.
 	  _.mapObject = function(obj, iteratee, context) {
 	    iteratee = cb(iteratee, context);
-	    var keys =  _.keys(obj),
-	          length = keys.length,
-	          results = {},
-	          currentKey;
-	      for (var index = 0; index < length; index++) {
-	        currentKey = keys[index];
-	        results[currentKey] = iteratee(obj[currentKey], currentKey, obj);
-	      }
-	      return results;
+	    var keys = _.keys(obj),
+	        length = keys.length,
+	        results = {};
+	    for (var index = 0; index < length; index++) {
+	      var currentKey = keys[index];
+	      results[currentKey] = iteratee(obj[currentKey], currentKey, obj);
+	    }
+	    return results;
 	  };
 
 	  // Convert an object into a list of `[key, value]` pairs.
+	  // The opposite of _.object.
 	  _.pairs = function(obj) {
 	    var keys = _.keys(obj);
 	    var length = keys.length;
@@ -11173,7 +11245,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  };
 
 	  // Return a sorted list of the function names available on the object.
-	  // Aliased as `methods`
+	  // Aliased as `methods`.
 	  _.functions = _.methods = function(obj) {
 	    var names = [];
 	    for (var key in obj) {
@@ -11182,14 +11254,33 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return names.sort();
 	  };
 
+	  // An internal function for creating assigner functions.
+	  var createAssigner = function(keysFunc, defaults) {
+	    return function(obj) {
+	      var length = arguments.length;
+	      if (defaults) obj = Object(obj);
+	      if (length < 2 || obj == null) return obj;
+	      for (var index = 1; index < length; index++) {
+	        var source = arguments[index],
+	            keys = keysFunc(source),
+	            l = keys.length;
+	        for (var i = 0; i < l; i++) {
+	          var key = keys[i];
+	          if (!defaults || obj[key] === void 0) obj[key] = source[key];
+	        }
+	      }
+	      return obj;
+	    };
+	  };
+
 	  // Extend a given object with all the properties in passed-in object(s).
 	  _.extend = createAssigner(_.allKeys);
 
-	  // Assigns a given object with all the own properties in the passed-in object(s)
+	  // Assigns a given object with all the own properties in the passed-in object(s).
 	  // (https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
 	  _.extendOwn = _.assign = createAssigner(_.keys);
 
-	  // Returns the first key on an object that passes a predicate test
+	  // Returns the first key on an object that passes a predicate test.
 	  _.findKey = function(obj, predicate, context) {
 	    predicate = cb(predicate, context);
 	    var keys = _.keys(obj), key;
@@ -11199,16 +11290,21 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 	  };
 
+	  // Internal pick helper function to determine if `obj` has key `key`.
+	  var keyInObj = function(value, key, obj) {
+	    return key in obj;
+	  };
+
 	  // Return a copy of the object only containing the whitelisted properties.
-	  _.pick = function(object, oiteratee, context) {
-	    var result = {}, obj = object, iteratee, keys;
+	  _.pick = restArguments(function(obj, keys) {
+	    var result = {}, iteratee = keys[0];
 	    if (obj == null) return result;
-	    if (_.isFunction(oiteratee)) {
+	    if (_.isFunction(iteratee)) {
+	      if (keys.length > 1) iteratee = optimizeCb(iteratee, keys[1]);
 	      keys = _.allKeys(obj);
-	      iteratee = optimizeCb(oiteratee, context);
 	    } else {
-	      keys = flatten(arguments, false, false, 1);
-	      iteratee = function(value, key, obj) { return key in obj; };
+	      iteratee = keyInObj;
+	      keys = flatten(keys, false, false);
 	      obj = Object(obj);
 	    }
 	    for (var i = 0, length = keys.length; i < length; i++) {
@@ -11217,20 +11313,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      if (iteratee(value, key, obj)) result[key] = value;
 	    }
 	    return result;
-	  };
+	  });
 
-	   // Return a copy of the object without the blacklisted properties.
-	  _.omit = function(obj, iteratee, context) {
+	  // Return a copy of the object without the blacklisted properties.
+	  _.omit = restArguments(function(obj, keys) {
+	    var iteratee = keys[0], context;
 	    if (_.isFunction(iteratee)) {
 	      iteratee = _.negate(iteratee);
+	      if (keys.length > 1) context = keys[1];
 	    } else {
-	      var keys = _.map(flatten(arguments, false, false, 1), String);
+	      keys = _.map(flatten(keys, false, false), String);
 	      iteratee = function(value, key) {
 	        return !_.contains(keys, key);
 	      };
 	    }
 	    return _.pick(obj, iteratee, context);
-	  };
+	  });
 
 	  // Fill in a given object with default properties.
 	  _.defaults = createAssigner(_.allKeys, true);
@@ -11272,12 +11370,23 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 	  // Internal recursive comparison function for `isEqual`.
-	  var eq = function(a, b, aStack, bStack) {
+	  var eq, deepEq;
+	  eq = function(a, b, aStack, bStack) {
 	    // Identical objects are equal. `0 === -0`, but they aren't identical.
 	    // See the [Harmony `egal` proposal](http://wiki.ecmascript.org/doku.php?id=harmony:egal).
 	    if (a === b) return a !== 0 || 1 / a === 1 / b;
-	    // A strict comparison is necessary because `null == undefined`.
-	    if (a == null || b == null) return a === b;
+	    // `null` or `undefined` only equal to itself (strict comparison).
+	    if (a == null || b == null) return false;
+	    // `NaN`s are equivalent, but non-reflexive.
+	    if (a !== a) return b !== b;
+	    // Exhaust primitive checks
+	    var type = typeof a;
+	    if (type !== 'function' && type !== 'object' && typeof b != 'object') return false;
+	    return deepEq(a, b, aStack, bStack);
+	  };
+
+	  // Internal recursive comparison function for `isEqual`.
+	  deepEq = function(a, b, aStack, bStack) {
 	    // Unwrap any wrapped objects.
 	    if (a instanceof _) a = a._wrapped;
 	    if (b instanceof _) b = b._wrapped;
@@ -11294,7 +11403,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return '' + a === '' + b;
 	      case '[object Number]':
 	        // `NaN`s are equivalent, but non-reflexive.
-	        // Object(NaN) is equivalent to NaN
+	        // Object(NaN) is equivalent to NaN.
 	        if (+a !== +a) return +b !== +b;
 	        // An `egal` comparison is performed for other numeric values.
 	        return +a === 0 ? 1 / +a === 1 / b : +a === +b;
@@ -11304,6 +11413,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        // millisecond representations. Note that invalid dates with millisecond representations
 	        // of `NaN` are not equivalent.
 	        return +a === +b;
+	      case '[object Symbol]':
+	        return SymbolProto.valueOf.call(a) === SymbolProto.valueOf.call(b);
 	    }
 
 	    var areArrays = className === '[object Array]';
@@ -11355,7 +11466,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      while (length--) {
 	        // Deep compare each member
 	        key = keys[length];
-	        if (!(_.has(b, key) && eq(a[key], b[key], aStack, bStack))) return false;
+	        if (!(has(b, key) && eq(a[key], b[key], aStack, bStack))) return false;
 	      }
 	    }
 	    // Remove the first object from the stack of traversed objects.
@@ -11394,8 +11505,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return type === 'function' || type === 'object' && !!obj;
 	  };
 
-	  // Add some isType methods: isArguments, isFunction, isString, isNumber, isDate, isRegExp, isError.
-	  _.each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp', 'Error'], function(name) {
+	  // Add some isType methods: isArguments, isFunction, isString, isNumber, isDate, isRegExp, isError, isMap, isWeakMap, isSet, isWeakSet.
+	  _.each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp', 'Error', 'Symbol', 'Map', 'WeakMap', 'Set', 'WeakSet'], function(name) {
 	    _['is' + name] = function(obj) {
 	      return toString.call(obj) === '[object ' + name + ']';
 	    };
@@ -11405,13 +11516,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // there isn't any inspectable "Arguments" type.
 	  if (!_.isArguments(arguments)) {
 	    _.isArguments = function(obj) {
-	      return _.has(obj, 'callee');
+	      return has(obj, 'callee');
 	    };
 	  }
 
 	  // Optimize `isFunction` if appropriate. Work around some typeof bugs in old v8,
-	  // IE 11 (#1621), and in Safari 8 (#1929).
-	  if (typeof /./ != 'function' && typeof Int8Array != 'object') {
+	  // IE 11 (#1621), Safari 8 (#1929), and PhantomJS (#2236).
+	  var nodelist = root.document && root.document.childNodes;
+	  if (typeof /./ != 'function' && typeof Int8Array != 'object' && typeof nodelist != 'function') {
 	    _.isFunction = function(obj) {
 	      return typeof obj == 'function' || false;
 	    };
@@ -11419,12 +11531,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Is a given object a finite number?
 	  _.isFinite = function(obj) {
-	    return isFinite(obj) && !isNaN(parseFloat(obj));
+	    return !_.isSymbol(obj) && isFinite(obj) && !isNaN(parseFloat(obj));
 	  };
 
-	  // Is the given value `NaN`? (NaN is the only number which does not equal itself).
+	  // Is the given value `NaN`?
 	  _.isNaN = function(obj) {
-	    return _.isNumber(obj) && obj !== +obj;
+	    return _.isNumber(obj) && isNaN(obj);
 	  };
 
 	  // Is a given value a boolean?
@@ -11444,8 +11556,19 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  // Shortcut function for checking if an object has a given property directly
 	  // on itself (in other words, not on a prototype).
-	  _.has = function(obj, key) {
-	    return obj != null && hasOwnProperty.call(obj, key);
+	  _.has = function(obj, path) {
+	    if (!_.isArray(path)) {
+	      return has(obj, path);
+	    }
+	    var length = path.length;
+	    for (var i = 0; i < length; i++) {
+	      var key = path[i];
+	      if (obj == null || !hasOwnProperty.call(obj, key)) {
+	        return false;
+	      }
+	      obj = obj[key];
+	    }
+	    return !!length;
 	  };
 
 	  // Utility Functions
@@ -11472,12 +11595,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  _.noop = function(){};
 
-	  _.property = property;
+	  // Creates a function that, when passed an object, will traverse that object’s
+	  // properties down the given `path`, specified as an array of keys or indexes.
+	  _.property = function(path) {
+	    if (!_.isArray(path)) {
+	      return shallowProperty(path);
+	    }
+	    return function(obj) {
+	      return deepGet(obj, path);
+	    };
+	  };
 
 	  // Generates a function for a given object that returns a given property.
 	  _.propertyOf = function(obj) {
-	    return obj == null ? function(){} : function(key) {
-	      return obj[key];
+	    if (obj == null) {
+	      return function(){};
+	    }
+	    return function(path) {
+	      return !_.isArray(path) ? obj[path] : deepGet(obj, path);
 	    };
 	  };
 
@@ -11512,7 +11647,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return new Date().getTime();
 	  };
 
-	   // List of HTML entities for escaping.
+	  // List of HTML entities for escaping.
 	  var escapeMap = {
 	    '&': '&amp;',
 	    '<': '&lt;',
@@ -11528,7 +11663,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    var escaper = function(match) {
 	      return map[match];
 	    };
-	    // Regexes for identifying a key that needs to be escaped
+	    // Regexes for identifying a key that needs to be escaped.
 	    var source = '(?:' + _.keys(map).join('|') + ')';
 	    var testRegexp = RegExp(source);
 	    var replaceRegexp = RegExp(source, 'g');
@@ -11540,14 +11675,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  _.escape = createEscaper(escapeMap);
 	  _.unescape = createEscaper(unescapeMap);
 
-	  // If the value of the named `property` is a function then invoke it with the
-	  // `object` as context; otherwise, return it.
-	  _.result = function(object, property, fallback) {
-	    var value = object == null ? void 0 : object[property];
-	    if (value === void 0) {
-	      value = fallback;
+	  // Traverses the children of `obj` along `path`. If a child is a function, it
+	  // is invoked with its parent as context. Returns the value of the final
+	  // child, or `fallback` if any child is undefined.
+	  _.result = function(obj, path, fallback) {
+	    if (!_.isArray(path)) path = [path];
+	    var length = path.length;
+	    if (!length) {
+	      return _.isFunction(fallback) ? fallback.call(obj) : fallback;
 	    }
-	    return _.isFunction(value) ? value.call(object) : value;
+	    for (var i = 0; i < length; i++) {
+	      var prop = obj == null ? void 0 : obj[path[i]];
+	      if (prop === void 0) {
+	        prop = fallback;
+	        i = length; // Ensure we don't continue iterating.
+	      }
+	      obj = _.isFunction(prop) ? prop.call(obj) : prop;
+	    }
+	    return obj;
 	  };
 
 	  // Generate a unique integer id (unique within the entire client session).
@@ -11561,9 +11706,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // By default, Underscore uses ERB-style template delimiters, change the
 	  // following template settings to use alternative delimiters.
 	  _.templateSettings = {
-	    evaluate    : /<%([\s\S]+?)%>/g,
-	    interpolate : /<%=([\s\S]+?)%>/g,
-	    escape      : /<%-([\s\S]+?)%>/g
+	    evaluate: /<%([\s\S]+?)%>/g,
+	    interpolate: /<%=([\s\S]+?)%>/g,
+	    escape: /<%-([\s\S]+?)%>/g
 	  };
 
 	  // When customizing `templateSettings`, if you don't want to define an
@@ -11574,15 +11719,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // Certain characters need to be escaped so that they can be put into a
 	  // string literal.
 	  var escapes = {
-	    "'":      "'",
-	    '\\':     '\\',
-	    '\r':     'r',
-	    '\n':     'n',
+	    "'": "'",
+	    '\\': '\\',
+	    '\r': 'r',
+	    '\n': 'n',
 	    '\u2028': 'u2028',
 	    '\u2029': 'u2029'
 	  };
 
-	  var escaper = /\\|'|\r|\n|\u2028|\u2029/g;
+	  var escapeRegExp = /\\|'|\r|\n|\u2028|\u2029/g;
 
 	  var escapeChar = function(match) {
 	    return '\\' + escapes[match];
@@ -11607,7 +11752,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    var index = 0;
 	    var source = "__p+='";
 	    text.replace(matcher, function(match, escape, interpolate, evaluate, offset) {
-	      source += text.slice(index, offset).replace(escaper, escapeChar);
+	      source += text.slice(index, offset).replace(escapeRegExp, escapeChar);
 	      index = offset + match.length;
 
 	      if (escape) {
@@ -11618,7 +11763,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        source += "';\n" + evaluate + "\n__p+='";
 	      }
 
-	      // Adobe VMs need the match returned to produce the correct offest.
+	      // Adobe VMs need the match returned to produce the correct offset.
 	      return match;
 	    });
 	    source += "';\n";
@@ -11630,8 +11775,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      "print=function(){__p+=__j.call(arguments,'');};\n" +
 	      source + 'return __p;\n';
 
+	    var render;
 	    try {
-	      var render = new Function(settings.variable || 'obj', '_', source);
+	      render = new Function(settings.variable || 'obj', '_', source);
 	    } catch (e) {
 	      e.source = source;
 	      throw e;
@@ -11662,7 +11808,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // underscore functions. Wrapped objects may be chained.
 
 	  // Helper function to continue chaining intermediate results.
-	  var result = function(instance, obj) {
+	  var chainResult = function(instance, obj) {
 	    return instance._chain ? _(obj).chain() : obj;
 	  };
 
@@ -11673,9 +11819,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      _.prototype[name] = function() {
 	        var args = [this._wrapped];
 	        push.apply(args, arguments);
-	        return result(this, func.apply(_, args));
+	        return chainResult(this, func.apply(_, args));
 	      };
 	    });
+	    return _;
 	  };
 
 	  // Add all of the Underscore functions to the wrapper object.
@@ -11688,7 +11835,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      var obj = this._wrapped;
 	      method.apply(obj, arguments);
 	      if ((name === 'shift' || name === 'splice') && obj.length === 0) delete obj[0];
-	      return result(this, obj);
+	      return chainResult(this, obj);
 	    };
 	  });
 
@@ -11696,7 +11843,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  _.each(['concat', 'join', 'slice'], function(name) {
 	    var method = ArrayProto[name];
 	    _.prototype[name] = function() {
-	      return result(this, method.apply(this._wrapped, arguments));
+	      return chainResult(this, method.apply(this._wrapped, arguments));
 	    };
 	  });
 
@@ -11710,7 +11857,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  _.prototype.valueOf = _.prototype.toJSON = _.prototype.value;
 
 	  _.prototype.toString = function() {
-	    return '' + this._wrapped;
+	    return String(this._wrapped);
 	  };
 
 	  // AMD registration happens at the end for compatibility with AMD loaders
@@ -11725,36 +11872,64 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      return _;
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	  }
-	}.call(this));
+	}());
 
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(3)(module)))
 
-/***/ },
+/***/ }),
 /* 3 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
+	module.exports = function(module) {
+		if(!module.webpackPolyfill) {
+			module.deprecate = function() {};
+			module.paths = [];
+			// module.parent = undefined by default
+			module.children = [];
+			module.webpackPolyfill = 1;
+		}
+		return module;
+	}
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*! @preserve
 	 * numeral.js
-	 * version : 1.5.3
+	 * version : 1.5.6
 	 * author : Adam Draper
 	 * license : MIT
 	 * http://adamwdraper.github.com/Numeral-js/
 	 */
 
-	(function () {
+	(function() {
 
 	    /************************************
-	        Constants
+	        Variables
 	    ************************************/
 
 	    var numeral,
-	        VERSION = '1.5.3',
+	        VERSION = '1.5.6',
 	        // internal storage for language config files
 	        languages = {},
-	        currentLanguage = 'en',
-	        zeroFormat = null,
-	        defaultFormat = '0,0',
-	        // check for nodeJS
-	        hasModule = (typeof module !== 'undefined' && module.exports);
+	        defaults = {
+	            currentLanguage: 'en',
+	            zeroFormat: null,
+	            nullFormat: null,
+	            defaultFormat: '0,0'
+	        },
+	        options = {
+	            currentLanguage: defaults.currentLanguage,
+	            zeroFormat: defaults.zeroFormat,
+	            nullFormat: defaults.nullFormat,
+	            defaultFormat: defaults.defaultFormat
+	        },
+	        byteSuffixes = {
+	            bytes: ['B','KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+	            iec: ['B','KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
+	        };
 
 
 	    /************************************
@@ -11763,7 +11938,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 	    // Numeral prototype object
-	    function Numeral (number) {
+	    function Numeral(number) {
 	        this._value = number;
 	    }
 
@@ -11773,17 +11948,29 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	     * Fixes binary rounding issues (eg. (0.615).toFixed(2) === '0.61') that present
 	     * problems for accounting- and finance-related software.
 	     */
-	    function toFixed (value, precision, roundingFunction, optionals) {
-	        var power = Math.pow(10, precision),
+	    function toFixed (value, maxDecimals, roundingFunction, optionals) {
+	        var splitValue = value.toString().split('.'),
+	            minDecimals = maxDecimals - (optionals || 0),
+	            boundedPrecision,
 	            optionalsRegExp,
+	            power,
 	            output;
-	            
+
+	        // Use the smallest precision value possible to avoid errors from floating point representation
+	        if (splitValue.length === 2) {
+	          boundedPrecision = Math.min(Math.max(splitValue[1].length, minDecimals), maxDecimals);
+	        } else {
+	          boundedPrecision = minDecimals;
+	        }
+
+	        power = Math.pow(10, boundedPrecision);
+
 	        //roundingFunction = (roundingFunction !== undefined ? roundingFunction : Math.round);
 	        // Multiply up by precision, round accurately, then divide and use native toFixed():
-	        output = (roundingFunction(value * power) / power).toFixed(precision);
+	        output = (roundingFunction(value * power) / power).toFixed(boundedPrecision);
 
-	        if (optionals) {
-	            optionalsRegExp = new RegExp('0{1,' + optionals + '}$');
+	        if (optionals > maxDecimals - boundedPrecision) {
+	            optionalsRegExp = new RegExp('\\.?0{1,' + (optionals - (maxDecimals - boundedPrecision)) + '}$');
 	            output = output.replace(optionalsRegExp, '');
 	        }
 
@@ -11795,71 +11982,34 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    ************************************/
 
 	    // determine what type of formatting we need to do
-	    function formatNumeral (n, format, roundingFunction) {
+	    function formatNumeral(n, format, roundingFunction) {
 	        var output;
 
-	        // figure out what kind of format we are dealing with
-	        if (format.indexOf('$') > -1) { // currency!!!!!
-	            output = formatCurrency(n, format, roundingFunction);
-	        } else if (format.indexOf('%') > -1) { // percentage
-	            output = formatPercentage(n, format, roundingFunction);
-	        } else if (format.indexOf(':') > -1) { // time
-	            output = formatTime(n, format);
-	        } else { // plain ol' numbers or bytes
-	            output = formatNumber(n._value, format, roundingFunction);
+	        if (n._value === 0 && options.zeroFormat !== null) {
+	            output = options.zeroFormat;
+	        } else if (n._value === null && options.nullFormat !== null) {
+	            output = options.nullFormat;
+	        } else {
+	            // figure out what kind of format we are dealing with
+	            if (format.indexOf('$') > -1) {
+	                output = formatCurrency(n, format, roundingFunction);
+	            } else if (format.indexOf('%') > -1) {
+	                output = formatPercentage(n, format, roundingFunction);
+	            } else if (format.indexOf(':') > -1) {
+	                output = formatTime(n, format);
+	            } else if (format.indexOf('b') > -1 || format.indexOf('ib') > -1) {
+	                output = formatBytes(n, format, roundingFunction);
+	            } else if (format.indexOf('o') > -1) {
+	                output = formatOrdinal(n, format, roundingFunction);
+	            } else {
+	                output = formatNumber(n._value, format, roundingFunction);
+	            }
 	        }
 
-	        // return string
 	        return output;
 	    }
 
-	    // revert to number
-	    function unformatNumeral (n, string) {
-	        var stringOriginal = string,
-	            thousandRegExp,
-	            millionRegExp,
-	            billionRegExp,
-	            trillionRegExp,
-	            suffixes = ['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
-	            bytesMultiplier = false,
-	            power;
-
-	        if (string.indexOf(':') > -1) {
-	            n._value = unformatTime(string);
-	        } else {
-	            if (string === zeroFormat) {
-	                n._value = 0;
-	            } else {
-	                if (languages[currentLanguage].delimiters.decimal !== '.') {
-	                    string = string.replace(/\./g,'').replace(languages[currentLanguage].delimiters.decimal, '.');
-	                }
-
-	                // see if abbreviations are there so that we can multiply to the correct number
-	                thousandRegExp = new RegExp('[^a-zA-Z]' + languages[currentLanguage].abbreviations.thousand + '(?:\\)|(\\' + languages[currentLanguage].currency.symbol + ')?(?:\\))?)?$');
-	                millionRegExp = new RegExp('[^a-zA-Z]' + languages[currentLanguage].abbreviations.million + '(?:\\)|(\\' + languages[currentLanguage].currency.symbol + ')?(?:\\))?)?$');
-	                billionRegExp = new RegExp('[^a-zA-Z]' + languages[currentLanguage].abbreviations.billion + '(?:\\)|(\\' + languages[currentLanguage].currency.symbol + ')?(?:\\))?)?$');
-	                trillionRegExp = new RegExp('[^a-zA-Z]' + languages[currentLanguage].abbreviations.trillion + '(?:\\)|(\\' + languages[currentLanguage].currency.symbol + ')?(?:\\))?)?$');
-
-	                // see if bytes are there so that we can multiply to the correct number
-	                for (power = 0; power <= suffixes.length; power++) {
-	                    bytesMultiplier = (string.indexOf(suffixes[power]) > -1) ? Math.pow(1024, power + 1) : false;
-
-	                    if (bytesMultiplier) {
-	                        break;
-	                    }
-	                }
-
-	                // do some math to create our number
-	                n._value = ((bytesMultiplier) ? bytesMultiplier : 1) * ((stringOriginal.match(thousandRegExp)) ? Math.pow(10, 3) : 1) * ((stringOriginal.match(millionRegExp)) ? Math.pow(10, 6) : 1) * ((stringOriginal.match(billionRegExp)) ? Math.pow(10, 9) : 1) * ((stringOriginal.match(trillionRegExp)) ? Math.pow(10, 12) : 1) * ((string.indexOf('%') > -1) ? 0.01 : 1) * (((string.split('-').length + Math.min(string.split('(').length-1, string.split(')').length-1)) % 2)? 1: -1) * Number(string.replace(/[^0-9\.]+/g, ''));
-
-	                // round if we are talking about bytes
-	                n._value = (bytesMultiplier) ? Math.ceil(n._value) : n._value;
-	            }
-	        }
-	        return n._value;
-	    }
-
-	    function formatCurrency (n, format, roundingFunction) {
+	    function formatCurrency(n, format, roundingFunction) {
 	        var symbolIndex = format.indexOf('$'),
 	            openParenIndex = format.indexOf('('),
 	            minusSignIndex = format.indexOf('-'),
@@ -11879,36 +12029,36 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 
 	        // format the number
-	        output = formatNumber(n._value, format, roundingFunction);
+	        output = formatNumber(n._value, format, roundingFunction, false);
 
 	        // position the symbol
 	        if (symbolIndex <= 1) {
 	            if (output.indexOf('(') > -1 || output.indexOf('-') > -1) {
 	                output = output.split('');
 	                spliceIndex = 1;
-	                if (symbolIndex < openParenIndex || symbolIndex < minusSignIndex){
+	                if (symbolIndex < openParenIndex || symbolIndex < minusSignIndex) {
 	                    // the symbol appears before the "(" or "-"
 	                    spliceIndex = 0;
 	                }
-	                output.splice(spliceIndex, 0, languages[currentLanguage].currency.symbol + space);
+	                output.splice(spliceIndex, 0, languages[options.currentLanguage].currency.symbol + space);
 	                output = output.join('');
 	            } else {
-	                output = languages[currentLanguage].currency.symbol + space + output;
+	                output = languages[options.currentLanguage].currency.symbol + space + output;
 	            }
 	        } else {
 	            if (output.indexOf(')') > -1) {
 	                output = output.split('');
-	                output.splice(-1, 0, space + languages[currentLanguage].currency.symbol);
+	                output.splice(-1, 0, space + languages[options.currentLanguage].currency.symbol);
 	                output = output.join('');
 	            } else {
-	                output = output + space + languages[currentLanguage].currency.symbol;
+	                output = output + space + languages[options.currentLanguage].currency.symbol;
 	            }
 	        }
 
 	        return output;
 	    }
 
-	    function formatPercentage (n, format, roundingFunction) {
+	    function formatPercentage(n, format, roundingFunction) {
 	        var space = '',
 	            output,
 	            value = n._value * 100;
@@ -11922,8 +12072,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 
 	        output = formatNumber(value, format, roundingFunction);
-	        
-	        if (output.indexOf(')') > -1 ) {
+
+	        if (output.indexOf(')') > -1) {
 	            output = output.split('');
 	            output.splice(-1, 0, space + '%');
 	            output = output.join('');
@@ -11934,14 +12084,255 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return output;
 	    }
 
-	    function formatTime (n) {
-	        var hours = Math.floor(n._value/60/60),
-	            minutes = Math.floor((n._value - (hours * 60 * 60))/60),
+	    function formatBytes(n, format, roundingFunction) {
+	        var output,
+	            suffixes = format.indexOf('ib') > -1 ? byteSuffixes.iec : byteSuffixes.bytes,
+	            value = n._value,
+	            suffix = '',
+	            power,
+	            min,
+	            max;
+
+	        // check for space before
+	        if (format.indexOf(' b') > -1 || format.indexOf(' ib') > -1) {
+	            suffix = ' ';
+	            format = format.replace(' ib', '').replace(' b', '');
+	        } else {
+	            format = format.replace('ib', '').replace('b', '');
+	        }
+
+	        for (power = 0; power <= suffixes.length; power++) {
+	            min = Math.pow(1024, power);
+	            max = Math.pow(1024, power + 1);
+
+	            if (value === null || value === 0 || value >= min && value < max) {
+	                suffix += suffixes[power];
+
+	                if (min > 0) {
+	                    value = value / min;
+	                }
+
+	                break;
+	            }
+	        }
+
+	        output = formatNumber(value, format, roundingFunction);
+
+	        return output + suffix;
+	    }
+
+	    function formatOrdinal(n, format, roundingFunction) {
+	        var output,
+	            ordinal = '';
+
+	        // check for space before
+	        if (format.indexOf(' o') > -1) {
+	            ordinal = ' ';
+	            format = format.replace(' o', '');
+	        } else {
+	            format = format.replace('o', '');
+	        }
+
+	        ordinal += languages[options.currentLanguage].ordinal(n._value);
+
+	        output = formatNumber(n._value, format, roundingFunction);
+
+	        return output + ordinal;
+	    }
+
+	    function formatTime(n) {
+	        var hours = Math.floor(n._value / 60 / 60),
+	            minutes = Math.floor((n._value - (hours * 60 * 60)) / 60),
 	            seconds = Math.round(n._value - (hours * 60 * 60) - (minutes * 60));
+
 	        return hours + ':' + ((minutes < 10) ? '0' + minutes : minutes) + ':' + ((seconds < 10) ? '0' + seconds : seconds);
 	    }
 
-	    function unformatTime (string) {
+	    function formatNumber(value, format, roundingFunction) {
+	        var negP = false,
+	            signed = false,
+	            optDec = false,
+	            abbr = '',
+	            abbrK = false, // force abbreviation to thousands
+	            abbrM = false, // force abbreviation to millions
+	            abbrB = false, // force abbreviation to billions
+	            abbrT = false, // force abbreviation to trillions
+	            abbrForce = false, // force abbreviation
+	            abs,
+	            min,
+	            max,
+	            power,
+	            w,
+	            precision,
+	            thousands,
+	            d = '',
+	            neg = false;
+
+	        if (value === null) {
+	            value = 0;
+	        }
+
+	        abs = Math.abs(value);
+
+	        // see if we should use parentheses for negative number or if we should prefix with a sign
+	        // if both are present we default to parentheses
+	        if (format.indexOf('(') > -1) {
+	            negP = true;
+	            format = format.slice(1, -1);
+	        } else if (format.indexOf('+') > -1) {
+	            signed = true;
+	            format = format.replace(/\+/g, '');
+	        }
+
+	        // see if abbreviation is wanted
+	        if (format.indexOf('a') > -1) {
+	            // check if abbreviation is specified
+	            abbrK = format.indexOf('aK') >= 0;
+	            abbrM = format.indexOf('aM') >= 0;
+	            abbrB = format.indexOf('aB') >= 0;
+	            abbrT = format.indexOf('aT') >= 0;
+	            abbrForce = abbrK || abbrM || abbrB || abbrT;
+
+	            // check for space before abbreviation
+	            if (format.indexOf(' a') > -1) {
+	                abbr = ' ';
+	            }
+
+	            format = format.replace(new RegExp(abbr + 'a[KMBT]?'), '');
+
+	            if (abs >= Math.pow(10, 12) && !abbrForce || abbrT) {
+	                // trillion
+	                abbr = abbr + languages[options.currentLanguage].abbreviations.trillion;
+	                value = value / Math.pow(10, 12);
+	            } else if (abs < Math.pow(10, 12) && abs >= Math.pow(10, 9) && !abbrForce || abbrB) {
+	                // billion
+	                abbr = abbr + languages[options.currentLanguage].abbreviations.billion;
+	                value = value / Math.pow(10, 9);
+	            } else if (abs < Math.pow(10, 9) && abs >= Math.pow(10, 6) && !abbrForce || abbrM) {
+	                // million
+	                abbr = abbr + languages[options.currentLanguage].abbreviations.million;
+	                value = value / Math.pow(10, 6);
+	            } else if (abs < Math.pow(10, 6) && abs >= Math.pow(10, 3) && !abbrForce || abbrK) {
+	                // thousand
+	                abbr = abbr + languages[options.currentLanguage].abbreviations.thousand;
+	                value = value / Math.pow(10, 3);
+	            }
+	        }
+
+
+	        if (format.indexOf('[.]') > -1) {
+	            optDec = true;
+	            format = format.replace('[.]', '.');
+	        }
+
+	        w = value.toString().split('.')[0];
+	        precision = format.split('.')[1];
+	        thousands = format.indexOf(',');
+
+	        if (precision) {
+	            if (precision.indexOf('[') > -1) {
+	                precision = precision.replace(']', '');
+	                precision = precision.split('[');
+	                d = toFixed(value, (precision[0].length + precision[1].length), roundingFunction, precision[1].length);
+	            } else {
+	                d = toFixed(value, precision.length, roundingFunction);
+	            }
+
+	            w = d.split('.')[0];
+
+	            if (d.indexOf('.') > -1) {
+	                d = languages[options.currentLanguage].delimiters.decimal + d.split('.')[1];
+	            } else {
+	                d = '';
+	            }
+
+	            if (optDec && Number(d.slice(1)) === 0) {
+	                d = '';
+	            }
+	        } else {
+	            w = toFixed(value, null, roundingFunction);
+	        }
+
+	        // format number
+	        if (w.indexOf('-') > -1) {
+	            w = w.slice(1);
+	            neg = true;
+	        }
+
+	        if (thousands > -1) {
+	            w = w.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1' + languages[options.currentLanguage].delimiters.thousands);
+	        }
+
+	        if (format.indexOf('.') === 0) {
+	            w = '';
+	        }
+
+	        return ((negP && neg) ? '(' : '') + ((!negP && neg) ? '-' : '') + ((!neg && signed) ? '+' : '') + w + d + ((abbr) ? abbr : '') + ((negP && neg) ? ')' : '');
+	    }
+
+
+	    /************************************
+	        Unformatting
+	    ************************************/
+
+	    // revert to number
+	    function unformatNumeral(n, string) {
+	        var stringOriginal = string,
+	            thousandRegExp,
+	            millionRegExp,
+	            billionRegExp,
+	            trillionRegExp,
+	            bytesMultiplier = false,
+	            power,
+	            value;
+
+	        if (string.indexOf(':') > -1) {
+	            value = unformatTime(string);
+	        } else {
+	            if (string === options.zeroFormat || string === options.nullFormat) {
+	                value = 0;
+	            } else {
+	                if (languages[options.currentLanguage].delimiters.decimal !== '.') {
+	                    string = string.replace(/\./g, '').replace(languages[options.currentLanguage].delimiters.decimal, '.');
+	                }
+
+	                // see if abbreviations are there so that we can multiply to the correct number
+	                thousandRegExp = new RegExp('[^a-zA-Z]' + languages[options.currentLanguage].abbreviations.thousand + '(?:\\)|(\\' + languages[options.currentLanguage].currency.symbol + ')?(?:\\))?)?$');
+	                millionRegExp = new RegExp('[^a-zA-Z]' + languages[options.currentLanguage].abbreviations.million + '(?:\\)|(\\' + languages[options.currentLanguage].currency.symbol + ')?(?:\\))?)?$');
+	                billionRegExp = new RegExp('[^a-zA-Z]' + languages[options.currentLanguage].abbreviations.billion + '(?:\\)|(\\' + languages[options.currentLanguage].currency.symbol + ')?(?:\\))?)?$');
+	                trillionRegExp = new RegExp('[^a-zA-Z]' + languages[options.currentLanguage].abbreviations.trillion + '(?:\\)|(\\' + languages[options.currentLanguage].currency.symbol + ')?(?:\\))?)?$');
+
+	                // see if bytes are there so that we can multiply to the correct number
+	                for (power = 1; power <= byteSuffixes.bytes.length; power++) {
+	                    bytesMultiplier = ((string.indexOf(byteSuffixes.bytes[power]) > -1) || (string.indexOf(byteSuffixes.iec[power]) > -1))? Math.pow(1024, power) : false;
+
+	                    if (bytesMultiplier) {
+	                        break;
+	                    }
+	                }
+
+	                // do some math to create our number
+	                value = bytesMultiplier ? bytesMultiplier : 1;
+	                value *= stringOriginal.match(thousandRegExp) ? Math.pow(10, 3) : 1;
+	                value *= stringOriginal.match(millionRegExp) ? Math.pow(10, 6) : 1;
+	                value *= stringOriginal.match(billionRegExp) ? Math.pow(10, 9) : 1;
+	                value *= stringOriginal.match(trillionRegExp) ? Math.pow(10, 12) : 1;
+	                // check for percentage
+	                value *= string.indexOf('%') > -1 ? 0.01 : 1;
+	                // check for negative number
+	                value *= (string.split('-').length + Math.min(string.split('(').length - 1, string.split(')').length - 1)) % 2 ? 1 : -1;
+	                // remove non numbers
+	                value *= Number(string.replace(/[^0-9\.]+/g, ''));
+	                // round if we are talking about bytes
+	                value = bytesMultiplier ? Math.ceil(value) : value;
+	            }
+	        }
+
+	        n._value = value;
+
+	        return n._value;
+	    }
+	    function unformatTime(string) {
 	        var timeArray = string.split(':'),
 	            seconds = 0;
 	        // turn hours and minutes into seconds and add them all up
@@ -11961,204 +12352,52 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        return Number(seconds);
 	    }
 
-	    function formatNumber (value, format, roundingFunction) {
-	        var negP = false,
-	            signed = false,
-	            optDec = false,
-	            abbr = '',
-	            abbrK = false, // force abbreviation to thousands
-	            abbrM = false, // force abbreviation to millions
-	            abbrB = false, // force abbreviation to billions
-	            abbrT = false, // force abbreviation to trillions
-	            abbrForce = false, // force abbreviation
-	            bytes = '',
-	            ord = '',
-	            abs = Math.abs(value),
-	            suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
-	            min,
-	            max,
-	            power,
-	            w,
-	            precision,
-	            thousands,
-	            d = '',
-	            neg = false;
-
-	        // check if number is zero and a custom zero format has been set
-	        if (value === 0 && zeroFormat !== null) {
-	            return zeroFormat;
-	        } else {
-	            // see if we should use parentheses for negative number or if we should prefix with a sign
-	            // if both are present we default to parentheses
-	            if (format.indexOf('(') > -1) {
-	                negP = true;
-	                format = format.slice(1, -1);
-	            } else if (format.indexOf('+') > -1) {
-	                signed = true;
-	                format = format.replace(/\+/g, '');
-	            }
-
-	            // see if abbreviation is wanted
-	            if (format.indexOf('a') > -1) {
-	                // check if abbreviation is specified
-	                abbrK = format.indexOf('aK') >= 0;
-	                abbrM = format.indexOf('aM') >= 0;
-	                abbrB = format.indexOf('aB') >= 0;
-	                abbrT = format.indexOf('aT') >= 0;
-	                abbrForce = abbrK || abbrM || abbrB || abbrT;
-
-	                // check for space before abbreviation
-	                if (format.indexOf(' a') > -1) {
-	                    abbr = ' ';
-	                    format = format.replace(' a', '');
-	                } else {
-	                    format = format.replace('a', '');
-	                }
-
-	                if (abs >= Math.pow(10, 12) && !abbrForce || abbrT) {
-	                    // trillion
-	                    abbr = abbr + languages[currentLanguage].abbreviations.trillion;
-	                    value = value / Math.pow(10, 12);
-	                } else if (abs < Math.pow(10, 12) && abs >= Math.pow(10, 9) && !abbrForce || abbrB) {
-	                    // billion
-	                    abbr = abbr + languages[currentLanguage].abbreviations.billion;
-	                    value = value / Math.pow(10, 9);
-	                } else if (abs < Math.pow(10, 9) && abs >= Math.pow(10, 6) && !abbrForce || abbrM) {
-	                    // million
-	                    abbr = abbr + languages[currentLanguage].abbreviations.million;
-	                    value = value / Math.pow(10, 6);
-	                } else if (abs < Math.pow(10, 6) && abs >= Math.pow(10, 3) && !abbrForce || abbrK) {
-	                    // thousand
-	                    abbr = abbr + languages[currentLanguage].abbreviations.thousand;
-	                    value = value / Math.pow(10, 3);
-	                }
-	            }
-
-	            // see if we are formatting bytes
-	            if (format.indexOf('b') > -1) {
-	                // check for space before
-	                if (format.indexOf(' b') > -1) {
-	                    bytes = ' ';
-	                    format = format.replace(' b', '');
-	                } else {
-	                    format = format.replace('b', '');
-	                }
-
-	                for (power = 0; power <= suffixes.length; power++) {
-	                    min = Math.pow(1024, power);
-	                    max = Math.pow(1024, power+1);
-
-	                    if (value >= min && value < max) {
-	                        bytes = bytes + suffixes[power];
-	                        if (min > 0) {
-	                            value = value / min;
-	                        }
-	                        break;
-	                    }
-	                }
-	            }
-
-	            // see if ordinal is wanted
-	            if (format.indexOf('o') > -1) {
-	                // check for space before
-	                if (format.indexOf(' o') > -1) {
-	                    ord = ' ';
-	                    format = format.replace(' o', '');
-	                } else {
-	                    format = format.replace('o', '');
-	                }
-
-	                ord = ord + languages[currentLanguage].ordinal(value);
-	            }
-
-	            if (format.indexOf('[.]') > -1) {
-	                optDec = true;
-	                format = format.replace('[.]', '.');
-	            }
-
-	            w = value.toString().split('.')[0];
-	            precision = format.split('.')[1];
-	            thousands = format.indexOf(',');
-
-	            if (precision) {
-	                if (precision.indexOf('[') > -1) {
-	                    precision = precision.replace(']', '');
-	                    precision = precision.split('[');
-	                    d = toFixed(value, (precision[0].length + precision[1].length), roundingFunction, precision[1].length);
-	                } else {
-	                    d = toFixed(value, precision.length, roundingFunction);
-	                }
-
-	                w = d.split('.')[0];
-
-	                if (d.split('.')[1].length) {
-	                    d = languages[currentLanguage].delimiters.decimal + d.split('.')[1];
-	                } else {
-	                    d = '';
-	                }
-
-	                if (optDec && Number(d.slice(1)) === 0) {
-	                    d = '';
-	                }
-	            } else {
-	                w = toFixed(value, null, roundingFunction);
-	            }
-
-	            // format number
-	            if (w.indexOf('-') > -1) {
-	                w = w.slice(1);
-	                neg = true;
-	            }
-
-	            if (thousands > -1) {
-	                w = w.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1' + languages[currentLanguage].delimiters.thousands);
-	            }
-
-	            if (format.indexOf('.') === 0) {
-	                w = '';
-	            }
-
-	            return ((negP && neg) ? '(' : '') + ((!negP && neg) ? '-' : '') + ((!neg && signed) ? '+' : '') + w + d + ((ord) ? ord : '') + ((abbr) ? abbr : '') + ((bytes) ? bytes : '') + ((negP && neg) ? ')' : '');
-	        }
-	    }
 
 	    /************************************
 	        Top Level Functions
 	    ************************************/
 
-	    numeral = function (input) {
+	    numeral = function(input) {
 	        if (numeral.isNumeral(input)) {
 	            input = input.value();
 	        } else if (input === 0 || typeof input === 'undefined') {
 	            input = 0;
+	        } else if (input === null) {
+	            input = null;
 	        } else if (!Number(input)) {
 	            input = numeral.fn.unformat(input);
+	        } else {
+	            input = Number(input);
 	        }
 
-	        return new Numeral(Number(input));
+	        return new Numeral(input);
 	    };
 
 	    // version number
 	    numeral.version = VERSION;
 
 	    // compare numeral object
-	    numeral.isNumeral = function (obj) {
+	    numeral.isNumeral = function(obj) {
 	        return obj instanceof Numeral;
 	    };
+
 
 	    // This function will load languages and then set the global language.  If
 	    // no arguments are passed in, it will simply return the current global
 	    // language key.
-	    numeral.language = function (key, values) {
+	    numeral.language = function(key, values) {
 	        if (!key) {
-	            return currentLanguage;
+	            return options.currentLanguage;
 	        }
 
+	        key = key.toLowerCase();
+
 	        if (key && !values) {
-	            if(!languages[key]) {
+	            if (!languages[key]) {
 	                throw new Error('Unknown language : ' + key);
 	            }
-	            currentLanguage = key;
+
+	            options.currentLanguage = key;
 	        }
 
 	        if (values || !languages[key]) {
@@ -12167,19 +12406,25 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	        return numeral;
 	    };
-	    
+
+	    numeral.reset = function() {
+	        for (var property in defaults) {
+	            options[property] = defaults[property];
+	        }
+	    };
+
 	    // This function provides access to the loaded language data.  If
 	    // no arguments are passed in, it will simply return the current
 	    // global language object.
-	    numeral.languageData = function (key) {
+	    numeral.languageData = function(key) {
 	        if (!key) {
-	            return languages[currentLanguage];
+	            return languages[options.currentLanguage];
 	        }
-	        
+
 	        if (!languages[key]) {
 	            throw new Error('Unknown language : ' + key);
 	        }
-	        
+
 	        return languages[key];
 	    };
 
@@ -12194,9 +12439,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            billion: 'b',
 	            trillion: 't'
 	        },
-	        ordinal: function (number) {
+	        ordinal: function(number) {
 	            var b = number % 10;
-	            return (~~ (number % 100 / 10) === 1) ? 'th' :
+	            return (~~(number % 100 / 10) === 1) ? 'th' :
 	                (b === 1) ? 'st' :
 	                (b === 2) ? 'nd' :
 	                (b === 3) ? 'rd' : 'th';
@@ -12206,12 +12451,105 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        }
 	    });
 
-	    numeral.zeroFormat = function (format) {
-	        zeroFormat = typeof(format) === 'string' ? format : null;
+	    numeral.zeroFormat = function(format) {
+	        options.zeroFormat = typeof(format) === 'string' ? format : null;
 	    };
 
-	    numeral.defaultFormat = function (format) {
-	        defaultFormat = typeof(format) === 'string' ? format : '0.0';
+	    numeral.nullFormat = function (format) {
+	        options.nullFormat = typeof(format) === 'string' ? format : null;
+	    };
+
+	    numeral.defaultFormat = function(format) {
+	        options.defaultFormat = typeof(format) === 'string' ? format : '0.0';
+	    };
+
+	    numeral.validate = function(val, culture) {
+	        var _decimalSep,
+	            _thousandSep,
+	            _currSymbol,
+	            _valArray,
+	            _abbrObj,
+	            _thousandRegEx,
+	            languageData,
+	            temp;
+
+	        //coerce val to string
+	        if (typeof val !== 'string') {
+	            val += '';
+	            if (console.warn) {
+	                console.warn('Numeral.js: Value is not string. It has been co-erced to: ', val);
+	            }
+	        }
+
+	        //trim whitespaces from either sides
+	        val = val.trim();
+
+	        //if val is just digits return true
+	        if ( !! val.match(/^\d+$/)) {
+	            return true;
+	        }
+
+	        //if val is empty return false
+	        if (val === '') {
+	            return false;
+	        }
+
+	        //get the decimal and thousands separator from numeral.languageData
+	        try {
+	            //check if the culture is understood by numeral. if not, default it to current language
+	            languageData = numeral.languageData(culture);
+	        } catch (e) {
+	            languageData = numeral.languageData(numeral.language());
+	        }
+
+	        //setup the delimiters and currency symbol based on culture/language
+	        _currSymbol = languageData.currency.symbol;
+	        _abbrObj = languageData.abbreviations;
+	        _decimalSep = languageData.delimiters.decimal;
+	        if (languageData.delimiters.thousands === '.') {
+	            _thousandSep = '\\.';
+	        } else {
+	            _thousandSep = languageData.delimiters.thousands;
+	        }
+
+	        // validating currency symbol
+	        temp = val.match(/^[^\d]+/);
+	        if (temp !== null) {
+	            val = val.substr(1);
+	            if (temp[0] !== _currSymbol) {
+	                return false;
+	            }
+	        }
+
+	        //validating abbreviation symbol
+	        temp = val.match(/[^\d]+$/);
+	        if (temp !== null) {
+	            val = val.slice(0, -1);
+	            if (temp[0] !== _abbrObj.thousand && temp[0] !== _abbrObj.million && temp[0] !== _abbrObj.billion && temp[0] !== _abbrObj.trillion) {
+	                return false;
+	            }
+	        }
+
+	        _thousandRegEx = new RegExp(_thousandSep + '{2}');
+
+	        if (!val.match(/[^\d.,]/g)) {
+	            _valArray = val.split(_decimalSep);
+	            if (_valArray.length > 2) {
+	                return false;
+	            } else {
+	                if (_valArray.length < 2) {
+	                    return ( !! _valArray[0].match(/^\d+.*\d$/) && !_valArray[0].match(_thousandRegEx));
+	                } else {
+	                    if (_valArray[0].length === 1) {
+	                        return ( !! _valArray[0].match(/^\d+$/) && !_valArray[0].match(_thousandRegEx) && !! _valArray[1].match(/^\d+$/));
+	                    } else {
+	                        return ( !! _valArray[0].match(/^\d+.*\d$/) && !_valArray[0].match(_thousandRegEx) && !! _valArray[1].match(/^\d+$/));
+	                    }
+	                }
+	            }
+	        }
+
+	        return false;
 	    };
 
 	    /************************************
@@ -12229,55 +12567,43 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    // The floating-point helper functions and implementation
 	    // borrows heavily from sinful.js: http://guipn.github.io/sinful.js/
 
-	    /**
-	     * Array.prototype.reduce for browsers that don't support it
-	     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce#Compatibility
-	     */
-	    if ('function' !== typeof Array.prototype.reduce) {
-	        Array.prototype.reduce = function (callback, opt_initialValue) {
+	    // Production steps of ECMA-262, Edition 5, 15.4.4.21
+	    // Reference: http://es5.github.io/#x15.4.4.21
+	    if (!Array.prototype.reduce) {
+	        Array.prototype.reduce = function(callback /*, initialValue*/) {
 	            'use strict';
-	            
-	            if (null === this || 'undefined' === typeof this) {
-	                // At the moment all modern browsers, that support strict mode, have
-	                // native implementation of Array.prototype.reduce. For instance, IE8
-	                // does not support strict mode, so this check is actually useless.
+	            if (this === null) {
 	                throw new TypeError('Array.prototype.reduce called on null or undefined');
 	            }
-	            
-	            if ('function' !== typeof callback) {
+
+	            if (typeof callback !== 'function') {
 	                throw new TypeError(callback + ' is not a function');
 	            }
 
-	            var index,
-	                value,
-	                length = this.length >>> 0,
-	                isValueSet = false;
+	            var t = Object(this), len = t.length >>> 0, k = 0, value;
 
-	            if (1 < arguments.length) {
-	                value = opt_initialValue;
-	                isValueSet = true;
+	            if (arguments.length === 2) {
+	                value = arguments[1];
+	            } else {
+	                while (k < len && !(k in t)) {
+	                    k++;
+	                }
+
+	                if (k >= len) {
+	                    throw new TypeError('Reduce of empty array with no initial value');
+	                }
+
+	                value = t[k++];
 	            }
-
-	            for (index = 0; length > index; ++index) {
-	                if (this.hasOwnProperty(index)) {
-	                    if (isValueSet) {
-	                        value = callback(value, this[index], index, this);
-	                    } else {
-	                        value = this[index];
-	                        isValueSet = true;
-	                    }
+	            for (; k < len; k++) {
+	                if (k in t) {
+	                    value = callback(value, t[k], k, t);
 	                }
 	            }
-
-	            if (!isValueSet) {
-	                throw new TypeError('Reduce of empty array with no initial value');
-	            }
-
 	            return value;
 	        };
 	    }
 
-	    
 	    /**
 	     * Computes the multiplier necessary to make x >= 1,
 	     * effectively eliminating miscalculations caused by
@@ -12298,12 +12624,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	     */
 	    function correctionFactor() {
 	        var args = Array.prototype.slice.call(arguments);
-	        return args.reduce(function (prev, next) {
+	        return args.reduce(function(prev, next) {
 	            var mp = multiplier(prev),
 	                mn = multiplier(next);
-	        return mp > mn ? mp : mn;
+	            return mp > mn ? mp : mn;
 	        }, -Infinity);
-	    }        
+	    }
 
 
 	    /************************************
@@ -12313,39 +12639,41 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    numeral.fn = Numeral.prototype = {
 
-	        clone : function () {
+	        clone: function() {
 	            return numeral(this);
 	        },
 
-	        format : function (inputString, roundingFunction) {
-	            return formatNumeral(this, 
-	                  inputString ? inputString : defaultFormat, 
-	                  (roundingFunction !== undefined) ? roundingFunction : Math.round
-	              );
+	        format: function (inputString, roundingFunction) {
+	            return formatNumeral(this,
+	                inputString ? inputString : options.defaultFormat,
+	                roundingFunction !== undefined ? roundingFunction : Math.round
+	            );
 	        },
 
-	        unformat : function (inputString) {
-	            if (Object.prototype.toString.call(inputString) === '[object Number]') { 
-	                return inputString; 
+	        unformat: function (inputString) {
+	            if (Object.prototype.toString.call(inputString) === '[object Number]') {
+	                return inputString;
 	            }
-	            return unformatNumeral(this, inputString ? inputString : defaultFormat);
+
+	            return unformatNumeral(this, inputString ? inputString : options.defaultFormat);
 	        },
 
-	        value : function () {
+	        value: function() {
 	            return this._value;
 	        },
 
-	        valueOf : function () {
+	        valueOf: function() {
 	            return this._value;
 	        },
 
-	        set : function (value) {
+	        set: function(value) {
 	            this._value = Number(value);
 	            return this;
 	        },
 
-	        add : function (value) {
+	        add: function(value) {
 	            var corrFactor = correctionFactor.call(null, this._value, value);
+
 	            function cback(accum, curr, currI, O) {
 	                return accum + corrFactor * curr;
 	            }
@@ -12353,16 +12681,17 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            return this;
 	        },
 
-	        subtract : function (value) {
+	        subtract: function(value) {
 	            var corrFactor = correctionFactor.call(null, this._value, value);
+
 	            function cback(accum, curr, currI, O) {
 	                return accum - corrFactor * curr;
 	            }
-	            this._value = [value].reduce(cback, this._value * corrFactor) / corrFactor;            
+	            this._value = [value].reduce(cback, this._value * corrFactor) / corrFactor;
 	            return this;
 	        },
 
-	        multiply : function (value) {
+	        multiply: function(value) {
 	            function cback(accum, curr, currI, O) {
 	                var corrFactor = correctionFactor(accum, curr);
 	                return (accum * corrFactor) * (curr * corrFactor) /
@@ -12372,16 +12701,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            return this;
 	        },
 
-	        divide : function (value) {
+	        divide: function(value) {
 	            function cback(accum, curr, currI, O) {
 	                var corrFactor = correctionFactor(accum, curr);
 	                return (accum * corrFactor) / (curr * corrFactor);
 	            }
-	            this._value = [this._value, value].reduce(cback);            
+	            this._value = [this._value, value].reduce(cback);
 	            return this;
 	        },
 
-	        difference : function (value) {
+	        difference: function(value) {
 	            return Math.abs(numeral(this._value).subtract(value).value());
 	        }
 
@@ -12392,7 +12721,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    ************************************/
 
 	    // CommonJS module is defined
-	    if (hasModule) {
+	    if (typeof module !== 'undefined' && module.exports) {
 	        module.exports = numeral;
 	    }
 
@@ -12406,24 +12735,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	    /*global define:false */
 	    if (true) {
-	        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
+	        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function() {
 	            return numeral;
 	        }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	    }
 	}).call(this);
 
 
-/***/ },
-/* 4 */
-/***/ function(module, exports) {
-
-	module.exports = __WEBPACK_EXTERNAL_MODULE_4__;
-
-/***/ },
+/***/ }),
 /* 5 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	module.exports = __WEBPACK_EXTERNAL_MODULE_5__;
 
-/***/ }
+/***/ }),
+/* 6 */
+/***/ (function(module, exports) {
+
+	module.exports = __WEBPACK_EXTERNAL_MODULE_6__;
+
+/***/ })
 /******/ ])});;

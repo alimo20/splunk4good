@@ -1,3 +1,10 @@
+/* TODO: jink to replace theme_utils with that from core */
+require.config({
+  paths: {
+    theme_utils: '../app/simple_xml_examples/theme_utils'
+  }
+});
+
 require([
     'jquery',
     'underscore',
@@ -9,6 +16,7 @@ require([
     '../app/simple_xml_examples/components/event_token_browser/TokenDetail',
     'backbone',
     'util/moment',
+    'theme_utils',
     'css!../app/simple_xml_examples/event_token_browser.css',
     'splunkjs/mvc/simplexml/ready!'
     ],
@@ -22,7 +30,8 @@ function(
     ActionHistoryView,
     TokenDetailView,
     Backbone,
-    moment
+    moment,
+    themeUtils
 ){
     function getSearchManagerComponents(components) {
         return _(components).filter(function(component) {
@@ -100,8 +109,10 @@ function(
         return DASHBOARD_ACTIONS[action].actionType;
     });
 
+    var isDarkTheme = themeUtils.getCurrentTheme && themeUtils.getCurrentTheme() === 'dark';
+
     var TokenView = Backbone.View.extend({
-        className: 'token-view',
+        className: isDarkTheme ? 'token-view dark':'token-view',
 
         initialize: function() {
             this.model = {

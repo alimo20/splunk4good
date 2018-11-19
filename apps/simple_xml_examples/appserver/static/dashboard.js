@@ -1,7 +1,9 @@
+/* TODO: jink to replace theme_utils with that from core */
 require.config({
     paths: {
         "app": "../app",
-        showdown: '../app/simple_xml_examples/components/srcviewer/contrib/showdown'
+        showdown: '../app/simple_xml_examples/components/srcviewer/contrib/showdown',
+        theme_utils: '../app/simple_xml_examples/theme_utils'
     }
 });
 
@@ -12,8 +14,9 @@ require([
     'splunk.util',
     'backbone',
     'showdown',
-    'app/simple_xml_examples/components/srcviewer/srcviewer'
-], function($, _, DashboardController, SplunkUtil, Backbone, Showdown, SourceViewer) {
+    'app/simple_xml_examples/components/srcviewer/srcviewer',
+    'theme_utils'
+], function($, _, DashboardController, SplunkUtil, Backbone, Showdown, SourceViewer, themeUtils) {
     // Disable Bootstrap auto discovery
     $('body').off('.data-api');
     // Open external links in new window
@@ -30,8 +33,10 @@ require([
         cache: true
     });
 
-    var bannerTemplate = '\
-        <div class="dashboard-banner"><%= message %></div>';
+    var isDarkTheme = themeUtils.getCurrentTheme && themeUtils.getCurrentTheme() === 'dark';
+
+    var bannerTemplate = '<div class="dashboard-banner"><%= message %></div>';
+
 
 
     DashboardController.onReady(function() {
@@ -141,6 +146,9 @@ require([
                         success: function(text){
                             var markdown = new Showdown.converter();
                             var banner = $(_.template(bannerTemplate, {message: markdown.makeHtml(text)}));
+                            if (isDarkTheme) {
+                              banner.addClass('dark');
+                            }
                             $('.main-section-body.dashboard-body').prepend($(banner));
                         }
                     });

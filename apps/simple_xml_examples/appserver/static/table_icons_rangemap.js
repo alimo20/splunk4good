@@ -1,10 +1,18 @@
+/* TODO: jink to replace theme_utils with that from core */
+require.config({
+  paths: {
+    theme_utils: '../app/simple_xml_examples/theme_utils'
+  }
+});
+
 require([
     'underscore',
     'jquery',
     'splunkjs/mvc',
     'splunkjs/mvc/tableview',
+    'theme_utils',
     'splunkjs/mvc/simplexml/ready!'
-], function(_, $, mvc, TableView) {
+], function(_, $, mvc, TableView, themeUtils) {
 
     // Translations from rangemap results to CSS class
     var ICONS = {
@@ -20,14 +28,17 @@ require([
         },
         render: function($td, cell) {
             var icon = 'question';
+            var isDarkTheme = themeUtils.getCurrentTheme && themeUtils.getCurrentTheme() === 'dark';
+
             // Fetch the icon for the value
             if (ICONS.hasOwnProperty(cell.value)) {
                 icon = ICONS[cell.value];
             }
             // Create the icon element and add it to the table cell
-            $td.addClass('icon').html(_.template('<i class="icon-<%-icon%> <%- range %>" title="<%- range %>"></i>', {
+            $td.addClass('icon').html(_.template('<i class="icon-<%-icon%> <%- range %> <%- isDarkTheme %>" title="<%- range %>"></i>', {
                 icon: icon,
-                range: cell.value
+                range: cell.value,
+                isDarkTheme: isDarkTheme ? 'dark' : ''
             }));
         }
     });

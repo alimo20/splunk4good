@@ -240,7 +240,7 @@ class TreeCodec(BaseCodec):
         # and is used to init an np array of zeros in version 0.18:
         # https://github.com/scikit-learn/scikit-learn/blob/ef5cb84a805efbe4bb06516670a9b8c690992bd7/sklearn/tree/_tree.pyx#L926
         # https://github.com/scikit-learn/scikit-learn/blob/ef5cb84a805efbe4bb06516670a9b8c690992bd7/sklearn/tree/_tree.pyx#L991
-        state['max_depth'] = 0
+        state['max_depth'] = state.get('max_depth', 0)
 
         t = sklearn.tree._tree.Tree(*init_args)
 

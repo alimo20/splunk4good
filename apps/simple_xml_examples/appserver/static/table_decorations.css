@@ -57,3 +57,29 @@ td.icon .low {
 .icon-inline i.icon-check {
     color: #5fff5e;
 }
+
+/* Dark Theme */
+
+td.icon i.dark {
+    text-shadow: none;
+}
+
+/* Row Coloring */
+
+#highlight tr.dark td {
+    background-color: #5BA383 !important;
+}
+
+#highlight tr.range-elevated.dark td {
+    background-color: #EC9960 !important;
+}
+
+#highlight tr.range-severe.dark td {
+    background-color: #AF575A !important;
+}
+
+
+#highlight .table .dark td {
+    border-top: 1px solid #000000;
+    color: #F2F4F5;
+}

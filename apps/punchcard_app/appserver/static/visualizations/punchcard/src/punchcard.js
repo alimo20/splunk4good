@@ -75,6 +75,8 @@ define([
         return x;
     }
 
+    var isDarkTheme = vizUtils.getCurrentTheme && vizUtils.getCurrentTheme() === 'dark';
+
     return SplunkVisualizationBase.extend({
 
         initialize: function() {
@@ -82,6 +84,9 @@ define([
 
             this.$el = $(this.el);
             this.$el.addClass('splunk-punchcard');
+            if (isDarkTheme){
+              this.$el.addClass('dark');
+            }
         },
 
         setupView: function() {
@@ -339,7 +344,7 @@ define([
                 .attr('class', 'x axis')
                 .call(xAxis);
 
-            var axisText = axisContainer.selectAll('text')
+            var axisText = axisContainer.selectAll('text');
 
             axisText
                 .attr('data-label-input', function(d) { return d; })
@@ -358,10 +363,12 @@ define([
                     .style('text-anchor', 'start');
             }
 
+            var textFillColor = isDarkTheme ? '#E1E6EB' : '#333';
+
             (d3.select(this.el).selectAll('.tick')[0]).forEach(function(d1, index) {
                 d3.select(d1).select('text')
                     .on('mouseover', function(d) {
-                            d3.select(this).style('fill', '#333')
+                            d3.select(this).style('fill', textFillColor)
                                 .style('font-weight', 'bold');
                             d3.select(containerEl).selectAll('circle[data-column="' + d + '"]')
                                 .transition()
@@ -373,7 +380,7 @@ define([
                                 .style('opacity', '1');
                     })
                     .on('mouseout',function(d) {
-                            d3.select(this).style('fill', '#555')
+                            d3.select(this).style('fill', textFillColor)
                                 .style('font-weight', 'normal');
                             d3.select(containerEl).selectAll('circle[data-column="' + d + '"]')
                                 .transition()
@@ -473,7 +480,7 @@ define([
                             .duration(120)
                             .style('opacity', 1);
                         text.attr('storedFill', text.style('fill'))
-                            .style('fill', '#333');
+                            .style('fill', textFillColor);
                         var currentCol = text.attr('data-column');
                         d3.select(d3.select(this).node().parentNode)
                             .selectAll('circle[data-column="' + currentCol + '"]')
@@ -500,14 +507,14 @@ define([
 
                 labelEnter.append('rect')
                     .style('fill', '#000000')
-                    .style('opacity', 0)
+                    .style('opacity', 0);
 
                 labelEnter.append('text')
                     .attr('data-column', function(d, i) { return d.xValue })
                     .attr('data-ccat', function(d, i) { return colorMode === 'categorical' ? d.category : categoryScale(d.category); })
                     .style('text-anchor', 'middle')
                     .style('fill', function(d) { return useColors ? colorScale(categoryScale(d.category)) : 'rgb(30, 147, 198)'; })
-                    .style('opacity', 0)
+                    .style('opacity', 0);
 
                 labels
                     .attr('transform', function(d, i){
@@ -521,7 +528,7 @@ define([
                         })
                         .attr('class', 'value')
                         .attr('y', maxRadius + 7)
-                        .attr('x', maxRadius)
+                        .attr('x', maxRadius);
 
                 labels
                     .select('rect')
@@ -535,12 +542,12 @@ define([
                     .attr('class','label')
                     .attr('data-label-input', row['name'])
                     .text(formatYAxisLabel(row['name']))
-                    .style('fill', '#555')
+                    .style('fill', isDarkTheme ? '#E1E6EB' : '#555')
                     .on('mouseover', function(p) {
                         var g = d3.select(this).node().parentNode;
                         var element = d3.select(this);
                         element.attr('storedFill', element.style('fill'));
-                        element.style('fill', 'black');
+                        element.style('fill', isDarkTheme ? 'white' : 'black');
                         element.style('font-weight', 'bold');
                         d3.select(g).selectAll('circle')
                             .transition()
@@ -617,7 +624,7 @@ define([
                                 .transition()
                                 .duration(120)
                                 .style('opacity', 0);
-                    })
+                    });
 
                 legendItems.append('circle')
                   .attr('r', LEGEND_CIRCLE_RADIUS)
@@ -626,6 +633,7 @@ define([
                 legendItems.append('text')
                   .attr('x', 2 * LEGEND_CIRCLE_RADIUS + LEGEND_SPACING)
                   .attr('y', 4)
+                  .attr('fill', isDarkTheme ? 'white' : '')
                   .text(function(d) { return truncate((colorMode === 'categorical' ? '' : '>= ') + d, 18); })
                   .append('title')
                   .text(function(d) { return (colorMode === 'categorical' ? '' : '>= ') + d; });

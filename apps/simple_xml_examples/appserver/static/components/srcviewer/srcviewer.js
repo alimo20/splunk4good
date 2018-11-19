@@ -1,6 +1,8 @@
+/* TODO: jink to replace theme_utils with that from core */
 require.config({
     paths: {
-        showdown: '../app/simple_xml_examples/components/srcviewer/contrib/showdown'
+        showdown: '../app/simple_xml_examples/components/srcviewer/contrib/showdown',
+        theme_utils: '../app/simple_xml_examples/theme_utils'
     }
 });
 
@@ -10,13 +12,16 @@ define([
     'backbone',
     './codeview',
     'showdown',
+    'theme_utils',
     'bootstrap.tab'
-], function(_, $, Backbone, CodeView, Showdown) {
+], function(_, $, Backbone, CodeView, Showdown, themeUtils) {
 
     var markdown = new Showdown.converter();
 
+    var isDarkTheme = themeUtils.getCurrentTheme && themeUtils.getCurrentTheme() === 'dark';
+
     var SourceCodeViewer = Backbone.View.extend({
-        className: 'sourcecode-viewer',
+        className: isDarkTheme? 'sourcecode-viewer dark':'sourcecode-viewer',
         options: {
             title: 'Dashboard Source Code'
         },
@@ -65,7 +70,8 @@ define([
                 _: _,
                 description: '',
                 shortDescription: '',
-                related_links: null
+                related_links: null,
+                showsource_container: isDarkTheme ? 'showsource-container dark' : 'showsource-container'
             }, this.model.toJSON(), this.options);
 
             if(model.description) {
@@ -93,7 +99,7 @@ define([
                     '<% } %>' +
                 '</div>' +
             '</div>' +
-            '<div class="showsource-container">' +
+            '<div class="<%- showsource_container %>">' +
                 '<ul class="nav nav-tabs">' +
                 '<li class="nav-title">Source Code</li>' +
                 '</ul>' +

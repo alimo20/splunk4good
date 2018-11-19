@@ -37,6 +37,9 @@ define([
         'SUBSECONDS': '%X %L'
     };
 
+    var isDarkTheme = vizUtils.getCurrentTheme && vizUtils.getCurrentTheme() === 'dark';
+
+
     var STRIP_TIMEZONE_REGEX = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.{0,1}(\d*))[+-]{1}\d{2}[:]?\d{2}$/;
 
     var LEGEND_WIDTH = 200;
@@ -58,6 +61,9 @@ define([
 
             this.$el = $(this.el);
             this.$el.addClass('splunk-timeline');
+            if (isDarkTheme){
+              this.$el.addClass('dark');
+            }
 
             this.compiledTooltipTemplate = _.template(this._tooltipTemplate);
             this.tooltipContainer = $('<div class="splunk-timeline-tooltip" style="position:relative"></div>').appendTo('body');
@@ -194,6 +200,8 @@ define([
             var colorScale;
             var chartWidth;
             var categoryScale;
+
+            this.useColors = useColors;
 
             if (useColors) {
                 chartWidth = width - LEGEND_WIDTH - LEGEND_MARGIN;
@@ -348,7 +356,10 @@ define([
                     tickSize: 3
                 })
                 .background(function(d, i) {
-                    return i % 2 === 0 ? '#F5F5F5': 'white'
+                    if (isDarkTheme){
+                        return i % 2 === 0 ? '#2B3033': '#31373E';
+                    }
+                    return i % 2 === 0 ? '#F5F5F5': 'white';
                 })
                 .fullLengthBackgrounds(true)
                 .margin({left: LABEL_WIDTH, right:30, top: 30, bottom:0});
@@ -433,6 +444,7 @@ define([
                 legend.append('text')
                   .attr('x', LEGEND_RECT_SIZE + 2 * LEGEND_SPACING)
                   .attr('y', LEGEND_RECT_SIZE - LEGEND_SPACING + LEGEND_RECT_SIZE / 6)
+                  .attr('fill', function() {return isDarkTheme? '#fff' : '#000';})
                   .text(function(d) { return (colorMode === 'categorical' ? '' : '>= ') + truncate(d, 18); })
                   .append('title')
                     .text(function(d) { return (colorMode === 'categorical' ? '' : '>= ') + d; });

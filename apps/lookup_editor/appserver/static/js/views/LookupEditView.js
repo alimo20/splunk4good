@@ -149,14 +149,14 @@ define([
         },
         
         events: {
-			"click #save"                                  : "doSaveLookup",
-			"click #create"                                : "doCreateLookup",
-        	"click .user-context"                          : "doLoadUserContext",
-        	"click #export-file"                           : "doExport",
-        	"click #import-file"                           : "openFileImportModal",
-			"click #refresh"                               : "refreshLookup",
-			"click #edit-acl"                              : "editACLs",
-			"click #open-in-search"                        : "openInSearch"
+			"click #save"           : "doSaveLookup",
+			"click #create"         : "doCreateLookup",
+        	"click .user-context"   : "doLoadUserContext",
+        	"click #export-file"    : "doExport",
+        	"click #import-file"    : "openFileImportModal",
+			"click #refresh"        : "refreshLookup",
+			"click #edit-acl"       : "editACLs",
+			"click #open-in-search" : "openInSearch"
         },
         
         /**
@@ -1356,12 +1356,12 @@ define([
 			var uri = null;
 
 			if(this.lookup_type == 'kv'){
-				uri = '/servicesNS/nobody/' + this.namespace + '/storage/collections/config/' + this.lookup;
-				document.location = '/en-US/manager/permissions/' + this.namespace + '/storage/collections/config/' + this.lookup + '?uri=' + encodeURIComponent(uri);
+				uri = Splunk.util.make_url('/splunkd/__raw/servicesNS/nobody/' + this.namespace + '/storage/collections/config/' + this.lookup);
+				document.location = Splunk.util.make_url('/manager/permissions/' + this.namespace + '/storage/collections/config/' + this.lookup + '?uri=' + encodeURIComponent(uri));
 			}
 			else{
-				uri = '/servicesNS/' + this.owner + '/' + this.namespace + '/data/lookup-table-files/' + this.lookup;
-				document.location = '/en-US/manager/permissions/' + this.namespace + '/data/lookup-table-files/' + this.lookup + '?uri=' + encodeURIComponent(uri);
+				uri = Splunk.util.make_url('/splunkd/__raw/servicesNS/' + this.owner + '/' + this.namespace + '/data/lookup-table-files/' + this.lookup);
+				document.location = Splunk.util.make_url('/manager/permissions/' + this.namespace + '/data/lookup-table-files/' + this.lookup + '?uri=' + encodeURIComponent(uri));
 			}
 
 		},
@@ -1400,10 +1400,17 @@ define([
         render: function () {
 			$.when(Capabilities.hasCapability('admin_all_objects')).done(function(has_permission){
 				// Get the information from the lookup to load
-				this.lookup = Splunk.util.getParameter("lookup");
-				this.namespace = Splunk.util.getParameter("namespace");
-				this.owner = Splunk.util.getParameter("owner");
-				this.lookup_type = Splunk.util.getParameter("type");
+				this.lookup = decodeURIComponent(Splunk.util.getParameter("lookup"));
+				this.namespace = decodeURIComponent(Splunk.util.getParameter("namespace"));
+
+				if(Splunk.util.getParameter("owner")){
+					this.owner = decodeURIComponent(Splunk.util.getParameter("owner"));
+				}
+				else{
+					this.owner = null;
+				}
+
+				this.lookup_type = decodeURIComponent(Splunk.util.getParameter("type"));
 				
 				// Determine if we are making a new lookup
 				this.is_new = false;
@@ -1442,10 +1449,12 @@ define([
 				$.when(Users.getUsers(this.owner, user_descriptions, default_users)).done(function(users){
 					// Sort the users list
 					users = Users.sortUsersList(users, ['nobody', this.owner, Splunk.util.getConfigValue("USERNAME")]);
-						
+					
+					var insufficient_permissions = !has_permission && this.is_new && this.lookup_type === "kv";
+
 					// Render the HTML content
 					this.$el.html(_.template(Template, {
-						'insufficient_permissions' : !has_permission && this.is_new,
+						'insufficient_permissions' : insufficient_permissions,
 						'is_new' : this.is_new,
 						'lookup_name': this.lookup,
 						'lookup_type' : this.lookup_type,
@@ -1480,7 +1489,7 @@ define([
 					console.info("Press CTRL + E to see something interesting");
 
 					// Show the content that is specific to making new lookups
-					if (has_permission && this.is_new) {
+					if (!insufficient_permissions && this.is_new) {
 
 						// Make the lookup name input
 						var name_input = new TextInput({

@@ -5,6 +5,9 @@ from ast import literal_eval
 
 from base_util import is_valid_identifier
 
+# Global parameter-parsing regex (scoring and fitting)
+params_re = re.compile("([_a-zA-Z][_a-zA-Z0-9]*)\s*=\s*(.*)")
+
 
 def is_truthy(s):
     return str(s).lower() in [
@@ -101,7 +104,6 @@ def parse_args(argv):
 
     from_seen = False
 
-    params_re = re.compile("([_a-zA-Z][_a-zA-Z0-9]*)\s*=\s*(.*)")
     while argv:
         arg = argv.pop(0)
         if arg.lower() == 'into':
@@ -138,10 +140,10 @@ def parse_args(argv):
                 raise RuntimeError('Syntax error: you may specify "from" only once')
 
             options.setdefault('feature_variables', [])
-            options['target_variable'] = options.pop('feature_variables')
+            if len(options['feature_variables']) > 0:
+                options['target_variable'] = options.pop('feature_variables')
 
             from_seen = True
-            continue
         else:
             m = params_re.match(arg)
             if m:
@@ -160,6 +162,53 @@ def parse_args(argv):
 
                 variables.append(arg)
 
+    return options
+
+
+def parse_score_args(argv):
+    options = {}
+    against_seen = False
+
+    while argv:
+        arg = argv.pop(0)
+        if arg.lower() == 'against' or arg == "~":
+            # For two-array scoring methods, syntax is ..| score <scoring_method> a1 a2 .. AGAINST b1 b2 ..
+            # For single-array methods, syntax is ..| score <scoring_method> a1 a2 ..
+            if against_seen:
+                raise RuntimeError('Syntax error: you may specify "against" only once.')
+
+            options.setdefault('b_variables', [])
+            if len(options['b_variables']) > 0:
+                # All fields before "AGAINST" are a_variables, after are b_variables.
+                options['a_variables'] = options.pop('b_variables')
+
+            against_seen = True
+
+        else:
+            m = params_re.match(arg)
+            if m:
+                params = options.setdefault('params', {})
+                params[m.group(1)] = m.group(2)
+            else:
+                arg = unquote_arg(arg)
+                if len(arg) == 0:
+                    continue
+                args = options.setdefault('args', [])
+                args.append(arg)
+
+                # Append to 'b_variables' until 'against' is seen
+                variables = options.setdefault('b_variables', [])
+                if isinstance(arg, unicode):
+                    arg = arg.encode('utf-8')
+
+                variables.append(arg)
+
+    if 'a_variables' not in options:
+        # If "AGAINST" is not provided, set all fields to a_variables.
+        options.setdefault('a_variables', options.pop('b_variables', []))
+
+    # Set b_variables to be an empty list by default
+    options.setdefault('b_variables', [])
     return options
 
 

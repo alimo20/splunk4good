@@ -4,15 +4,22 @@ import pandas as pd
 
 import cexc
 from BaseProcessor import BaseProcessor
-from models import deletemodels
 import models.base
-from sampler import ReservoirSampler
-from util.param_util import is_truthy, convert_params
+from models import deletemodels
 from util.base_util import match_field_globs
 from util.base_util import MLSPLNotImplementedError
 from util.algos import initialize_algo_class
 from util.mlspl_loader import MLSPLConf
+# from util.telemetry_util import log_algo_details
+from base import ClassifierMixin, RegressorMixin
 
+from util.processor_util import (
+    split_options,
+    load_resource_limits,
+    load_sampler_limits,
+    get_sampler,
+    check_sampler,
+)
 
 logger = cexc.get_logger(__name__)
 messages = cexc.get_messages_logger()
@@ -31,7 +38,8 @@ class FitBatchProcessor(BaseProcessor):
         # Split apart process & algo options
         self.namespace = process_options.pop('namespace', None)
         mlspl_conf = MLSPLConf(searchinfo)
-        self.process_options, self.algo_options = self.split_options(process_options, mlspl_conf)
+        self.process_options, self.algo_options = split_options(process_options, mlspl_conf, process_options['algo_name'])
+
         self.searchinfo = searchinfo
 
         # Convenience / readability
@@ -39,64 +47,18 @@ class FitBatchProcessor(BaseProcessor):
 
         self.algo = self.initialize_algo(self.algo_options, self.searchinfo)
 
-        self.check_algo_options(self.algo_options, self.algo)
+        self.check_algo_options(self.algo, self.algo_options)
         self.save_temp_model(self.algo_options, self.tmp_dir)
 
-        self.resource_limits = self.load_resource_limits(self.algo_options['algo_name'], mlspl_conf)
+        self.resource_limits = load_resource_limits(self.algo_options['algo_name'], mlspl_conf)
 
         self._sampler_time = 0.0
-        self.sampler_limits = self.load_sampler_limits(self.process_options, self.algo_options['algo_name'], mlspl_conf)
-        self.sampler = self.get_sampler(self.sampler_limits)
-
-    @staticmethod
-    def split_options(options, mlspl_conf):
-        """Pop tmp_dir from the options. Also, parse sample count
-        and sample seed from original params and add them to process options.
-
-        Args:
-            options (dict): process options
-            mlspl_conf (obj): the conf utility for mlspl conf settings
-
-        Returns:
-            process_options (dict): the process options we use here
-            algo_options (dict): the algo options to be passed to the algo
-        """
-        sample_params = {}
-        if 'params' in options:
-            try:
-                sample_params = convert_params(options['params'],
-                                               ignore_extra=True,
-                                               ints=['sample_count',
-                                                     'sample_seed']
-                                              )
-            except ValueError as e:
-                raise RuntimeError(str(e))
-
-        if 'sample_count' in sample_params:
-            del options['params']['sample_count']
-
-        if 'sample_seed' in sample_params:
-            del options['params']['sample_seed']
-
-        # copy everything from leftover options to algo options
-        algo_options = options.copy()
-        algo_name = algo_options['algo_name']
-        algo_options['mlspl_limits'] = mlspl_conf.get_stanza(algo_name)
-
-        # brand new process options
-        process_options = {}
-
-        # sample options are added to the process options
-        process_options['sample_seed'] = sample_params.get('sample_seed', None)
-        process_options['sample_count'] = sample_params.get('sample_count', None)
-
-        # needed by processor, not algorithm
-        process_options['tmp_dir'] = algo_options.pop('tmp_dir')
-
-        return process_options, algo_options
+        self.sampler_limits = load_sampler_limits(self.process_options, self.algo_options['algo_name'], mlspl_conf)
+        self.sampler = get_sampler(self.sampler_limits)
 
     @staticmethod
     def initialize_algo(algo_options, searchinfo):
+
         algo_name = algo_options['algo_name']
         try:
             algo_class = initialize_algo_class(algo_name, searchinfo)
@@ -106,20 +68,21 @@ class FitBatchProcessor(BaseProcessor):
             raise RuntimeError('Error while initializing algorithm "%s": %s' % (
                 algo_name, str(e)))
 
-
     @staticmethod
-    def check_algo_options(algo_options, algo):
+    def check_algo_options(algo, algo_options):
         """Raise errors if options are incompatible
 
         Args:
+            algo (object): initialized algo object
             algo_options (dict): algo options
-            algo (dict): initialized algo object
 
         Raises:
             RuntimeError
         """
         # Pre-validate whether or not this algo supports saved models.
         if 'model_name' in algo_options:
+            if algo_options.get('kfold_cv') is not None:
+                raise RuntimeError('The kfold_cv option cannot be used when saving a model')
             try:
                 algo.register_codecs()
             except MLSPLNotImplementedError:
@@ -128,11 +91,19 @@ class FitBatchProcessor(BaseProcessor):
                 logger.debug("Error while calling algorithm's register_codecs method. {}".format(str(e)))
                 raise RuntimeError('Error while initializing algorithm. See search.log for details.')
 
+        can_use_kfold_cv = isinstance(algo, (ClassifierMixin, RegressorMixin))
+        if algo_options.get('kfold_cv') is not None:
+            if not can_use_kfold_cv:
+                raise RuntimeError('Algorithm "%s" does not support the kfold_cv parameter' % algo_options['algo_name'])
+            if algo_options.get('kfold_cv') <= 1:
+                raise RuntimeError('kfold_cv must be > 1')
+
     @staticmethod
-    def match_and_assign_variables(columns, algo, algo_options):
+    def match_and_assign_variables(app_name, columns, algo, algo_options):
         """Match field globs and attach variables to algo.
 
         Args:
+            app_name (str): application name which runs the fit()
             columns (list): columns from dataframe
             algo (object): initialized algo object
             algo_options (dict): algo options
@@ -140,6 +111,8 @@ class FitBatchProcessor(BaseProcessor):
         """
         if hasattr(algo, 'feature_variables'):
             algo.feature_variables = match_field_globs(columns, algo.feature_variables)
+            # log_algo_details(app_name, algo, algo_options)
+            
         else:
             algo.feature_variables = []
 
@@ -156,81 +129,6 @@ class FitBatchProcessor(BaseProcessor):
                 algo.feature_variables.remove(algo.target_variable)
 
         return algo
-
-    @staticmethod
-    def load_sampler_limits(process_options, algo_name, mlspl_conf):
-        """Read sampling limits from conf file and decide sample count.
-
-        Args:
-            process_options (dict): process options
-            algo_name (str): algo name
-            mlspl_conf (obj): the conf utility for mlspl conf settings
-
-        Returns:
-            sampler_limits (dict): sampler limits
-        """
-        sampler_limits = {}
-
-        # setting up the logic to choose the sample count
-        sampler_limits['use_sampling'] = is_truthy(str(mlspl_conf.get_mlspl_prop('use_sampling', algo_name, 'yes')))
-        max_inputs = int(mlspl_conf.get_mlspl_prop('max_inputs', algo_name, -1))
-        if process_options['sample_count']:
-            sampler_limits['sample_count'] = min(process_options['sample_count'], max_inputs)
-        else:
-            sampler_limits['sample_count'] = max_inputs
-
-        # simply set sample seed
-        sampler_limits['sample_seed'] = process_options['sample_seed']
-        return sampler_limits
-
-    @staticmethod
-    def get_sampler(sampler_limits):
-        """Initialize the sampler and use resource limits from processor.
-
-        Args:
-            sampler_limits (dict): sampler limits
-
-        Returns:
-            (object): sampler object
-        """
-        return ReservoirSampler(sampler_limits['sample_count'], random_state=sampler_limits['sample_seed'])
-
-    @staticmethod
-    def check_sampler(sampler_limits, algo_name):
-        """Inform user if sampling is on or raise error if sampling is off and
-        events exceed limit.
-
-        Args:
-            sampler_limits (dict): sampler limits
-            algo_name (str): algo name
-        """
-        if is_truthy(sampler_limits['use_sampling']):
-            messages.warn(
-                'Input event count exceeds max_inputs for %s (%d), model will be fit on a sample of events.' % (
-                    algo_name, sampler_limits['sample_count']))
-        else:
-            raise RuntimeError('Input event count exceeds max_inputs for %s (%d) and sampling is disabled.' % (
-                algo_name, sampler_limits['sample_count']))
-
-    @staticmethod
-    def load_resource_limits(algo_name, mlspl_conf):
-        """Load algorithm specific resource limits.
-
-        Args:
-            algo_name (str): algo_name
-            mlspl_conf (obj): the conf utility for mlspl conf settings
-
-        Returns:
-            resource_limits (dict): dictionary of resource limits including
-                max_fit_time, max_memory_usage_mb, and max_model_size_mb
-        """
-        
-
-        resource_limits = {}
-        resource_limits['max_memory_usage_mb'] = int(mlspl_conf.get_mlspl_prop('max_memory_usage_mb', algo_name, -1))
-        resource_limits['max_fit_time'] = int(mlspl_conf.get_mlspl_prop('max_fit_time', algo_name, -1))
-        resource_limits['max_model_size_mb'] = int(mlspl_conf.get_mlspl_prop('max_model_size_mb', algo_name, -1))
-        return resource_limits
 
     @staticmethod
     def save_temp_model(algo_options, tmp_dir):
@@ -292,7 +190,7 @@ class FitBatchProcessor(BaseProcessor):
             df (dataframe): dataframe received from controller
         """
         if self.sampler_limits['sample_count'] - len(df) < self.sampler.count <= self.sampler_limits['sample_count']:
-            self.check_sampler(sampler_limits=self.sampler_limits, algo_name=self.algo_options['algo_name'])
+            check_sampler(sampler_limits=self.sampler_limits, class_name=self.algo_options['algo_name'])
 
         with cexc.Timer() as sampler_t:
             self.sampler.append(df)
@@ -303,7 +201,9 @@ class FitBatchProcessor(BaseProcessor):
     def process(self):
         """Get dataframe, update algo, and possibly make predictions."""
         self.df = self.sampler.get_df()
-        self.algo = self.match_and_assign_variables(self.df.columns, self.algo, self.algo_options)
+        self.algo = self.match_and_assign_variables(
+            self.searchinfo.get('app'), self.df.columns, self.algo, self.algo_options
+        )
         self.algo, self.df, self.has_applied = self.fit(self.df, self.algo, self.algo_options)
 
     @staticmethod

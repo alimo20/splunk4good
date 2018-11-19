@@ -36,6 +36,8 @@ else:
 
     app_name = cherrypy.request.path_info.split('/')[3]
     page_css_path = "/static/app/" + app_name + "/style/css/" + page + ".css"
+    app_root = "/" + "/".join(["static","app",app_name])
+    css_path = app_root + "/bootstrap-enterprise.css"
     %>
 
     <link rel="stylesheet" type="text/css" href="${make_url(page_css_path)}" />
@@ -43,7 +45,7 @@ else:
     % if isLite:
     <link rel="stylesheet" type="text/css" href="${make_url('/static/build/css/bootstrap-lite.css', _qs=css_less_qs)}" />
     % else:
-    <link rel="stylesheet" type="text/css" href="${make_url('/static/build/css/bootstrap-enterprise.css', _qs=css_less_qs)}" />
+    <link rel="stylesheet" type="text/css" href="${make_url(css_path, _qs=css_less_qs)}" />
     % endif
 
 </head>

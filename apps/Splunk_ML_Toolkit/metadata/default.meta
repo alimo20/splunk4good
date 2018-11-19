@@ -21,6 +21,10 @@ export = system
 access = read : [ * ], write : [ admin ]
 export = system
 
+[scorings]
+access = read : [ * ], write : [ admin ]
+export = system
+
 [mlspl]
 access = read : [ * ], write : [ admin ]
 export = system

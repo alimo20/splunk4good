@@ -5,18 +5,19 @@ Splunk_SA_Scientific_Python - Python for Scientific Computing in Splunk
 This package contains a Python interpreter bundled with the following
 Python scientific and machine learning libraries:
 
-  * numpy 1.10.4
-  * scipy 0.17.0
-  * pandas 0.17.1
-  * scikit-learn 0.17.0
+  * numpy 1.13.3
+  * scipy 0.19.1
+  * pandas 0.22.0
+  * scikit-learn 0.19.0
+  * statsmodels 0.8.0
 
 Splunk_SA_Scientific_Python is cross-platform and available for 64-bit
 Linux, 32-bit Linux, Darwin, and 64-bit Windows.
 
 The included exec_anaconda() function can be used to execute Splunk
-Custom Search Commands and REST handlers within the bundled Anaconda
-interpreter, thereby enabling you to import modules like numpy in a
-robust, cross-platform manner.
+Custom Search Commands within the bundled Anaconda interpreter, thereby
+enabling you to import modules like numpy in a robust, cross-platform 
+manner.
 
 To use Splunk_SA_Scientific_Python, copy exec_anaconda.py into your
 app's bin directory. At the top of your custom search command, add the

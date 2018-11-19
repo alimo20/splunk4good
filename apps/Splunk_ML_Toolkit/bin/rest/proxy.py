@@ -17,6 +17,9 @@ class SplunkRestException(Exception):
         super(SplunkRestException, self).__init__(reply.get('content', ''))
         self.reply = reply
 
+    def get_raw_reply(self):
+        return self.reply
+
     def to_http_response(self):
         return {
             'payload': self.reply.get('content', ''),
@@ -173,10 +176,10 @@ class SplunkRestEndpointProxy(object):
 
         rest_proxy = SplunkRestProxy.from_rest_request(request, self.with_admin_token)
 
-        transformed_options = self._transform_request_options(options, url_parts, request)
+        transformed_rest_options, reply_options = self._transform_request_options(options, url_parts, request)
 
         # re-construct the url with _convert_url_parts, and make a full url for rest_proxy
-        transformed_options['url'] = self._make_url(
+        transformed_rest_options['url'] = self._make_url(
             rest_proxy, 'user',  # TODO: make this configurable, after refactoring all the url making functions
             self._convert_url_parts(url_parts)
         )
@@ -184,43 +187,43 @@ class SplunkRestEndpointProxy(object):
         # if there is any existing url parameters passed in, retain those
         # and merge them with any other url parameters produced by request transformation
         getargs_from_request = dict(request.get('query', []))
-        if 'getargs' in transformed_options:
-            transformed_options['getargs'].update(getargs_from_request)
+        if 'getargs' in transformed_rest_options:
+            transformed_rest_options['getargs'].update(getargs_from_request)
         else:
-            transformed_options['getargs'] = getargs_from_request
+            transformed_rest_options['getargs'] = getargs_from_request
 
         if self.with_raw_result:
-            transformed_options['rawResult'] = True
+            transformed_rest_options['rawResult'] = True
 
         # TODO: make this safer by validating option entries
-        reply = rest_proxy.make_rest_call(**transformed_options)
+        reply = rest_proxy.make_rest_call(**transformed_rest_options)
 
         # skiping the reply transformation when we need to
         if with_raw_reply:
             return reply
 
-        return self._handle_reply(reply, request, url_parts, options['method'])
+        return self._handle_reply(reply, reply_options, request, url_parts, options['method'])
 
     @abc.abstractmethod
-    def _transform_request_options(self, options, url_parts, request):
+    def _transform_request_options(self, rest_options, url_parts, request):
         """
         Mutate the `request` object, in case we need some custom modification
 
         Optional override, class extending SplunkRestProxy can use this method to modify request before sending
 
         Args:
-            options (dict): HTTP request config options
+            rest_options (dict): HTTP request config options
             url_parts (list): the list of url parts of the INCOMING request
             request (object): request object from the INCOMING http request
 
         Returns:
-            dict: the modified request options stored in a dictionary
+            tuple: the modified request options stored in a dictionary, and a reply options if any
         """
 
-        return options
+        return rest_options, {}
 
     @abc.abstractmethod
-    def _handle_reply(self, reply, request, url_parts, method):
+    def _handle_reply(self, reply, reply_options, request, url_parts, method):
         """
         Mutate the `reply` object returned from `rest_proxy.make_rest_call()`
 
@@ -229,6 +232,7 @@ class SplunkRestEndpointProxy(object):
 
         Args:
             reply (object): the reply from the splunk rest endpoint
+            reply_options (dict): the reply options from '_transform_request_options'
             request (dict): the request from the client side.
             url_parts (list): the list of url parts of the INCOMING http request
             method (string): HTTP method in string

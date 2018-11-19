@@ -159,10 +159,28 @@ Change History
 |---------|------------------------------------------------------------------------------------------------------------------|
 | 2.7.1   | Fixing issue where lookups with spaces in the names were allowed                                                 |
 |---------|------------------------------------------------------------------------------------------------------------------|
+| 2.7.2   | Fixing issue where lookup saving would be considered a failure when replication could not be forced              |
+|---------|------------------------------------------------------------------------------------------------------------------|
 | 3.0.0   | Added support for Splunk 7.1                                                                                     |
 |         | Numerous user interface enhancements                                                                             |
 |         | Added ability to replicate lookup backup files in a Search Head Cluster                                          |
 |         | Added a link to open a lookup in search from the lookup editor                                                   |
 |         | Added a dialog that will guide the user in creating a lookup transform in order to open it in search             |
 |         | Added support for editing on an iPad                                                                             |
+|---------|------------------------------------------------------------------------------------------------------------------|
+| 3.0.1   | Fixing issue where CSVs didn't loaded for some user names (such as those with slashes)                           |
+|         | Fixing broken open-in-search link                                                                                |
+|---------|------------------------------------------------------------------------------------------------------------------|
+| 3.0.2   | Fixing issue where lookup saving would be considered a failure when replication could not be forced              |
+|         | Added message noting that lookup file is being loaded                                                            |
+|         | KV store lookup fields are correctly loaded when the fields are declared in transforms.conf                      |
+|---------|------------------------------------------------------------------------------------------------------------------|
+| 3.0.3   | Fixing issue where time fields could be mis-interpreting and saved as "NaN"                                      |
+|         | Fixing double encoding issue causing lookups files to not be listed                                              |
+|         | Fixing issue where lookups that were user-owned by a user with a slash couldn't be loaded or deleted             |
+|         | New CSV lookup files are no longer created via direct access                                                     |
+|         | Lookup creation was disallowed unnecessarily for CSVs for non-admins                                             |
+|---------|------------------------------------------------------------------------------------------------------------------|
+| 3.0.4   | Fixing issue where app was incompatible with apps that had copied components from the Lookup Editor              |
+|         | Fixing issue where transform entry was made incorrectly for KV store lookups with a field name containing a space|                                                     |
 +---------+------------------------------------------------------------------------------------------------------------------+

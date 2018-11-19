@@ -13,10 +13,11 @@ import numpy as np
 import cexc
 import util.models_util as models_util
 from codec import MLSPLEncoder, MLSPLDecoder
-from exec_anaconda import get_staging_area_path
 from util.algos import initialize_algo_class
+from util.base_util import get_staging_area_path
 from util.constants import DEFAULT_LOOKUPS_DIR
-from util.lookups_util import file_name_to_path, lookup_name_to_path_from_splunk
+from util.lookups_util import file_name_to_path, lookup_name_to_path_from_splunk, parse_model_reply
+# from util.telemetry_util import log_experiment_details, log_apply_details, log_example_details, log_app_details
 
 logger = cexc.get_logger(__name__)
 messages = cexc.get_messages_logger()
@@ -39,7 +40,6 @@ def load_model(model_name,
 
     logger.debug('Loading model: %s' % file_path)
     algo_name, model_data, model_options = models_util.load_algo_options_from_disk(file_path=file_path)
-
     if skip_model_obj:
         model_obj = None
     else:
@@ -51,7 +51,9 @@ def load_model(model_name,
 
         # Convert pre 2.2 variable names to feature_variables and target_variable
         model_obj, model_options = convert_variable_names(model_obj, model_options)
-
+    # app_name = searchinfo.get('app')
+    # log_app_details(app_name)
+    # log_apply_details(app_name, algo_name, model_options)
     return algo_name, model_obj, model_options
 
 
@@ -113,8 +115,10 @@ def save_model(model_name, algo, algo_name, options,
     # if we're creating a real model, generate a random name for it to avoid collisions in the upload staging area
     model_name_to_open = model_name if (tmp or local) else '_' + str(uuid.uuid1()).replace('-', '_')
     file_path = file_name_to_path(models_util.model_name_to_filename(model_name_to_open, tmp), model_dir)  # raises if invalid
-    logger.debug('Saving model: %s' % file_path)
-
+    logger.debug("Saving model: %s" % file_path)
+    # log_experiment_details(model_name_to_open)
+    # log_example_details(model_name_to_open)
+    
     with open(file_path, mode='w') as f:
         model_writer = csv.writer(f)
 
@@ -124,7 +128,9 @@ def save_model(model_name, algo, algo_name, options,
 
     if not (tmp or local):
         model_filename = models_util.model_name_to_filename(model_name)
-        models_util.move_model_file_from_staging(model_filename, searchinfo, namespace, f.name)
+        reply = models_util.move_model_file_from_staging(model_filename, searchinfo, namespace, f.name)
+        if not reply.get('success'):
+            parse_model_reply(reply)
 
 
 def encode(obj):

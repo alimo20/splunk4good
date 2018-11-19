@@ -1,9 +1,14 @@
-# mlspl.conf contains configuration for the "fit" and "apply"
-# commands included with the Machine Learning Toolkit.
+# mlspl.conf contains configuration for the "fit", "apply" and
+# "score" commands included with the Machine Learning Toolkit.
 #
 # Put global settings in the [default] stanza and algorithm-specific
 # settings in a stanza named for the algorithm
 # (e.g. [LinearRegression] for the LinearRegression algorithm).
+#
+# Stanzas given by [score:*] do not reference algorithms but rather
+# "score" classes (e.g. [score:classification] for classification
+# scoring methods such as accuracy_score.
+
 
 [default]
 max_inputs = <int>
@@ -27,6 +32,18 @@ max_fit_time = <int>
   algorithm.
 * This setting does not relate to the other phases of a search (e.g.
   retrieving events from an index).
+
+max_score_time = <int>
+* defaults to 600
+* The maximum time, in seconds, to spend in the "score" phase of an
+  algorithm.
+* This setting does not relate to the other phases of a search (e.g.
+  retrieving events from an index).
+
+# Maximum time (in seconds) to spend in the "score" phase of a scoring
+# method(including down-sampling the input). This does not relate
+# to the other phases of a search (e.g. retrieving events from an
+# index).
 
 max_memory_usage_mb = <int>
 * defaults to 1000
@@ -69,6 +86,13 @@ max_distinct_cat_values_for_classifiers = <int>
 the target (or response) variable in a classifier algorithm
 * if the number of distinct values exceeds this limit, the field will be dropped
   (with a warning)
+
+max_distinct_cat_values_for_scoring = <int>
+* defaults to 100
+* determines the upper limit for the number of distinct values in a categorical field that is
+the target (or response) variable in a scoring method
+* if the number of distinct values exceeds this limit, the field will be dropped
+  (with an appropriate warning or error message)
 
 # Algorithm-specific configuration
 # Note: Not all global settings can be overwritten in algorithm-specific
@@ -124,3 +148,21 @@ summary_return_json = true|false
 [ARIMA]
 use_sampling = true|false
 * defaults to false
+
+[score:classification]
+* defaults to algorithm defaults
+
+[score:pairwise]
+max_inputs = <int>
+* default to 1000
+
+[score:regression]
+* defaults to algorithm defaults
+
+[score:statstest]
+* defaults to algorithm defaults
+
+[score:clustering]
+* defaults to algorithm defaults
+
+

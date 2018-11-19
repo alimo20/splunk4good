@@ -1,10 +1,20 @@
+/* TODO: jink to replace theme_utils with that from core */
+require.config({
+  paths: {
+    theme_utils: '../app/simple_xml_examples/theme_utils'
+  }
+});
+
 require([
     'underscore',
     'jquery',
     'splunkjs/mvc',
     'splunkjs/mvc/tableview',
+    'theme_utils',
     'splunkjs/mvc/simplexml/ready!'
-], function(_, $, mvc, TableView) {
+], function(_, $, mvc, TableView, themeUtils) {
+
+    var isDarkTheme = themeUtils.getCurrentTheme && themeUtils.getCurrentTheme() === 'dark';
 
      // Row Coloring Example with custom, client-side range interpretation
 
@@ -42,6 +52,12 @@ require([
             tableView.$el.find('td.range-cell').each(function() {
                 $(this).parents('tr').addClass(this.className);
             });
+
+            if(isDarkTheme){
+              tableView.$el.find('td.timestamp').each(function() {
+                 $(this).parents('tr').addClass('dark');
+              });
+            }
         });
         // Add custom cell renderer, the table will re-render automatically.
         tableView.addCellRenderer(new CustomRangeRenderer());

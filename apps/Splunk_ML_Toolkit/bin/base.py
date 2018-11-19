@@ -297,6 +297,18 @@ class RegressorMixin(object):
             mlspl_limits=options.get('mlspl_limits'),
         )
 
+        # Return cross_validation scores if kfold_cv is set.
+        kfolds = options.get('kfold_cv')
+        if kfolds is not None:
+            cv_df = algo_util.get_kfold_cross_validation(
+                estimator=self.estimator,
+                X=X.values,
+                y=y.values,
+                scoring=['r2', 'neg_mean_squared_error'],
+                kfolds=kfolds,
+                )
+            return cv_df
+
         # Fit the estimator
         self.estimator.fit(X.values, y.values)
 
@@ -381,6 +393,20 @@ class ClassifierMixin(object):
             target=self.target_variable,
             mlspl_limits=mlspl_limits,
         )
+
+        # Return cross_validation scores if kfold_cv is set.
+        kfolds = options.get('kfold_cv')
+        if kfolds is not None:
+            scoring = ['f1_weighted', 'accuracy', 'precision_weighted', 'recall_weighted']
+            cv_df = algo_util.get_kfold_cross_validation(
+                estimator=self.estimator,
+                X=X.values,
+                y=y.values,
+                scoring=scoring,
+                kfolds=kfolds,
+                )
+            return cv_df
+
         # Fit the estimator
         self.estimator.fit(X.values, y.values)
 

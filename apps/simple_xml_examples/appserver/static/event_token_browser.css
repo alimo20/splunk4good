@@ -36,3 +36,22 @@
     max-height: 615px;
     overflow: auto;
 }
+
+/* Dark Theme */
+
+.token-view.dark {
+    background-color: #31373E;
+}
+
+.token-view.dark label {
+    color: #FFFFFF;
+}
+
+.token-view.dark button {
+    color: #FFFFFF;
+    border-color: #FFFFFF;
+}
+
+.token-view.dark .token-name, .token-view.dark .token-value {
+    border-bottom: 1px solid #C3CBD4;
+}

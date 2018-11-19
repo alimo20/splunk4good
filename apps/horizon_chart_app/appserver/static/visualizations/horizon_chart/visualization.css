@@ -83,3 +83,22 @@
   overflow: auto;
   position: absolute;
 }
+
+/* Dark Theme */
+
+.splunk-horizon-chart.dark .axis {
+    fill: #E1E6EB;
+}
+
+.splunk-horizon-chart.dark .axis line {
+    stroke: #E1E6EB;
+}
+
+.splunk-horizon-chart.dark .line {
+    background: #E1E6EB;
+}
+
+.splunk-horizon-chart.dark .horizon .title,
+.splunk-horizon-chart.dark .horizon .value {
+    text-shadow: 0 1px 0 rgba(0,0,0,.5);
+}

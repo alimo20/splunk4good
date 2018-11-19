@@ -23,12 +23,12 @@ def capture_exception(callback, request, url_parts):
     """
 
     try:
-
         return callback(request, url_parts)
     except (SplunkRestProxyException, SplunkRestException) as e:
         return e.to_http_response()
     except Exception as e:
-        return SplunkRestProxyException('Can not complete the request: %s' % str(e), logging.ERROR, httplib.INTERNAL_SERVER_ERROR).to_http_response()
+        return SplunkRestProxyException('Cannot complete the request: %s' % str(e), logging.ERROR, httplib.INTERNAL_SERVER_ERROR).to_http_response()
+
 
 def get_invalid_path_error(path_parts):
     return SplunkRestProxyException('Invalid request path. path: %s' % str(path_parts), logging.ERROR, httplib.BAD_REQUEST)
@@ -40,13 +40,28 @@ class Experiments(object):
     """
 
     experiment_store = ExperimentStore()
-    history_store = ExperimentHistoryStore(with_admin_token=True)
+    history_store = ExperimentHistoryStore(
+        with_admin_token=True,
+    )
 
     @classmethod
-    def check_experiment_for_history(cls, request, url_parts):
+    def check_experiment_exists(cls, request, url_parts):
+        """
+        A util function to check if the experiment with the given id exists, and return the response if it does.
+
+        Args:
+            request: (dict): the request object being passed in from rest handler
+            url_parts: ([type]): the url parts passed in from rest handler
+
+        Returns: (dict) a dict of response from experiment GET request
+
+        """
+
         experiment_fetch_reply = cls.experiment_store.get(request, url_parts, with_raw_reply=True)
         if not experiment_fetch_reply['success']:
             raise SplunkRestException(experiment_fetch_reply)
+
+        return experiment_fetch_reply
 
     @classmethod
     def safe_handle_get(cls, request, path_parts):
@@ -54,7 +69,7 @@ class Experiments(object):
         url_parts = []
 
         # Experiment GET request handling
-        if path_part_length <= 2 and path_part_length > 0:
+        if 0 < path_part_length <= 2:
             if path_part_length == 2:
                 url_parts.append(path_parts[1])
             return cls.experiment_store.get(request, url_parts)
@@ -64,7 +79,7 @@ class Experiments(object):
             if path_parts[2] != "history":
                 raise get_invalid_path_error(path_parts)
             url_parts.append(path_parts[1])
-            cls.check_experiment_for_history(request, url_parts)
+            cls.check_experiment_exists(request, url_parts)
             return cls.history_store.get(request, url_parts)
 
         # Oh noooo we can't do that
@@ -82,13 +97,22 @@ class Experiments(object):
                 url_parts.append(path_parts[1])
             return cls.experiment_store.post(request, url_parts)
 
-        # History POST request handling
         elif path_part_length == 3:
-            if path_parts[2] != "history":
+
+            # History POST request handling
+            if path_parts[2] == "history":
+                url_parts.append(path_parts[1])
+                cls.check_experiment_exists(request, url_parts)
+                return cls.history_store.post(request, url_parts)
+
+            # clone models POST request handling
+            elif path_parts[2] == 'clone_models':
+                url_parts.append(path_parts[1])
+                experiment_fetch_reply = cls.check_experiment_exists(request, url_parts)
+                return cls.experiment_store.clone_experiment_models(experiment_fetch_reply, request, url_parts)
+
+            else:
                 raise get_invalid_path_error(path_parts)
-            url_parts.append(path_parts[1])
-            cls.check_experiment_for_history(request, url_parts)
-            return cls.history_store.post(request, url_parts)
 
         # Welp we don't know this
         else:

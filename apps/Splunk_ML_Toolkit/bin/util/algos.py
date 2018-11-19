@@ -1,14 +1,16 @@
 import sys
 import os
 
-from base_util import is_valid_identifier
+from base_util import is_valid_identifier, get_apps_path
 from searchinfo_util import should_use_btool, validate_searchinfo_for_btool
-from exec_anaconda import get_apps_path
 from algo_loader import (
     AlgoLoader,
     BtoolAlgoLoadingStrategy,
     RestAlgoLoadingStrategy,
 )
+import cexc
+
+logger = cexc.get_logger(__name__)
 
 
 def load_algos_from_searchinfo(searchinfo):
@@ -66,10 +68,10 @@ def initialize_algo_class(algo_name, searchinfo):
         algo_class (class): the suspect's class
 
     """
-    all_algos = load_algos_from_searchinfo(searchinfo)
-
     if not is_valid_identifier(algo_name):
         raise RuntimeError('Failed to load algorithm with an invalid name: %s' % algo_name)
+
+    all_algos = load_algos_from_searchinfo(searchinfo)
 
     algo = {}
     try:
@@ -91,5 +93,6 @@ def initialize_algo_class(algo_name, searchinfo):
     except (ImportError, AttributeError) as e:
         package_name = algo.get('package', '')
         algo_name = '{}.{}'.format(package_name, algo_name) if package_name else algo_name
+        logger.debug(e)
         raise RuntimeError('Failed to load algorithm "%s"' % algo_name)
 

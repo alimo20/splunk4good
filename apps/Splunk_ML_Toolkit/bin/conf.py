@@ -10,7 +10,7 @@ APP_NAME = (
 CONF_NAME = 'mlspl'
 
 from splunklite import conf
-from exec_anaconda import get_apps_path
+from util.base_util import get_apps_path
 
 
 def get_app_path():

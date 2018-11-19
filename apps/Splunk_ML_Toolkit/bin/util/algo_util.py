@@ -5,6 +5,7 @@ import json
 import pandas as pd
 
 from util.param_util import convert_params, is_truthy
+from util.version_util import check_kfold_cv_available
 import base
 
 
@@ -224,3 +225,35 @@ def add_missing_attr(estimator, attr, value, param_key=None):
 
     if not hasattr(estimator, attr):
         setattr(estimator, attr, new_value)
+
+
+def get_kfold_cross_validation(estimator, X, y=None, scoring=None, kfolds=None):
+    """ Return a dataframe of kfold cross validation scores.
+
+    If the estimator is a classifier and y is either binary or multiclass,
+    sklearn's StratifiedKFold is used. In all other cases, normal KFold is used.
+
+    See http://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values
+    for additional information on scoring options
+
+    Args:
+        estimator (object): sklearn-compatible estimator
+        X (dataframe): feature dataframe
+        y (pd series): target series
+        kfolds (int): the number of folds in the (Stratified)KFold
+
+    Returns:
+        cv_df (dataframe): the cross validation scores
+
+    Raises:
+        RuntimeError: if kfold_cv is not supported
+    """
+    check_kfold_cv_available()
+    from sklearn.model_selection import cross_validate
+    raw_scores = cross_validate(estimator, X, y, scoring=scoring, cv=kfolds)
+    # We only need the testing scores, not the training scores
+    test_keys = ['test_' + metric for metric in scoring]
+    scores = [raw_scores.get(k) for k in test_keys]
+    cv_df = pd.DataFrame(scores).T
+    cv_df.columns = scoring
+    return cv_df

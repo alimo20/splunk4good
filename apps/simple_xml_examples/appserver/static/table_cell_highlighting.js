@@ -1,12 +1,22 @@
+/* TODO: jink to replace theme_utils with that from core */
+require.config({
+  paths: {
+    theme_utils: '../app/simple_xml_examples/theme_utils'
+  }
+});
+
 require([
     'underscore',
     'jquery',
     'splunkjs/mvc',
     'splunkjs/mvc/tableview',
+    'theme_utils',
     'splunkjs/mvc/simplexml/ready!'
-], function(_, $, mvc, TableView) {
+], function(_, $, mvc, TableView, themeUtils) {
 
      // Row Coloring Example with custom, client-side range interpretation
+
+    var isDarkTheme = themeUtils.getCurrentTheme && themeUtils.getCurrentTheme() === 'dark';
 
     var CustomRangeRenderer = TableView.BaseCellRenderer.extend({
         canRender: function(cell) {
@@ -35,6 +45,10 @@ require([
                 if (value > 1) {
                     $td.addClass('range-cell').addClass('range-severe');
                 }
+            }
+
+            if (isDarkTheme) {
+              $td.addClass('dark');
             }
 
             // Update the cell content

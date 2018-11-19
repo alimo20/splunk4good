@@ -26,3 +26,4 @@ CSV_FILESIZE_LIMIT = 2 ** 30
 EXPERIMENT_MODEL_PREFIX = "_exp_"
 EXPERMENT_DRAFT_MODEL_PREFIX = 'draft_'
 MODEL_FILE_REGEX = r'.*__mlspl_(?P<model_name>[a-zA-Z_][a-zA-Z0-9_]*).csv'
+TELEMETRY_ID_REGEX = r'^(?:_exp_)?(?:draft_)?([0-9a-f]+)(?:_[a-zA-z]+_[0-9]+)?$'

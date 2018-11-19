@@ -1,7 +1,6 @@
 #   Version 6.6.0
 #
-# This file will contain possible attribute/value pairs for configuring algorithms. 
-# For the moment attribute/value pairs are empty. 
+# This file will contain possible attribute/value pairs for configuring algorithms.
 
 # There is an algos.conf in $SPLUNK_HOME/etc/apps/Splunk_ML_Toolkit/default/. You must restart 
 # Splunk to enable configurations.
@@ -26,3 +25,6 @@
 * Set the following attributes/values for the command.  Otherwise, Splunk uses
   the defaults.
 * Implementation of the algorithms should be located in $SPLUNK_HOME/etc/apps/Splunk_ML_Toolkit/bin/algos/.
+
+package = <string>
+* Package specifies the location of the directory that contains algorithms.

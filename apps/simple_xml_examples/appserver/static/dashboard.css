@@ -115,3 +115,66 @@ code.inline {
 .dashboard-banner p {
     margin: 0px;
 }
+
+
+/* Dark Theme */
+
+.sourcecode-viewer.dark .dashboard-description {
+    border-top: 1px solid #171D21;
+    background: #31373E;
+}
+
+.sourcecode-viewer.dark .dashboard-description pre {
+    background-color: #2B3033;
+    border: 1px solid rgba(225, 230, 235, 1);
+}
+
+.sourcecode-viewer.dark .dashboard-description pre code {
+    color: #FFFFFF;
+    border: none;
+}
+
+.sourcecode-viewer.dark .dashboard-description code {
+    color: #E28964;
+    background-color: #2B3033;
+    border: 1px solid rgba(129, 141, 153, 1);
+}
+
+.sourcecode-viewer.dark {
+    background: #31373E;
+}
+
+.showsource-container.dark .nav li.nav-title {
+    border: 1px solid #171D21;
+    color: #FFFFFF;
+    background: #31373E;
+}
+
+.showsource-container.dark .prettyprint {
+    background: #31373E;
+    border-bottom: 1px solid #171D21;
+}
+
+.prettyprint.dark listing{
+    font-size: 20px;
+    background: #000000;
+}
+
+.showsource-container.dark .nav-tabs {
+    background: #31373E;
+    border-bottom: 1px solid #171D21;
+}
+
+.showsource-container.dark .nav-tabs > li > a {
+    color: #C3CBD4;
+}
+
+.showsource-container.dark .nav-tabs > li.active > a {
+    background: #2B3033;
+}
+
+
+.dashboard-banner.dark {
+    background-color: #31373E;
+    border: 1px solid #C3CBD4;
+}

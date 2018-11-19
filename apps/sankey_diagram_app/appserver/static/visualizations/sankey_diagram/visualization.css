@@ -240,3 +240,16 @@ div.splunk-sankey div {
   font-size: 11px;
 }
 
+/* Dark Theme */
+
+.splunk-sankey.dark .legend ul text {
+    color: #E1E6EB;
+}
+
+.splunk-sankey.dark .node text {
+    fill: #E1E6EB;
+}
+
+.splunk-sankey.dark li.key {
+    color: #FFFFFF;
+}

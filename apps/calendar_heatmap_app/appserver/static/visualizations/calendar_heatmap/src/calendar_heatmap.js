@@ -47,6 +47,9 @@ function(
         SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
             this.$el = $(this.el);
             this.$el.addClass('splunk-calendar-heatmap');
+            if (vizUtils.getCurrentTheme && vizUtils.getCurrentTheme() === 'dark'){
+              this.$el.addClass('dark');
+            }
 
             this.compiledTemplate = _.template(this._template);
 

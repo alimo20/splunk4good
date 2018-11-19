@@ -5,7 +5,7 @@
         "title": "Chart Element",
         "short-description": "Add graphs, charts, and gauges to dashboards.",
         "category": ["Basic Elements", "Chart Elements"],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": []
     },
 
@@ -14,7 +14,7 @@
         "title": "Table Element",
         "short-description": "Create a simple table using the dashboard editor.",
         "category": ["Basic Elements","Table Elements"],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_table_data_overlay","simple_table_sparklines"]
     },
 
@@ -23,7 +23,7 @@
         "title": "Single Value Element",
         "short-description": "Create a single value viz with trend indicator, sparkline, and more.",
         "category": ["Basic Elements", "Single Value Elements"],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_single_color"]
     },
 
@@ -32,7 +32,7 @@
         "title": "Map Element",
         "short-description": "Plot geographical data on integrated maps.",
         "category": ["Basic Elements", "Map Elements"],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_choropleth"]
     },
 
@@ -41,7 +41,7 @@
         "title": "Events Viewer Element",
         "short-description": "Visualize the raw data indexed by Splunk Enterprise, with field metadata.",
         "category": "Basic Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": []
     },
 
@@ -50,7 +50,7 @@
         "title": "HTML Element",
         "short-description": "Include static HTML content.  Useful for descriptions, links, and context.",
         "category": "Basic Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": []
     },
 
@@ -59,7 +59,7 @@
         "title": "Chart Overlay",
         "short-description": "Show limits and other data on one chart.",
         "category": "Chart Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"]
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -67,7 +67,7 @@
         "title": "Trellis Visualization Layout",
         "short-description": "Trellis layout enables visual segmentation for easy data comparisons.",
         "category": "Chart Elements",
-        "versions": ["6.6", "7.0", "7.1"]
+        "versions": ["6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -75,7 +75,7 @@
         "title": "Chart Enhancements",
         "short-description": "Overlay time-series charts with dynamic, discrete events to provide relevant context.",
         "category": "Chart Elements",
-        "versions": ["7.0", "7.1"]
+        "versions": ["7.0", "7.1", "7.2"]
     },
 
     {
@@ -83,7 +83,7 @@
         "title": "Event Annotations",
         "short-description": "Several new charting options to improve metric and multi-series monitoring use cases.",
         "category": "Chart Elements",
-        "versions": ["7.0", "7.1"]
+        "versions": ["7.0", "7.1", "7.2"]
     },
 
     {
@@ -91,7 +91,7 @@
         "title": "Splunk Gauges",
         "short-description": "Visualize a single numeric value.",
         "category": "Chart Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"]
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -99,7 +99,7 @@
         "title": "Chart Color Options",
         "short-description": "Use built-in chart color options to set background, foreground, font, and seriesColors.",
         "category": "Chart Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"]
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -107,7 +107,7 @@
         "title": "Table Element with Data Overlay",
         "short-description": "Add data overlay modes (heatmap, high/values) using the dashboard editor.",
         "category": "Table Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_table","simple_table_formats","simple_table_sparklines"]
     },
 
@@ -116,7 +116,7 @@
         "title": "Table Formats",
         "short-description": "Format columns using built-in table formats (coloring, number formatting).",
         "category": "Table Elements",
-        "versions": ["6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_table", "simple_table_data_overlay", "simple_table_sparklines"]
     },
 
@@ -125,7 +125,7 @@
         "title": "Table Element with Sparklines",
         "short-description": "Configure basic and advanced sparkline formatting options.",
         "category": "Table Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_table","simple_table_data_overlay","simple_table_formats"]
     },
 
@@ -134,7 +134,7 @@
         "title": "Table Element with Hidden Fields",
         "short-description": "Basic table with hidden search fields for use in drilldown.",
         "category": "Table Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": []
     },
 
@@ -143,7 +143,7 @@
         "title": "Bar Chart",
         "short-description": "Plot proportional data using a horizontal bar chart.",
         "category": "Chart Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_chart"]
     },
 
@@ -152,7 +152,7 @@
         "title": "Bubble Chart",
         "short-description": "Bubble charts can help visualize data in three dimensions.",
         "category": "Chart Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_viz_chart_scatter"]
      },
 
@@ -161,7 +161,7 @@
         "title": "Scatter Chart",
         "short-description": "Scatter chart example.",
         "category": "Chart Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_chart_bubble"]
     },
 
@@ -171,7 +171,7 @@
         "short-description": "Use Javascript and CSS in tables to convert rangemap results into icons.",
         "category": "Table Elements",
         "tags": ["extension"],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["custom_table_icon_set_inline","custom_table_row_highlighting","custom_table_data_bar"]
     },
 
@@ -181,7 +181,7 @@
         "short-description": "Add icons to table cells based on custom conditions.",
         "category": "Table Elements",
         "tags": ["extension"],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["custom_table_icon_set_rangemap","custom_table_row_highlighting","custom_table_data_bar"]
     },
 
@@ -191,7 +191,7 @@
         "short-description": "Color table rows based on conditions having multiple field values.",
         "category": "Table Elements",
         "tags": ["extension"],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["custom_table_icon_set_rangemap","custom_table_icon_set_inline","custom_table_data_bar"]
     },
 
@@ -201,7 +201,7 @@
         "short-description": "Color table cells based on conditions having multiple field values.",
         "category": "Table Elements",
         "tags": ["extension"],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["custom_table_row_highlighting","custom_table_icon_set_rangemap","custom_table_icon_set_inline","custom_table_data_bar"]
     },
 
@@ -211,7 +211,7 @@
         "short-description": "Custom table cell renderer that replaces a field value with a data bar.",
         "category": "Table Elements",
         "tags": ["extension"],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["custom_table_icon_set_rangemap","custom_table_row_highlighting","custom_table_icon_set_inline"]
     },
 
@@ -221,7 +221,7 @@
         "short-description": "Show more information on click of expansion.",
         "category": "Table Elements",
         "tags": ["extension"],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": []
     },
 
@@ -231,7 +231,7 @@
         "short-description": "Modify table column width by custom stylesheet.",
         "category": "Table Elements",
         "tags": ["extension"],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": []
     },
 
@@ -240,7 +240,7 @@
         "title": "Single Value With Color",
         "short-description": "Display single value with color options.",
         "category": "Single Value Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_single"]
     },
 
@@ -249,7 +249,7 @@
         "title": "Choropleth Maps",
         "short-description": "Visualize a metric that varies across a (custom) geographic region.",
         "category": "Map Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_maps"]
     },
 
@@ -258,7 +258,7 @@
         "title": "Choropleth Map Color Modes",
         "short-description": "Choose between three color modes and find the one that best fits your data.",
         "category": "Map Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_choropleth", "simple_maps"]
     },
 
@@ -267,7 +267,7 @@
         "title": "Inline Search",
         "short-description": "Use a search query to power dashboard elements.",
         "category": "Search Types",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_search_report","simple_search_realtime"]
     },
 
@@ -276,7 +276,7 @@
         "title": "Report Search",
         "short-description": "Use a saved report to power dashboard elements.",
         "category": "Search Types",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_search_inline","simple_search_realtime"]
     },
 
@@ -285,7 +285,7 @@
         "title": "Post Process Search",
         "short-description": "Use a post process query to further filter a global search.",
         "category": "Search Types",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_form_time"]
     },
 
@@ -294,7 +294,7 @@
         "title": "Recursive Search Post-process",
         "short-description": "Chain multiple search post-process searches to further optimize dashboard performance.",
         "category": "Search Types",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": []
     },
 
@@ -303,7 +303,7 @@
         "title": "Real-time Search",
         "short-description": "Use a real-time search for continuous trend updating.",
         "category": "Search Types",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_search_report","simple_search_inline"]
     },
 
@@ -312,7 +312,7 @@
         "title": "Multi-Search Management",
         "short-description": "Manage multiple background searches to drive various elements on the dashboard.",
         "category": "Search Types",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_search_postprocess","simple_search_report","simple_search_inline"]
     },
 
@@ -321,7 +321,7 @@
         "title": "Null Search Swapper",
         "short-description": "Control viz and search behavior based on search result count.",
         "category": "Search Types",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": []
     },
 
@@ -330,7 +330,7 @@
         "title": "Search Result Setter",
         "short-description": "Set tokens from the search manager to embed throughout the page.",
         "category": "Search Types",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": []
     },
 
@@ -339,7 +339,7 @@
         "title": "Eval Token Expressions",
         "short-description": "Use Splunk eval expressions within the token setter to format or transform values.",
         "category": "Search Types",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "tags": [],
         "related_links": ["null_search_swapper"]
     },
@@ -350,7 +350,7 @@
         "short-description": "Control refresh time and element footer display.",
         "category": "Search Types",
         "tags": [],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_search_report","simple_search_inline"]
     },
 
@@ -359,7 +359,7 @@
         "title": "Dashboard Data Sampling",
         "short-description": "Probabilistic method of returning a limited sample of search results.",
         "category": "Search Types",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": []
     },
 
@@ -369,7 +369,7 @@
         "short-description": "Control search refresh and refresh display behavior.",
         "category": "Search Types",
         "tags": [],
-        "versions": ["6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_panel_refresh"]
     },
 
@@ -378,7 +378,7 @@
         "title": "Show Search Time Range",
         "short-description": "Show the effective search time range in the title of a visualization.",
         "category": "Search Types",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_eval_tokens"]
     },
 
@@ -387,7 +387,7 @@
         "title": "Search Event Handler Condition Matches",
         "short-description": "Use advanced condition match in search event handler.",
         "category": "Search Types",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": []
     },
 
@@ -396,7 +396,7 @@
         "title": "Text Form Input Element",
         "short-description": "Set search terms by populating a form with textbox input.",
         "category": "Form Input Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_form_dropdown","simple_form_radio","simple_form_time"]
     },
 
@@ -405,7 +405,7 @@
         "title": "Dropdown Form Input Element",
         "short-description": "Set search terms by populating a form with one or more dropdown options.",
         "category": "Form Input Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_form_text","simple_form_radio","simple_form_time"]
     },
 
@@ -414,7 +414,7 @@
         "title": "Radio Form Input Element",
         "short-description": "Set search terms by populating a form with one or more sets of radio buttons.",
         "category": "Form Input Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_form_text","simple_form_dropdown","simple_form_time"]
     },
 
@@ -423,7 +423,7 @@
         "title": "Multiselect Input",
         "short-description": "Include a multiselect input.",
         "category": "Form Input Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_form_checkbox"]
     },
 
@@ -432,7 +432,7 @@
         "title": "Checkbox Input",
         "short-description": "Include multiple checkbox selection.",
         "category": "Form Input Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_form_multiselect"]
     },
 
@@ -441,7 +441,7 @@
         "title": "Time Picker Input",
         "short-description": "Add a timerange picker to modify a search time span.",
         "category": "Form Input Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_form_text","simple_form_dropdown","simple_form_radio"]
     },
 
@@ -450,7 +450,7 @@
         "title": "Cascading Form Input",
         "short-description": "Power a form input from other input values to narrow search results.",
         "category": "Form Input Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_form_text","simple_form_dropdown","simple_form_radio","simple_form_time"]
     },
 
@@ -459,7 +459,7 @@
         "title": "Form Input - Advanced Controls",
         "short-description": "Demonstrate various form input operations.",
         "category": "Form Input Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_form_text","simple_form_dropdown","simple_form_radio","simple_form_time", "simple_form_cascading"]
     },
 
@@ -468,7 +468,7 @@
         "title": "Link Switcher",
         "short-description": "Toggle dashboard content using a list of links.",
         "category": "Form Input Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": []
     },
 
@@ -477,7 +477,7 @@
         "title": "Input Multi-token Setter",
         "short-description": "Set multiple tokens within form inputs to drive multiple searches, better labeling, and more",
         "category": "Form Input Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": []
     },
 
@@ -487,7 +487,7 @@
         "short-description": "Disable drilldown action through UI Editor or editing XML.",
         "category": "Drilldown Elements",
         "partial_versions": ["6.4", "6.5"],
-        "versions": ["6.6", "7.0", "7.1"]
+        "versions": ["6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -496,7 +496,7 @@
         "short-description": "Enable drilldown to search action through UI editor or editing XML.",
         "category": "Drilldown Elements",
         "partial_versions": ["6.4", "6.5"],
-        "versions": ["6.6", "7.0", "7.1"]
+        "versions": ["6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -505,7 +505,7 @@
         "short-description": "Enable link to dashboard action through UI Editor or editing XML.",
         "category": "Drilldown Elements",
         "partial_versions": ["6.4", "6.5"],
-        "versions": ["6.6", "7.0", "7.1"]
+        "versions": ["6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -514,7 +514,7 @@
         "short-description": "Enable link to report action through UI Editor or editing XML.",
         "category": "Drilldown Elements",
         "partial_versions": ["6.4", "6.5"],
-        "versions": ["6.6", "7.0", "7.1"]
+        "versions": ["6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -523,7 +523,7 @@
         "short-description": "Enable link to custom url action through UI Editor or editing XML.",
         "category": "Drilldown Elements",
         "partial_versions": ["6.4", "6.5"],
-        "versions": ["6.6", "7.0", "7.1"]
+        "versions": ["6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -532,7 +532,7 @@
         "short-description": "Enable in-page interaction through UI Editor or editing XML.",
         "category": "Drilldown Elements",
         "partial_versions": ["6.4", "6.5"],
-        "versions": ["6.6", "7.0", "7.1"]
+        "versions": ["6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -541,7 +541,7 @@
         "short-description": "Configure drilldown to redirect users to the URL value of the referer field.",
         "category": "Drilldown Elements",
         "tags": [],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": []
     },
 
@@ -550,7 +550,7 @@
         "title": "Pan and Zoom Chart Controls",
         "short-description": "Charts allow you to select a range to zoom in.  Alternatively you can use that data to drilldown further into your data.",
         "category": "Drilldown Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": []
     },
 
@@ -560,7 +560,7 @@
         "title": "Multiple Panels to a Row",
         "short-description": "Organize similar content in a single row.",
         "category": "Layout Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_layout_grouping_single","simple_layout_grouping_chart"]
     },
 
@@ -570,7 +570,7 @@
         "short-description": "Group multiple single value elements, aligning horizontally.",
         "category": "Layout Elements",
         "tags": [],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_layout_panels","simple_layout_grouping_chart"]
     },
 
@@ -579,7 +579,7 @@
         "title": "Panel Grouping with Charts",
         "short-description": "Group multiple charts, tables, html panels, or events, aligning vertically.",
         "category": "Layout Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_layout_panels","simple_layout_grouping_single"]
     },
 
@@ -589,7 +589,7 @@
         "short-description": "Apply page-level, custom stylesheets.",
         "category": "Layout Elements",
         "tags": ["extension"],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": []
     },
 
@@ -599,7 +599,7 @@
         "short-description": "Display workflow status visually using an image, and grouped single value elements.",
         "category": "Layout Elements",
         "tags": ["extension"],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_single"]
     },
 
@@ -609,7 +609,7 @@
         "short-description": "Customize the width of dashboard panels.",
         "category": "Layout Elements",
         "tags": ["extension"],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": []
     },
 
@@ -618,7 +618,7 @@
         "title": "Form Elements Within Panels",
         "short-description": "Example of placing form elements within a panel.",
         "category": "Layout Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_form_dropdown, simple_form_radio"]
     },
 
@@ -627,7 +627,7 @@
         "title": "Time Range Picker Within Panels",
         "short-description": "Example of placing a time range picker within a panel.",
         "category": "Layout Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["simple_form_dropdown, simple_form_time"]
     },
 
@@ -636,7 +636,7 @@
         "title": "Display Controls",
         "short-description": "Turn on or off display of common components like the header, footer, edit controls.",
         "category": "Layout Elements",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"]
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -645,7 +645,7 @@
         "short-description": "Add search-driven, custom visualizations to a dashboard, using JavaScript.",
         "category": "Custom Visualizations",
         "tags": ["extension"],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "sourceFiles": [
             "/static/app/simple_xml_examples/visualizations/tagcloud/src/tagcloud.js"
         ]
@@ -657,7 +657,7 @@
         "short-description": "Use the new top-level search element in 6.2 and connect it to your custom visualization.",
         "category": "Custom Visualizations",
         "tags": ["extension"],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["custom_viz_tag_cloud"],
         "sourceFiles": [
             "/static/app/simple_xml_examples/visualizations/tagcloud/src/tagcloud.js"
@@ -670,7 +670,7 @@
         "short-description": "Example on how to use token-replacement in combination with custom visualizations.",
         "category": "Custom Visualizations",
         "tags": ["extension"],
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["custom_viz_tag_cloud"],
         "sourceFiles": [
             "/static/app/simple_xml_examples/visualizations/tagcloud/src/tagcloud.js"
@@ -684,7 +684,7 @@
         "category": "Custom Visualizations",
         "tags": ["app_deps"],
         "banner": "custom_viz_punchcard",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"]
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -694,7 +694,7 @@
         "category": "Custom Visualizations",
         "tags": ["app_deps"],
         "banner": "custom_viz_horseshoe",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"]
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -704,7 +704,7 @@
         "category": "Custom Visualizations",
         "tags": ["app_deps"],
         "banner": "custom_viz_status_indicator",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"]
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -714,7 +714,7 @@
         "category": "Custom Visualizations",
         "tags": ["app_deps"],
         "banner": "custom_viz_treemap",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"]
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -724,7 +724,7 @@
         "category": "Custom Visualizations",
         "tags": ["app_deps"],
         "banner": "custom_viz_location_tracker",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"]
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -734,7 +734,7 @@
         "category": "Custom Visualizations",
         "tags": ["app_deps"],
         "banner": "custom_viz_parallel_coordinates",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"]
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -744,7 +744,7 @@
         "category": "Custom Visualizations",
         "tags": ["app_deps"],
         "banner": "custom_viz_timeline",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"]
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -754,7 +754,7 @@
         "category": "Custom Visualizations",
         "tags": ["app_deps"],
         "banner": "custom_viz_bullet_graph",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"]
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -764,7 +764,7 @@
         "category": "Custom Visualizations",
         "tags": ["app_deps"],
         "banner": "custom_viz_horizon_chart",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"]
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -774,7 +774,7 @@
         "category": "Custom Visualizations",
         "tags": ["app_deps"],
         "banner": "custom_viz_sankey",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"]
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -784,7 +784,7 @@
         "category": "Custom Visualizations",
         "tags": ["app_deps"],
         "banner": "custom_viz_calendar_heatmap",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"]
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -794,7 +794,7 @@
         "category": "Custom Visualizations",
         "tags": ["extension"],
         "banner":"custom_decorations",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"]
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -802,7 +802,7 @@
         "title": "Custom token definitions",
         "short-description": "Use Javascript to set tokens in panel titles, html panels, and for drilldown.",
         "category": "Token Customization",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "related_links": ["custom_rest_token"],
         "tags": ["extension"]
     },
@@ -812,7 +812,7 @@
         "title": "Dynamic Token Viewer based on User Events",
         "short-description": "See live what tokens are available based on drilldown events, input change events, and more.",
         "category": "Token Customization",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "tags": ["extension"],
         "sourceFiles": [
             "/static/app/simple_xml_examples/event_token_browser.css",
@@ -829,7 +829,7 @@
         "title": "Token Viewer (Basic)",
         "short-description": "Basic token viewer, showing avaialble page-level tokens.",
         "category": "Token Customization",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "tags": ["extension"],
         "related_links": []
     },
@@ -839,7 +839,7 @@
         "title": "Custom token links",
         "short-description": "Set tokens from links or buttons in HTML panels.",
         "category": "Token Customization",
-        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.4", "6.5", "6.6", "7.0", "7.1", "7.2"],
         "tags": ["extension"],
         "related_links": ["custom_event_tokens", "custom_token_viewer"]
     },
@@ -850,7 +850,7 @@
         "short-description": "Set or unset tokens when initializing the page.",
         "tags": [],
         "category": "Token Customization",
-        "versions": ["6.5", "6.6", "7.0", "7.1"]
+        "versions": ["6.5", "6.6", "7.0", "7.1", "7.2"]
     },
 
     {
@@ -858,7 +858,7 @@
         "title": "Default Environment Tokens",
         "short-description": "Global default environment tokens available on initial load, and usable throughout a page.",
         "category": "Token Customization",
-        "versions": ["6.5", "6.6", "7.0", "7.1"],
+        "versions": ["6.5", "6.6", "7.0", "7.1", "7.2"],
         "tags": []
     }
 ]

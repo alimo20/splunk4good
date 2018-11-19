@@ -1,15 +1,20 @@
+/* TODO: jink to replace theme_utils with that from core */
 require.config({
     paths: {
-        prettify: '../app/simple_xml_examples/components/srcviewer/contrib/prettify'
+        prettify: '../app/simple_xml_examples/components/srcviewer/contrib/prettify',
+        theme_utils: '../app/simple_xml_examples/theme_utils'
     }
-})
+});
 define([
     'underscore',
     'jquery',
     'backbone',
     'prettify',
-    'css!contrib/google-code-prettify/prettify.css'
-], function(_, $, Backbone, prettify) {
+    'theme_utils',
+    'css!../../code_theme.css'
+], function(_, $, Backbone, prettify, themeUtils) {
+
+    var isDarkTheme = themeUtils.getCurrentTheme && themeUtils.getCurrentTheme() === 'dark';
 
     var CodeView = Backbone.View.extend({
         options: {
@@ -44,15 +49,16 @@ define([
         render: function() {
             this.$el.html(this.template({
                 content: this.getContent(),
-                lang: this.model.get('lang')
+                lang: this.model.get('lang'),
+                isDarkTheme: isDarkTheme
             }));
             this.$el.attr({ "class": "tab-pane", id: this.model.get("id") });
             prettify(function(){}, this.el);
             return this;
         },
         template: _.template(
-                    '<pre class="prettyprint linenums <% if(lang) { %>lang-<%-lang%><% } %>">' +
-                        '<code><%- content %></code>' +
+                    '<pre class="prettyprint linenums <% if(isDarkTheme) { %>dark <% }%><% if(lang) { %>lang-<%-lang%><% } %>">' +
+                      '<code class="<% if(isDarkTheme) { %>dark <% }%>"><%- content %></code>' +
                     '</pre>'
         )
     });

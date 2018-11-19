@@ -1,6 +1,6 @@
 {
   "name": "status_indicator_visualization",
-  "version": "1.2.0",
+  "version": "1.4.0",
   "description": "Splunk visualization app",
   "main": "visualization.js",
   "scripts": {

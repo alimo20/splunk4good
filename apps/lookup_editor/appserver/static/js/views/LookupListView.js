@@ -68,7 +68,7 @@ define([
 	});
 
 	var CSVLookups = SplunkDsBaseCollection.extend({
-		url: '/servicesNS/' + Splunk.util.getConfigValue("USERNAME") + '/-/data/lookup-table-files?count=-1',
+		url: Splunk.util.make_url('/splunkd/__raw/servicesNS', encodeURIComponent(Splunk.util.getConfigValue("USERNAME"))) + '/-/data/lookup-table-files?count=-1',
 		model: CSVLookup,
 		initialize: function() {
 			SplunkDsBaseCollection.prototype.initialize.apply(this, arguments);
@@ -83,7 +83,7 @@ define([
 	});
 
 	var KVLookups = SplunkDsBaseCollection.extend({
-		url: '/servicesNS/nobody/-/storage/collections/config?count=-1',
+		url: Splunk.util.make_url('/splunkd/__raw/servicesNS/nobody/-/storage/collections/config?count=-1'),
 		model: KVLookup,
 	    initialize: function() {
 	      SplunkDsBaseCollection.prototype.initialize.apply(this, arguments);
@@ -584,9 +584,12 @@ define([
 				this.lookup_transform_editor.render();
 			}
 
+			// Get the transform information for KV lookups
 			var data = $(e.currentTarget).data();
-
-			this.lookup_transform_editor.openInSearchOrCreateTransform(data.name, data.namespace, data.name);
+			
+			if(data.owner && data.namespace && data.name){
+				this.lookup_transform_editor.openInSearchOrCreateTransform(data.owner, data.namespace, data.name);
+			}
 		},
 
         /**
@@ -644,7 +647,7 @@ define([
 			var lookup = new SplunkDBaseModel();
 
 			lookup.fetch({
-				url: Splunk.util.make_url('splunkd/__raw/servicesNS/' + owner + '/' + namespace + '/data/lookup-table-files/' + lookup_name),
+				url: Splunk.util.make_url('/splunkd/__raw/servicesNS', encodeURIComponent(owner), encodeURIComponent(namespace), '/data/lookup-table-files/', encodeURIComponent(lookup_name)),
 				success: function() {
 					lookup.destroy({
 						success: function() {
@@ -669,7 +672,7 @@ define([
 			var lookup = new SplunkDBaseModel();
 
 			lookup.fetch({
-				url: Splunk.util.make_url('splunkd/__raw/servicesNS/nobody/' + namespace + '/storage/collections/config/' + lookup_name),
+				url: Splunk.util.make_url('/splunkd/__raw/servicesNS/nobody/' + encodeURIComponent(namespace) + '/storage/collections/config/' + encodeURIComponent(lookup_name)),
 				success: function() {
 					lookup.destroy({
 						success: function() {

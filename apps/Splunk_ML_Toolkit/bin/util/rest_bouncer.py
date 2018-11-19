@@ -8,14 +8,33 @@
 # through stdin to avoid leaks via environment variables/command line
 # arguments/etc.
 import json
+import os
+import subprocess
 import sys
+
+# Destination python path
+SPLUNK_PYTHON_PATH = os.path.join(os.environ['SPLUNK_HOME'], 'bin', 'python')
+
+
+def _need_to_bounce():
+    return sys.executable != SPLUNK_PYTHON_PATH
 
 
 def make_rest_call(session_key, method, url, postargs=None, jsonargs=None, getargs=None, rawResult=False):
-    import os
-    import subprocess
-    import cexc
+    """
+    Make REST call using a new python interpreter if necessary.
 
+    If the current python interpreter is not Splunk's default, launch an external process to run the REST query
+    with the Splunk's default python interpreter (because we need the SSL package not available in the PSC python
+    interpreter). If the current python interpreter is already Splunk's default, just run the REST query.
+
+    Args:
+        payload (dict): request payload. If None, it will be read from stdin.
+
+    Returns:
+        reply (dict): Splunk REST response or False on error.
+    """
+    import cexc
     logger = cexc.get_logger(__name__)
 
     payload = {
@@ -29,21 +48,24 @@ def make_rest_call(session_key, method, url, postargs=None, jsonargs=None, getar
     }
 
     try:
-        python_path = os.path.join(os.environ['SPLUNK_HOME'], 'bin', 'python')
-        p = subprocess.Popen([python_path, os.path.abspath(__file__)],
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-        (stdoutdata, stderrdata) = p.communicate(json.dumps(payload))
-        p.wait()
+        if _need_to_bounce():
+            p = subprocess.Popen([SPLUNK_PYTHON_PATH, os.path.abspath(__file__)],
+                                 stdin=subprocess.PIPE,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
+            (stdoutdata, stderrdata) = p.communicate(json.dumps(payload))
+            p.wait()
 
-        for errline in stderrdata.splitlines():
-            logger.debug('> %s', errline)
+            for errline in stderrdata.splitlines():
+                logger.debug('> %s', errline)
 
-        if p.returncode != 0:
-            raise RuntimeError("rest_bouncer subprocess exited with non-zero error code '%d'" % p.returncode)
+            if p.returncode != 0:
+                raise RuntimeError("rest_bouncer subprocess exited with non-zero error code '%d'" % p.returncode)
 
-        reply = json.loads(stdoutdata)
+            reply = json.loads(stdoutdata)
+        else:
+            # No need to bounce.  We already have the correct Python interpreter (Splunk's default).
+            reply = _make_rest_call_internal(payload)
     except Exception as e:
         logger.warn('rest_bouncer failure: %s: %s', type(e).__name__, str(e))
         return False
@@ -51,7 +73,18 @@ def make_rest_call(session_key, method, url, postargs=None, jsonargs=None, getar
     return reply
 
 
-if __name__ == "__main__":
+def _make_rest_call_internal(payload=None):
+    """
+    Make REST call via Splunk REST API
+
+    This does the real meat of the work.
+
+    Args:
+        payload (dict): request payload. If None, it will be read from stdin.
+
+    Returns:
+        reply (dict): Splunk REST response
+    """
     from splunk import rest, RESTException
     import httplib
 
@@ -65,8 +98,9 @@ if __name__ == "__main__":
 
     # Read JSON payload from stdin
     try:
-        line = sys.stdin.next()
-        payload = json.loads(line)
+        if payload is None:
+            line = sys.stdin.next()
+            payload = json.loads(line)
 
         session_key = payload['session_key']
         method = payload['method']
@@ -103,4 +137,13 @@ if __name__ == "__main__":
         reply['content'] = '{"messages":[{"type": "%s", "text": "%s"}]}' % (error_type, str(e))
         reply['error_type'] = error_type
         reply['status'] = httplib.INTERNAL_SERVER_ERROR
-    print json.dumps(reply)
+    return reply
+
+
+def main():
+    print(json.dumps(_make_rest_call_internal()))
+
+
+if __name__ == "__main__":
+    main()
+

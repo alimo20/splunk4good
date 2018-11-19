@@ -44,3 +44,13 @@
 .splunk-timeline svg {
   box-sizing:border-box;
 }
+
+/* Dark Theme */
+
+.splunk-timeline.dark .axis text {
+    fill: #fff;
+}
+
+.splunk-timeline.dark .timeline-label {
+    fill: #fff;
+}

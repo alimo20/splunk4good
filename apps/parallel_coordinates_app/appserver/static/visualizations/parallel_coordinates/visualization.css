@@ -3,8 +3,8 @@
 }
 .splunk-parcoords-viz text {
   font-family: 'Lucida Grande', 'Lucida Sans Unicode', Arial, Helvetica;
-  color:#555;
   font-size:11px;
+  text-shadow: 0 0 3px #fff;
 }
 .splunk-parcoords-viz.cat-max-35 text {
   font-size:10px;
@@ -27,10 +27,6 @@
 }
 .splunk-parcoords-viz > canvas {
   pointer-events: none;
-}
-
-.splunk-parcoords-viz text {
-  text-shadow: 0 0 3px #fff;
 }
 
 .splunk-parcoords-viz text.label {
@@ -73,9 +69,33 @@
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
-  background-color: white;
 }
 
 .splunk-parcoords-viz.no-ticks .axis g {
     display: none;
+}
+
+/* Dark Theme Styles to override default settings */
+
+.splunk-parcoords-viz.dark text {
+    fill: #fff;
+}
+
+.splunk-parcoords-viz.dark .axis line, .splunk-parcoords-viz.dark .axis path {
+    stroke: #FFFFFF;
+}
+
+.splunk-parcoords-viz.dark .clear-filters{
+    background-color: #5C6773;
+    border-color: #32414C;
+    color: #FFFFFF;
+    box-shadow: inset 0px -1px 0 #3C444D;
+}
+
+.splunk-parcoords-viz.dark .clear-filters[disabled="disabled"]{
+    background-color: #3C444D;
+    border-color: transparent;
+    color: #5C6773;
+    box-shadow: none;
+    cursor: not-allowed;
 }
