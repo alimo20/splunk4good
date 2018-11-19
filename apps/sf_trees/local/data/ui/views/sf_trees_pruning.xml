@@ -249,7 +249,7 @@
         <option name="leaflet_maps_app.maps-plus.allPopups">0</option>
         <option name="leaflet_maps_app.maps-plus.animate">1</option>
         <option name="leaflet_maps_app.maps-plus.autoFitAndZoom">1</option>
-        <option name="leaflet_maps_app.maps-plus.autoFitAndZoomDelay">500</option>
+        <option name="leaflet_maps_app.maps-plus.autoFitAndZoomDelay">2000</option>
         <option name="leaflet_maps_app.maps-plus.bingMaps">0</option>
         <option name="leaflet_maps_app.maps-plus.bingMapsLabelLanguage">en-US</option>
         <option name="leaflet_maps_app.maps-plus.bingMapsTileLayer">CanvasLight</option>
@@ -277,6 +277,7 @@
         <option name="leaflet_maps_app.maps-plus.mapCenterLon">-98.35</option>
         <option name="leaflet_maps_app.maps-plus.mapCenterZoom">6</option>
         <option name="leaflet_maps_app.maps-plus.mapTile">http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png</option>
+        <option name="leaflet_maps_app.maps-plus.mapTileOverride">http://mt.google.com/vt/lyrs=m&amp;x={x}&amp;y={y}&amp;z={z}</option>
         <option name="leaflet_maps_app.maps-plus.maxClusterRadius">80</option>
         <option name="leaflet_maps_app.maps-plus.maxSpiderfySize">100</option>
         <option name="leaflet_maps_app.maps-plus.maxZoom">19</option>
