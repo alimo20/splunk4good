@@ -127,7 +127,7 @@
         "title": "Human Trafficking",
         "short-description": "A sample of web scrapes performed by <a href=\"http://www.globalemancipation.ngo/\" target=\"_blank\">Global Emancipation Network</a> using on public listing (mostly escort pages) that are potentially related to human trafficking.",
         "category": ["Human rights"],
-        "tags": ["rest api", "sample", "json"],
+        "tags": ["work in progress", "rest api", "sample", "json"],
         "link": {
             "base": "/app/s4g_welcome/search",
             "params": {
@@ -152,7 +152,7 @@
         "title": "IRS Form 990 (Nonprofits)",
         "short-description": "Form 990 (officially, the \"Return of Organization Exempt From Income Tax\") is a United States Internal Revenue Service form that provides the public with financial information about a nonprofit organization. It is often the only source of such information. The public dataset includes forms from 2011 to 2017 and is provided by <a href=\"https://aws.amazon.com/public-datasets/irs-990/\" target=\"_blank\">Amazon S3</a>.",
         "category": ["Regulatory"],
-        "tags": ["fixed ranged", "xml"],
+        "tags": ["work in progress", "fixed ranged", "xml"],
         "link": {
             "base": "/app/s4g_welcome/search",
             "params": {
@@ -207,7 +207,7 @@
         "title": "The GDELT Project",
         "short-description": "The GDELT Project monitors the world's broadcast, print, and web news from nearly every corner of every country in over 100 languages and identifies the people, locations, organizations, themes, sources, emotions, counts, quotes, images and events driving our global society every second of every day, creating a free open platform for computing on the entire world.",
         "category": ["Social"],
-        "tags": ["lookup", "script", "real-time"],
+        "tags": ["work in progress", "lookup", "script", "real-time"],
         "link": {
             "base": "/app/s4g_welcome/search",
             "params": {

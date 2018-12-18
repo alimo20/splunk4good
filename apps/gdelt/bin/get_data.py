@@ -34,7 +34,7 @@ class Counter(object):
 def retry(retries, error_msg):
     sleep_sec = RETRY_SLEEP[retries]
 
-    logger.debug(error_msg.replace("_SEC_", str(sleep_sec)))
+    logger.error(error_msg.replace("_SEC_", str(sleep_sec)))
 
     time.sleep(sleep_sec)
 
@@ -57,7 +57,7 @@ def url_open(url):
             return response.read()
         except urllib.error.HTTPError as e:
             if e.code == 404:
-                logger.debug("{}: Error 404 not found! Skipping...".format(url))
+                logger.error("{}: Error 404 not found! Skipping...".format(url))
                 return False
 
             error_msg = "{}: Error {}. Sleeping for _SEC_ seconds(s)".format(url, e.code)
@@ -77,10 +77,10 @@ def get_csv(data):
         filename = re.search(r"\/(\d+\..+)\.CSV\.zip$", url).group(1)
     except AttributeError:
         count_skipped.increment()
-        logger.debug("{}: Regex filename extraction failed. Skipping...".format(url))
+        logger.error("{}: Regex filename extraction failed. Skipping...".format(url))
         return
 
-    tsv_file = Path(SPLUNK_DATA_PATH + "/" + filename + ".tsv")
+    tsv_file = Path(DATA_PATH + "/" + filename + ".tsv")
 
     if tsv_file.is_file():
         count_skipped.increment()
@@ -91,14 +91,14 @@ def get_csv(data):
 
     if not response:
         count_skipped.increment()
-        logger.debug("{}: No response. Skipping...".format(filename))
+        logger.error("{}: No response. Skipping...".format(filename))
         return
 
     z = ZipFile(BytesIO(response))
 
     for name in z.namelist():
         count_got.increment()
-        z.extract(name, SPLUNK_DATA_PATH)
+        z.extract(name, DATA_PATH)
         os.rename(name, filename + ".tsv")
         logger.info("{}: Extracted and saved as TSV".format(filename))
 
@@ -124,15 +124,18 @@ if __name__ == "__main__":
     if not setting_file.is_file():
         sys.exit("The file settings.py doesn't exist. Please rename settings.py.template to settings.py.")
 
-    logger = logging.getLogger('logger_debug')
+    logger = logging.getLogger('logger')
     logger.setLevel(logging.DEBUG)
-    handler = logging.handlers.RotatingFileHandler(SPLUNK_LOG_PATH + "/get_data.log", maxBytes=LOG_ROTATION_BYTES, backupCount=1000)
-    handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)-8s] (%(threadName)-10s) %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
+    handler = logging.handlers.RotatingFileHandler(LOG_PATH, maxBytes=LOG_ROTATION_BYTES, backupCount=LOG_ROTATION_LIMIT)
+    handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)-7s] (%(threadName)-10s) %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
     logger.addHandler(handler)
 
-    logger.info("START OF SCRIPT.")
+    print("Log file at {}".format(LOG_PATH))
 
-    os.chdir(SPLUNK_DATA_PATH)
+    logger.info("START OF SCRIPT.")
+    logger.debug("THREADS={} DATA_PATH={}".format(THREADS, DATA_PATH))
+
+    os.chdir(DATA_PATH)
 
     # Before retrying first wait 1 second, then another 1, then another 1, then every 30 seconds.
     print("Getting {}".format(URL_ENGLISH))
@@ -164,7 +167,7 @@ if __name__ == "__main__":
 
     count_total = len(data)
 
-    logger.debug("{} URLs to get".format(count_total))
+    logger.info("{} URLs to get".format(count_total))
 
     # https://stackoverflow.com/a/40133278/1150923
     pool = Pool(THREADS)
@@ -175,5 +178,5 @@ if __name__ == "__main__":
     pool.close()
     pool.join()
 
-    logger.debug("Total: {}. Got: {}. Skipped: {}.".format(count_total, count_got.value, count_skipped.value))
-    logger.debug("Done. Total elapsed seconds: {}".format(time.time() - start_time))
+    logger.info("Total: {}. Got: {}. Skipped: {}.".format(count_total, count_got.value, count_skipped.value))
+    logger.info("Done. Total elapsed seconds: {}".format(time.time() - start_time))

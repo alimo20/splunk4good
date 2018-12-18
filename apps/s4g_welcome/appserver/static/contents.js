@@ -93,7 +93,7 @@ require([
                         var $exampleContent = $('<div class="content"></div>').append($exampleTitle).append($exampleDescription);
                         var $tags =  $('<div class="tags"></div>').appendTo($exampleContent);
                         _.each(exampleInfo.get('tags'), function(tag){
-                            $tags.append($('<span class="label"></span>').addClass(tag).text(tag));
+                            $tags.append($('<span class="label"></span>').addClass(tag.replace(/ /g, "-")).text(tag));
                         });
                         $example.append($exampleImg).append($exampleContent);
                         $categoryContents.append($example);

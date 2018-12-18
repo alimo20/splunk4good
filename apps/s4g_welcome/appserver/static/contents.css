@@ -156,3 +156,8 @@ h2 {
     color: #FFFFFF;
 
 }
+
+.tags .work-in-progress {
+    background-color: #505050;
+    color: #dadada;
+}
