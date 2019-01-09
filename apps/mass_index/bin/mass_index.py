@@ -15,6 +15,7 @@ from tqdm import tqdm
 from pathlib import Path
 from multiprocessing.dummy import Pool
 from multiprocessing import RawValue, Lock
+from shutil import copy
 
 from settings import *
 
@@ -32,25 +33,27 @@ class Counter(object):
         return self.val.value
 
 def index_file(data):
-    count_success = data["count_success"]
-    count_failure = data["count_failure"]
     file_path = data["file_path"]
-    index = data["index"]
-    sourcetype = data["sourcetype"]
-
-    command = "{}/bin/splunk nom on {} -index {} -sourcetype {}".format(SPLUNK_HOME, file_path, index, sourcetype)
-    logger.info(command)
-
-    try:
-        subprocess.check_output(command.split(), stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError as e:
-        count_failure.increment()
-        logger.error(e.__dict__)
-        return
-
-    count_success.increment()
-    
-    time.sleep(SLEEP)
+    #index = data["index"]
+    #sourcetype = data["sourcetype"]
+    local_counter = 0
+    incrementer = 100
+    file_paths = sorted(glob.glob(file_path))
+    count_total = len(file_paths)	
+    logger.debug("{} files to index.".format(count_total))
+    	
+    #iterate through file paths, moving INCREMENTER files at a time to sinkhole
+#    try:
+    while count_total > local_counter:
+    	for f in file_paths[local_counter:local_counter+incrementer]:
+        	logger.debug('Processing filename:{}'.format(f))
+        	copy(f, "/opt/splunk/etc/apps/mass_index/data")
+        	sinkHoleFiles = len(glob.glob("/opt/splunk/etc/apps/mass_index/data/*"))
+        	while sinkHoleFiles > incrementer:
+                	sinkHoleFiles = len(glob.glob("/opt/splunk/etc/apps/mass_index/data/*"))
+                	logger.debug('Sleeping... number of files in sinkhole{} '.format(sinkHoleFiles))
+                	time.sleep(0.5)
+    	local_counter = local_counter + incrementer
 
 if __name__ == "__main__":
     start_time = time.time()
@@ -60,6 +63,7 @@ if __name__ == "__main__":
     if not setting_file.is_file():
         sys.exit("The file settings.py doesn't exist. Please rename settings.py.template to settings.py.")
     
+    #set logging stuff
     logger = logging.getLogger("logger")
     logger.setLevel(logging.DEBUG)
     handler = logging.handlers.RotatingFileHandler(LOG_PATH, maxBytes=LOG_ROTATION_BYTES, backupCount=LOG_ROTATION_LIMIT)
@@ -72,50 +76,18 @@ if __name__ == "__main__":
     logger.debug("THREADS={} SLEEP={} SPLUNK_HOME={}".format(THREADS, SLEEP, SPLUNK_HOME))
     logger.debug("DATA length: {}".format(len(DATA)))
 
-    command = "splunk login -auth {}:{}".format(SPLUNK_USERNAME, SPLUNK_PASSWORD)
-    
-    try:
-        subprocess.check_output(command.split(), stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError as e:
-        logger.error(e.__dict__)
-        sys.exit("Splunk authentication failed. Check correct credentials in settings.py.")
-
     data = []
 
     count_success = Counter(0)
     count_failure = Counter(0)
+    count_total = 0
+    local_counter = 0
+    incrementer = 10
 
+    #glob up file paths and sort
     for i, d in enumerate(DATA):
-        index = d["index"]
-        sourcetype = d["sourcetype"]
-        file_path = d["file_path"]
+    	file_path = d["file_path"]
+    	logger.debug("DATA #{}: file_path={}".format(i,file_path))
+        print("DATA #{}: file_path={}".format(i,file_path))
+    	index_file(DATA[i])
 
-        logger.debug("DATA #{}: index={} sourcetype={} file_path={}".format(i, index, sourcetype, file_path))
-
-        file_paths = glob.glob(file_path)
-
-        data.extend([
-            {
-                "file_path": f,
-                "index": index,
-                "sourcetype": sourcetype,
-                "count_success": count_success,
-                "count_failure": count_failure
-            }
-            for f in file_paths
-        ])
-
-    count_total = len(data)
-    logger.debug("{} files to index.".format(count_total))
-    
-    # https://stackoverflow.com/a/40133278/1150923
-    pool = Pool(THREADS)
-
-    for _ in tqdm(pool.imap_unordered(index_file, data), total=count_total):
-        pass
-
-    pool.close()
-    pool.join()
-
-    logger.info("Total: {}. Success: {}. Error: {}.".format(count_total, count_success.value, count_failure.value))
-    logger.info("DONE. Total elapsed seconds: {}".format(time.time() - start_time))
